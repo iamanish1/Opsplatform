@@ -1,12 +1,12 @@
 const { Queue } = require('bullmq');
 const redis = require('../config/redis');
 
-// Create review queue
-// Concurrency: 1 (dev), 3 (production) - configured in worker
-const reviewQueue = new Queue('reviewQueue', {
+// Create score queue
+// Concurrency: 1 (dev), 2 (production) - configured in worker
+const scoreQueue = new Queue('scoreQueue', {
   connection: redis,
   defaultJobOptions: {
-    attempts: 5, // Retry up to 5 times for GitHub API timeouts, LLM failures, network failures
+    attempts: 5, // Retry up to 5 times for database failures, calculation errors
     backoff: {
       type: 'exponential',
       delay: 2000, // Start with 2s delay, exponential backoff
@@ -22,9 +22,9 @@ const reviewQueue = new Queue('reviewQueue', {
 });
 
 // Log queue events for debugging
-reviewQueue.on('error', (error) => {
-  console.error('Review queue error:', error);
+scoreQueue.on('error', (error) => {
+  console.error('Score queue error:', error);
 });
 
-module.exports = reviewQueue;
+module.exports = scoreQueue;
 

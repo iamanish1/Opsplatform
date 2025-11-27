@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const routes = require('./routes');
 const errorHandler = require('./middlewares/error.middleware');
+const queueDashboard = require('./queues/dashboard');
 
 const app = express();
 
@@ -29,6 +30,10 @@ if (process.env.NODE_ENV === 'development') {
 } else {
   app.use(morgan('combined'));
 }
+
+// Queue dashboard (mount before other routes)
+// TODO: Add authentication middleware for production
+app.use('/admin/queues', queueDashboard);
 
 // Other routes (auth, user, etc.)
 app.use('/api', routes);
