@@ -1,0 +1,200 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+//// ======================
+// ENUMS
+//// ======================
+
+enum UserRole {
+  STUDENT
+  COMPANY
+  ADMIN
+}
+
+enum Badge {
+  RED
+  YELLOW
+  GREEN
+}
+
+enum SubmissionStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  SUBMITTED
+  REVIEWED
+}
+
+//// ======================
+// USER TABLE
+//// ======================
+model User {
+  id              String      @id @default(cuid())
+  name            String?
+  email           String?     @unique
+  avatar          String?
+  githubId        String?     @unique
+  githubUsername  String?
+  githubProfile   String?
+  githubInstallId String?     // GitHub App installation ID
+  onboardingStep  Int         @default(0)
+  trustScore      Int         @default(0)
+  badge           Badge       @default(RED)
+  role            UserRole    @default(STUDENT)
+
+  lessonProgress  LessonProgress[]
+  submissions     Submission[]
+  portfolio       Portfolio?
+  companyProfile  Company?
+  interviewRequests InterviewRequest[]
+
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+//// ======================
+// LESSONS
+//// ======================
+model Lesson {
+  id        String             @id @default(cuid())
+  title     String
+  content   String             @db.Text
+  order     Int
+  createdAt DateTime           @default(now())
+
+  progresses LessonProgress[]
+}
+
+model LessonProgress {
+  id        String   @id @default(cuid())
+  userId    String
+  lessonId  String
+  completed Boolean  @default(false)
+  completedAt DateTime?
+
+  user      User     @relation(fields: [userId], references: [id])
+  lesson    Lesson   @relation(fields: [lessonId], references: [id])
+}
+
+//// ======================
+// PROJECT
+//// ======================
+model Project {
+  id          String      @id @default(cuid())
+  title       String
+  description String      @db.Text
+  starterRepo String?
+  tasksJson   Json?
+
+  submissions Submission[]
+  createdAt   DateTime @default(now())
+}
+
+//// ======================
+// SUBMISSION (DevOps Project Work)
+//// ======================
+model Submission {
+  id          String             @id @default(cuid())
+  userId      String
+  projectId   String
+  repoUrl     String?
+  prNumber    Int?
+  status      SubmissionStatus   @default(IN_PROGRESS)
+
+  user        User               @relation(fields: [userId], references: [id])
+  project     Project            @relation(fields: [projectId], references: [id])
+  score       Score?
+  reviews     PRReview[]
+
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+}
+
+//// ======================
+// PR REVIEW (One per review run)
+//// ======================
+model PRReview {
+  id            String     @id @default(cuid())
+  submissionId  String
+  prNumber      Int
+  reviewJson    Json?      // AI review output
+  staticReport  Json?      // Linting / Docker / CI/CD analysis
+  suggestions   Json?      // Improvement suggestions
+
+  submission    Submission @relation(fields: [submissionId], references: [id])
+
+  createdAt     DateTime   @default(now())
+}
+
+//// ======================
+// SCORE (One per submission)
+//// ======================
+model Score {
+  id                String    @id @default(cuid())
+  submissionId      String    @unique
+  codeQuality       Int       @default(0)
+  devopsExecution   Int       @default(0)
+  reliability       Int       @default(0)
+  deliverySpeed     Int       @default(0)
+  collaboration     Int       @default(0)
+  totalScore        Int       @default(0)
+
+  submission        Submission @relation(fields: [submissionId], references: [id])
+
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+//// ======================
+// PORTFOLIO
+//// ======================
+model Portfolio {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  summary       String?
+  slug          String?  @unique
+  scoreJson     Json?
+  projectsJson  Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user          User     @relation(fields: [userId], references: [id])
+}
+
+//// ======================
+// COMPANY (Recruiters)
+//// ======================
+model Company {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  companyName     String
+  website         String?
+  logo            String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id])
+  interviewRequests InterviewRequest[]
+}
+
+//// ======================
+// INTERVIEW REQUEST
+//// ======================
+model InterviewRequest {
+  id        String   @id @default(cuid())
+  companyId String
+  userId    String
+  message   String?
+  status    String?  @default("pending")
+
+  company   Company  @relation(fields: [companyId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
