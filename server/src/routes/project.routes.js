@@ -1,10 +1,23 @@
 const express = require('express');
 const router = express.Router();
 
-// Placeholder routes - will be implemented in Phase 2
-router.get('/', (req, res) => {
-  res.json({ message: 'Project routes - Phase 2' });
-});
+const projectController = require('../controllers/project.controller');
+const { authenticate } = require('../middlewares/auth.middleware');
+const { validate } = require('../middlewares/validate.middleware');
+const { startSubmissionValidation } = require('../dto/submission.start.dto');
+
+/**
+ * GET /api/projects/:projectId
+ * Get project details
+ * Auth: Required
+ */
+router.get('/:projectId', authenticate, projectController.getProject);
+
+/**
+ * POST /api/projects/:projectId/start
+ * Start a project (create submission)
+ * Auth: Required
+ */
+router.post('/:projectId/start', authenticate, startSubmissionValidation, validate, projectController.startProject);
 
 module.exports = router;
-

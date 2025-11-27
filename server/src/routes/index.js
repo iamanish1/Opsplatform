@@ -11,6 +11,7 @@ const authRoutes = require('./auth.routes');
 const userRoutes = require('./user.routes');
 const lessonsRoutes = require('./lessons.routes');
 const projectRoutes = require('./project.routes');
+const submissionRoutes = require('./submission.routes');
 // Note: webhook routes are mounted in app.js with raw body parser
 
 // Mount routes
@@ -18,6 +19,7 @@ router.use('/auth', authRoutes);
 router.use('/user', userRoutes);
 router.use('/lessons', lessonsRoutes);
 router.use('/projects', projectRoutes);
+router.use('/submissions', submissionRoutes);
 
 module.exports = router;
 
