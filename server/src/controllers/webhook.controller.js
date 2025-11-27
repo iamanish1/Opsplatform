@@ -1,14 +1,15 @@
-const authService = require('../services/auth.service');
+const webhookService = require('../services/webhook.service');
 
 /**
  * POST /api/webhooks/github
  * Handle GitHub webhook events
+ * Always returns 200 to GitHub (even on errors) to prevent retries
  */
 async function handleGitHubWebhook(req, res, next) {
+  const startTime = Date.now();
+  
   try {
-    const event = req.headers['x-github-event'];
-    
-    // Parse body if it's a string (from raw body parser)
+    // Parse body if it's a string or Buffer (from raw body parser)
     let payload;
     if (typeof req.body === 'string') {
       payload = JSON.parse(req.body);
@@ -18,31 +19,84 @@ async function handleGitHubWebhook(req, res, next) {
       payload = req.body;
     }
 
-    console.log(`Received GitHub webhook: ${event}`);
+    // Extract event type from headers
+    const event = req.headers['x-github-event'];
+    const deliveryId = req.headers['x-github-delivery'];
+    
+    if (!event) {
+      console.warn('GitHub webhook received without x-github-event header');
+      return res.status(200).json({
+        success: false,
+        message: 'Missing event type',
+      });
+    }
 
-    // Handle different event types
+    console.log(`Received GitHub webhook: ${event} (delivery: ${deliveryId})`);
+
+    let result = {
+      processed: false,
+      event: event,
+    };
+
+    // Route to appropriate handler based on event type
     switch (event) {
+      case 'pull_request':
+        result = await webhookService.handlePullRequest(payload, req.headers);
+        break;
+
+      case 'workflow_run':
+        result = await webhookService.handleWorkflowRun(payload, req.headers);
+        break;
+
       case 'installation':
-        await handleInstallationEvent(payload);
+        result = await webhookService.handleInstallation(payload, req.headers);
         break;
 
       case 'installation_repositories':
-        // Handle repository access changes
+        // Optional: Handle repository access changes
         console.log('Installation repositories event received');
+        result = {
+          processed: false,
+          reason: 'Not implemented yet',
+        };
+        break;
+
+      case 'push':
+        // Optional: Notify user to open PR
+        console.log('Push event received (not processed)');
+        result = {
+          processed: false,
+          reason: 'Push events not processed',
+        };
         break;
 
       default:
         console.log(`Unhandled webhook event: ${event}`);
+        result = {
+          processed: false,
+          reason: `Event type ${event} not handled`,
+        };
     }
 
-    // Always return 200 to acknowledge receipt
+    const processingTime = Date.now() - startTime;
+    console.log(`Webhook processed in ${processingTime}ms: ${event} - ${result.processed ? 'success' : 'skipped'}`);
+
+    // Always return 200 to acknowledge receipt (GitHub will retry if we return error)
     res.status(200).json({
       success: true,
+      processed: result.processed,
+      event: event,
       message: 'Webhook received',
     });
   } catch (error) {
     // Log error but still return 200 (GitHub will retry if we return error)
-    console.error('Webhook processing error:', error);
+    const processingTime = Date.now() - startTime;
+    console.error(`Webhook processing error (${processingTime}ms):`, {
+      error: error.message,
+      stack: error.stack,
+      event: req.headers['x-github-event'],
+    });
+    
     res.status(200).json({
       success: false,
       error: {
@@ -52,40 +106,6 @@ async function handleGitHubWebhook(req, res, next) {
   }
 }
 
-/**
- * Handle installation events
- * @param {Object} payload - Webhook payload
- */
-async function handleInstallationEvent(payload) {
-  const action = payload.action;
-
-  switch (action) {
-    case 'created':
-      await authService.handleInstallationCreated(payload.installation);
-      console.log(`Installation created: ${payload.installation.id}`);
-      break;
-
-    case 'deleted':
-      await authService.handleInstallationDeleted(String(payload.installation.id));
-      console.log(`Installation deleted: ${payload.installation.id}`);
-      break;
-
-    case 'suspend':
-      // Handle suspension
-      console.log(`Installation suspended: ${payload.installation.id}`);
-      break;
-
-    case 'unsuspend':
-      // Handle unsuspension
-      console.log(`Installation unsuspended: ${payload.installation.id}`);
-      break;
-
-    default:
-      console.log(`Unhandled installation action: ${action}`);
-  }
-}
-
 module.exports = {
   handleGitHubWebhook,
 };
-

@@ -20,5 +20,12 @@ module.exports = {
     privateKey: process.env.GITHUB_PRIVATE_KEY,
     webhookSecret: process.env.GITHUB_WEBHOOK_SECRET,
   },
+  
+  // Redis Configuration
+  redis: {
+    url: process.env.REDIS_URL,
+    host: process.env.REDIS_HOST || 'localhost',
+    port: process.env.REDIS_PORT || 6379,
+  },
 };
 

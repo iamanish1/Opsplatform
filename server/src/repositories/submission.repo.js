@@ -86,7 +86,7 @@ async function findById(submissionId) {
 }
 
 /**
- * Find submission by repository URL
+ * Find submission by repository URL (exact match)
  * Used by webhook to map PR events to submissions
  * @param {string} repoUrl - Repository URL
  * @returns {Promise<Object|null>} Submission or null
@@ -94,8 +94,40 @@ async function findById(submissionId) {
 async function findByRepoUrl(repoUrl) {
   return prisma.submission.findFirst({
     where: {
-      repoUrl: {
-        contains: repoUrl, // Partial match for flexibility
+      repoUrl: repoUrl, // Exact match
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          githubId: true,
+        },
+      },
+    },
+  });
+}
+
+/**
+ * Find submission by repository URL and user GitHub ID
+ * More precise matching for PR mapping
+ * @param {string} repoUrl - Repository URL
+ * @param {string} githubId - User GitHub ID
+ * @returns {Promise<Object|null>} Submission or null
+ */
+async function findByRepoUrlAndUser(repoUrl, githubId) {
+  return prisma.submission.findFirst({
+    where: {
+      repoUrl: repoUrl,
+      user: {
+        githubId: githubId,
+      },
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          githubId: true,
+        },
       },
     },
   });
@@ -115,6 +147,28 @@ async function attachPR(submissionId, prNumber) {
     data: {
       prNumber,
       status: 'SUBMITTED',
+    },
+  });
+}
+
+/**
+ * Find submission by PR number
+ * Used by workflow_run events to find submission
+ * @param {number} prNumber - PR number
+ * @returns {Promise<Object|null>} Submission or null
+ */
+async function findByPRNumber(prNumber) {
+  return prisma.submission.findFirst({
+    where: {
+      prNumber: prNumber,
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          githubId: true,
+        },
+      },
     },
   });
 }
@@ -143,6 +197,8 @@ module.exports = {
   update,
   findById,
   findByRepoUrl,
+  findByRepoUrlAndUser,
+  findByPRNumber,
   attachPR,
   attachScore,
 };
