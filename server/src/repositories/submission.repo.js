@@ -174,6 +174,23 @@ async function findByPRNumber(prNumber) {
 }
 
 /**
+ * Update submission status
+ * @param {string} submissionId - Submission ID
+ * @param {string} status - New status (NOT_STARTED, IN_PROGRESS, SUBMITTED, REVIEWED)
+ * @returns {Promise<Object>} Updated submission
+ */
+async function updateStatus(submissionId, status) {
+  return prisma.submission.update({
+    where: {
+      id: submissionId,
+    },
+    data: {
+      status,
+    },
+  });
+}
+
+/**
  * Attach score to submission
  * @param {string} submissionId - Submission ID
  * @param {string} scoreId - Score ID
@@ -200,6 +217,7 @@ module.exports = {
   findByRepoUrlAndUser,
   findByPRNumber,
   attachPR,
+  updateStatus,
   attachScore,
 };
 
