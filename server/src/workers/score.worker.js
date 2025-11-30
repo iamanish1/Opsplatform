@@ -3,6 +3,8 @@ const redis = require('../config/redis');
 const scoringService = require('../services/scoring.service');
 const portfolioQueue = require('../queues/portfolio.queue');
 const submissionRepo = require('../repositories/submission.repo');
+const logger = require('../utils/logger');
+const Sentry = require('../utils/sentry');
 
 // Concurrency: 1 (dev), 2 (production)
 // Can be overridden with QUEUE_CONCURRENCY_SCORE env var
@@ -13,15 +15,21 @@ const worker = new Worker(
   async (job) => {
     const { submissionId } = job.data;
     
-    console.log(`[Score Worker] Processing job ${job.id}:`, {
+    logger.info({
+      jobId: job.id,
       submissionId,
-    });
+    }, 'Score worker job received');
 
     try {
       // Generate score
       const result = await scoringService.generateScore(job.data);
       
-      console.log(`[Score Worker] Score generated for job ${job.id}:`, result);
+      logger.info({
+        jobId: job.id,
+        submissionId,
+        scoreId: result.scoreId,
+        totalScore: result.totalScore,
+      }, 'Score worker job completed');
 
       // Get submission to extract userId
       const submission = await submissionRepo.findById(submissionId);
@@ -35,28 +43,42 @@ const worker = new Worker(
         status: 'REVIEWED',
       });
 
-      console.log(`[Score Worker] Updated submission ${submissionId} status to REVIEWED`);
+      logger.info({ submissionId }, 'Score worker updated submission status to REVIEWED');
 
       // On success: enqueue portfolio job
       if (submission.userId) {
         await portfolioQueue.add('portfolio', {
           userId: submission.userId,
+          submissionId,
         }, {
           jobId: `portfolio-${submission.userId}-${Date.now()}`,
         });
 
-        console.log(`[Score Worker] Enqueued portfolio job for user ${submission.userId}`);
+        logger.info({ userId: submission.userId, submissionId }, 'Score worker enqueued portfolio job');
       } else {
-        console.warn(`[Score Worker] Submission ${submissionId} has no userId, skipping portfolio generation`);
+        logger.warn({ submissionId }, 'Score worker skipping portfolio generation - no userId');
       }
 
       return result;
     } catch (error) {
-      console.error(`[Score Worker] Error processing job ${job.id}:`, {
+      logger.error({
+        jobId: job.id,
+        submissionId,
         error: error.message,
         stack: error.stack,
-        submissionId,
-      });
+      }, 'Score worker job failed');
+
+      // Send to Sentry
+      if (process.env.SENTRY_DSN) {
+        Sentry.captureException(error, {
+          tags: {
+            worker: 'score',
+            jobId: job.id,
+            submissionId,
+          },
+        });
+      }
+
       // Re-throw to let BullMQ handle retry
       throw error;
     }
@@ -69,27 +91,28 @@ const worker = new Worker(
 
 // Event listeners
 worker.on('completed', (job) => {
-  console.log(`[Score Worker] Job ${job.id} completed successfully`);
+  logger.info({ jobId: job.id }, 'Score worker job completed successfully');
 });
 
 worker.on('failed', (job, err) => {
-  console.error(`[Score Worker] Job ${job.id} failed:`, {
+  logger.error({
+    jobId: job.id,
     error: err.message,
     stack: err.stack,
     attemptsMade: job.attemptsMade,
     submissionId: job.data?.submissionId,
-  });
+  }, 'Score worker job failed');
 });
 
 worker.on('error', (err) => {
-  console.error('[Score Worker] Worker error:', err);
+  logger.error({ error: err.message, stack: err.stack }, 'Score worker error');
 });
 
 worker.on('stalled', (jobId) => {
-  console.warn(`[Score Worker] Job ${jobId} stalled`);
+  logger.warn({ jobId }, 'Score worker job stalled');
 });
 
-console.log(`[Score Worker] Started with concurrency: ${concurrency}`);
+logger.info({ concurrency }, 'Score worker started');
 
 module.exports = worker;
 

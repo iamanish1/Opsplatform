@@ -92,32 +92,58 @@ async function getInstallation(installationId) {
 }
 
 /**
- * Verify GitHub webhook signature
+ * Verify GitHub webhook signature using SHA256
  * @param {string} payload - Raw request body
  * @param {string} signature - X-Hub-Signature-256 header value
  * @returns {boolean} True if signature is valid
  */
 function verifyWebhookSignature(payload, signature) {
   const webhookSecret = config.githubApp.webhookSecret;
+  const logger = require('./logger');
 
   if (!webhookSecret) {
-    console.warn('GITHUB_WEBHOOK_SECRET is not configured, skipping signature verification');
+    if (process.env.NODE_ENV === 'production') {
+      logger.warn('GITHUB_WEBHOOK_SECRET is not configured in production - webhook security is disabled');
+      return false; // Fail in production if secret not set
+    }
+    logger.warn('GITHUB_WEBHOOK_SECRET is not configured, skipping signature verification');
     return true; // Allow in development if secret not set
   }
 
   if (!signature) {
+    logger.warn('Webhook signature header missing');
     return false;
   }
 
-  // Remove 'sha256=' prefix if present
-  const sig = signature.replace('sha256=', '');
+  // Extract signature value (remove 'sha256=' prefix if present)
+  const receivedSig = signature.startsWith('sha256=') 
+    ? signature.substring(7) 
+    : signature;
 
-  // Create HMAC hash
+  // Create HMAC SHA256 hash
   const hmac = crypto.createHmac('sha256', webhookSecret);
-  const digest = 'sha256=' + hmac.update(payload).digest('hex');
+  hmac.update(payload, 'utf8');
+  const expectedDigest = hmac.digest('hex');
 
-  // Compare signatures using timing-safe comparison
-  return crypto.timingSafeEqual(Buffer.from(sig), Buffer.from(digest.replace('sha256=', '')));
+  // Compare signatures using timing-safe comparison to prevent timing attacks
+  if (receivedSig.length !== expectedDigest.length) {
+    logger.warn('Webhook signature length mismatch');
+    return false;
+  }
+
+  const isValid = crypto.timingSafeEqual(
+    Buffer.from(receivedSig, 'hex'),
+    Buffer.from(expectedDigest, 'hex')
+  );
+
+  if (!isValid) {
+    logger.warn('Invalid webhook signature detected', {
+      receivedLength: receivedSig.length,
+      expectedLength: expectedDigest.length,
+    });
+  }
+
+  return isValid;
 }
 
 /**

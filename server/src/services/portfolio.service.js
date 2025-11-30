@@ -7,6 +7,7 @@ const userRepo = require('../repositories/user.repo');
 const submissionRepo = require('../repositories/submission.repo');
 const portfolioRepo = require('../repositories/portfolio.repo');
 const prReviewRepo = require('../repositories/prReview.repo');
+const logger = require('../utils/logger');
 
 /**
  * Generate portfolio for a submission
@@ -19,7 +20,7 @@ const prReviewRepo = require('../repositories/prReview.repo');
 async function generate(jobData) {
   const { userId, submissionId, scoreId } = jobData;
 
-  console.log(`[Portfolio Service] Generating portfolio for submission ${submissionId}`);
+  logger.info({ submissionId }, 'Portfolio service generating portfolio');
 
   try {
     // 1. Fetch all required data
@@ -69,7 +70,7 @@ async function generate(jobData) {
       portfolioJson,
     });
 
-    console.log(`[Portfolio Service] Portfolio generated: ${portfolio.id}, slug: ${slug}`);
+    logger.info({ portfolioId: portfolio.id, slug, submissionId }, 'Portfolio service portfolio generated');
 
     return {
       success: true,
@@ -78,7 +79,7 @@ async function generate(jobData) {
       portfolioJson,
     };
   } catch (error) {
-    console.error(`[Portfolio Service] Error generating portfolio:`, error);
+    logger.error({ error: error.message, stack: error.stack, submissionId }, 'Portfolio service error generating portfolio');
     throw error;
   }
 }

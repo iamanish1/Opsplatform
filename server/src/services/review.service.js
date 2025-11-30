@@ -52,6 +52,10 @@ async function processPRReview(jobData) {
     console.log(`[Review Service] Step 4: Fetching PR diff and files...`);
     diffData = await githubService.fetchPRDiff(octokit, repoFullName, prNumber, 5, 1000);
     console.log(`[Review Service] Diff fetched: ${diffData.totalFiles} files, ${diffData.totalAdditions} additions, ${diffData.totalDeletions} deletions`);
+    
+    // Sanitize diff data before sending to LLM
+    const { sanitizeFiles } = require('../utils/sanitize');
+    diffData.files = sanitizeFiles(diffData.files);
 
     // STEP 5: Run Static Analysis
     console.log(`[Review Service] Step 5: Running static analysis...`);

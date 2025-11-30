@@ -2,6 +2,7 @@ const submissionRepo = require('../repositories/submission.repo');
 const userRepo = require('../repositories/user.repo');
 const authService = require('./auth.service');
 const reviewQueue = require('../queues/review.queue');
+const logger = require('../utils/logger');
 
 /**
  * Map PR event to submission
@@ -27,7 +28,7 @@ async function mapSubmissionToPR(repoUrl, prAuthorGithubId) {
     }
     
     // If multiple submissions with same repo but different users, log warning
-    console.warn(`Multiple submissions found for repo ${repoUrl}, using PR author as tiebreaker`);
+    logger.warn({ repoUrl, prAuthorGithubId }, 'Multiple submissions found for repo, using PR author as tiebreaker');
   }
   
   return null;
@@ -44,11 +45,11 @@ async function enqueueReviewJob(jobPayload) {
     jobId: `${jobPayload.submissionId}-${jobPayload.prNumber}-${Date.now()}`,
   })
     .then((job) => {
-      console.log(`Enqueued review job: ${job.id} for submission ${jobPayload.submissionId}`);
+      logger.info({ jobId: job.id, submissionId: jobPayload.submissionId }, 'Enqueued review job');
       return job.id;
     })
     .catch((error) => {
-      console.error('Failed to enqueue review job:', error);
+      logger.error({ error: error.message, stack: error.stack }, 'Failed to enqueue review job');
       return null;
     });
   
@@ -70,38 +71,38 @@ async function handlePullRequest(payload, headers) {
   
   // Only process specific actions
   if (!['opened', 'reopened', 'synchronize'].includes(action)) {
-    console.log(`Skipping pull_request event with action: ${action}`);
+    logger.info({ action }, 'Skipping pull_request event');
     return {
       processed: false,
       reason: `Action ${action} not processed`,
     };
   }
-  
+
   // Extract data from payload
   const repoUrl = repo.html_url;
   const prNumber = pr.number;
   const prAuthorGithubId = String(pr.user.id);
   const repoFullName = repo.full_name;
   
-  console.log(`Processing pull_request event: ${action} for PR #${prNumber} in ${repoFullName}`);
+  logger.info({ action, prNumber, repoFullName }, 'Processing pull_request event');
   
   // Map PR to submission
   const submission = await mapSubmissionToPR(repoUrl, prAuthorGithubId);
   
   if (!submission) {
-    console.warn(`No submission found for PR #${prNumber} in repo ${repoUrl}`);
+    logger.warn({ prNumber, repoUrl }, 'No submission found for PR');
     return {
       processed: false,
       reason: 'No submission found for this repository',
     };
   }
-  
+
   // Update submission with PR number and status
   const shouldUpdateStatus = action === 'opened' || action === 'reopened';
   
   if (shouldUpdateStatus || !submission.prNumber) {
     await submissionRepo.attachPR(submission.id, prNumber);
-    console.log(`Updated submission ${submission.id} with PR #${prNumber}`);
+    logger.info({ submissionId: submission.id, prNumber }, 'Updated submission with PR number');
   }
   
   // Enqueue review job (fire-and-forget)
@@ -141,11 +142,11 @@ async function handleWorkflowRun(payload, headers) {
   const repoFullName = repo.full_name;
   const repoUrl = repo.html_url;
   
-  console.log(`Processing workflow_run event: ${conclusion} for ${repoFullName}`);
+  logger.info({ conclusion, repoFullName }, 'Processing workflow_run event');
   
   // Find associated PR number
   if (pullRequests.length === 0) {
-    console.log('No associated PRs found for workflow_run event');
+    logger.info({ repoFullName }, 'No associated PRs found for workflow_run event');
     return {
       processed: false,
       reason: 'No associated PRs',
@@ -158,7 +159,7 @@ async function handleWorkflowRun(payload, headers) {
   const submission = await submissionRepo.findByPRNumber(prNumber);
   
   if (!submission) {
-    console.warn(`No submission found for workflow_run with PR #${prNumber} in repo ${repoUrl}`);
+    logger.warn({ prNumber, repoUrl }, 'No submission found for workflow_run');
     return {
       processed: false,
       reason: 'No matching submission found',
@@ -200,7 +201,7 @@ async function handleInstallation(payload, headers) {
     const installationId = String(installation.id);
     const senderGithubId = String(sender.id);
     
-    console.log(`Processing installation.created: ${installationId} for GitHub user ${senderGithubId}`);
+    logger.info({ installationId, senderGithubId }, 'Processing installation.created');
     
     // Use existing auth service method
     await authService.handleInstallationCreated(installation);
@@ -213,7 +214,7 @@ async function handleInstallation(payload, headers) {
   } else if (action === 'deleted') {
     const installationId = String(installation.id);
     
-    console.log(`Processing installation.deleted: ${installationId}`);
+    logger.info({ installationId }, 'Processing installation.deleted');
     
     await authService.handleInstallationDeleted(installationId);
     

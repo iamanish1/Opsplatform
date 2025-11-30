@@ -1,6 +1,8 @@
 const { Worker } = require('bullmq');
 const redis = require('../config/redis');
 const portfolioService = require('../services/portfolio.service');
+const logger = require('../utils/logger');
+const Sentry = require('../utils/sentry');
 
 // Concurrency: 1 (both dev and production)
 // Can be overridden with QUEUE_CONCURRENCY_PORTFOLIO env var
@@ -11,17 +13,22 @@ const worker = new Worker(
   async (job) => {
     const { userId, submissionId, scoreId } = job.data;
     
-    console.log(`[Portfolio Worker] Processing job ${job.id}:`, {
+    logger.info({
+      jobId: job.id,
       userId,
       submissionId,
       scoreId,
-    });
+    }, 'Portfolio worker job received');
 
     try {
       // Generate portfolio
       const result = await portfolioService.generate(job.data);
       
-      console.log(`[Portfolio Worker] Portfolio generated for job ${job.id}:`, result);
+      logger.info({
+        jobId: job.id,
+        portfolioId: result.portfolioId,
+        slug: result.slug,
+      }, 'Portfolio worker job completed');
 
       // Emit PortfolioReady event
       try {
@@ -29,21 +36,34 @@ const worker = new Worker(
         eventBus.emit('PortfolioReady', {
           userId: job.data.userId,
           submissionId: job.data.submissionId,
-          portfolioId: result.id,
+          portfolioId: result.portfolioId,
         });
-        console.log(`[Portfolio Worker] PortfolioReady event emitted`);
+        logger.info({ portfolioId: result.portfolioId }, 'Portfolio worker emitted PortfolioReady event');
       } catch (eventError) {
-        console.warn(`[Portfolio Worker] Failed to emit PortfolioReady event: ${eventError.message}`);
+        logger.warn({ error: eventError.message }, 'Portfolio worker failed to emit PortfolioReady event');
         // Don't fail the job if event emission fails
       }
 
       return result;
     } catch (error) {
-      console.error(`[Portfolio Worker] Error processing job ${job.id}:`, {
+      logger.error({
+        jobId: job.id,
+        userId,
         error: error.message,
         stack: error.stack,
-        userId,
-      });
+      }, 'Portfolio worker job failed');
+
+      // Send to Sentry
+      if (process.env.SENTRY_DSN) {
+        Sentry.captureException(error, {
+          tags: {
+            worker: 'portfolio',
+            jobId: job.id,
+            userId,
+          },
+        });
+      }
+
       // Re-throw to let BullMQ handle retry
       throw error;
     }
@@ -56,27 +76,28 @@ const worker = new Worker(
 
 // Event listeners
 worker.on('completed', (job) => {
-  console.log(`[Portfolio Worker] Job ${job.id} completed successfully`);
+  logger.info({ jobId: job.id }, 'Portfolio worker job completed successfully');
 });
 
 worker.on('failed', (job, err) => {
-  console.error(`[Portfolio Worker] Job ${job.id} failed:`, {
+  logger.error({
+    jobId: job.id,
     error: err.message,
     stack: err.stack,
     attemptsMade: job.attemptsMade,
     userId: job.data?.userId,
-  });
+  }, 'Portfolio worker job failed');
 });
 
 worker.on('error', (err) => {
-  console.error('[Portfolio Worker] Worker error:', err);
+  logger.error({ error: err.message, stack: err.stack }, 'Portfolio worker error');
 });
 
 worker.on('stalled', (jobId) => {
-  console.warn(`[Portfolio Worker] Job ${jobId} stalled`);
+  logger.warn({ jobId }, 'Portfolio worker job stalled');
 });
 
-console.log(`[Portfolio Worker] Started with concurrency: ${concurrency}`);
+logger.info({ concurrency }, 'Portfolio worker started');
 
 module.exports = worker;
 

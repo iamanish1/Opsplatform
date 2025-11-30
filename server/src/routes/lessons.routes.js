@@ -3,6 +3,8 @@ const router = express.Router();
 
 const lessonsController = require('../controllers/lessons.controller');
 const { authenticate } = require('../middlewares/auth.middleware');
+const { validate } = require('../middlewares/validate.middleware');
+const { lessonIdValidation } = require('../dto/lesson.dto');
 
 /**
  * GET /api/lessons
@@ -23,6 +25,12 @@ router.get('/:id', authenticate, lessonsController.getLessonDetails);
  * Mark lesson as complete for the current user
  * Auth: Required
  */
-router.post('/:id/complete', authenticate, lessonsController.completeLesson);
+router.post(
+  '/:id/complete',
+  authenticate,
+  lessonIdValidation,
+  validate,
+  lessonsController.completeLesson
+);
 
 module.exports = router;

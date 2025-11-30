@@ -2,6 +2,8 @@ const { Worker } = require('bullmq');
 const redis = require('../config/redis');
 const reviewService = require('../services/review.service');
 const scoreQueue = require('../queues/score.queue');
+const logger = require('../utils/logger');
+const Sentry = require('../utils/sentry');
 
 // Concurrency: 1 (dev), 3 (production)
 // Can be overridden with QUEUE_CONCURRENCY_REVIEW env var
@@ -12,19 +14,24 @@ const worker = new Worker(
   async (job) => {
     const { submissionId, repoFullName, prNumber, event, action } = job.data;
     
-    console.log(`[Review Worker] Processing job ${job.id}:`, {
+    logger.info({
+      jobId: job.id,
       submissionId,
       repoFullName,
       prNumber,
       event,
       action,
-    });
+    }, 'Review worker job received');
 
     try {
       // Process PR review
       const result = await reviewService.processPRReview(job.data);
       
-      console.log(`[Review Worker] Review completed for job ${job.id}:`, result);
+      logger.info({
+        jobId: job.id,
+        submissionId,
+        result,
+      }, 'Review worker job completed');
 
       // On success: enqueue score job
       await scoreQueue.add('score', {
@@ -33,15 +40,28 @@ const worker = new Worker(
         jobId: `score-${submissionId}-${Date.now()}`,
       });
 
-      console.log(`[Review Worker] Enqueued score job for submission ${submissionId}`);
+      logger.info({ submissionId }, 'Review worker enqueued score job');
 
       return result;
     } catch (error) {
-      console.error(`[Review Worker] Error processing job ${job.id}:`, {
+      logger.error({
+        jobId: job.id,
+        submissionId,
         error: error.message,
         stack: error.stack,
-        submissionId,
-      });
+      }, 'Review worker job failed');
+
+      // Send to Sentry
+      if (process.env.SENTRY_DSN) {
+        Sentry.captureException(error, {
+          tags: {
+            worker: 'review',
+            jobId: job.id,
+            submissionId,
+          },
+        });
+      }
+
       // Re-throw to let BullMQ handle retry
       throw error;
     }

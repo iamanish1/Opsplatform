@@ -3,6 +3,8 @@
  * Builds LLM prompts from PR data, static analysis, and CI results
  */
 
+const { sanitizeFiles, sanitizeDiff } = require('../../utils/sanitize');
+
 /**
  * Summarize diff for prompt
  * @param {Array} files - Changed files with diff
@@ -13,10 +15,14 @@ function summarizeDiff(files) {
     return 'No files changed.';
   }
 
-  const summary = files
+  // Sanitize files before processing
+  const sanitizedFiles = sanitizeFiles(files);
+
+  const summary = sanitizedFiles
     .slice(0, 5) // Top 5 files
     .map((file) => {
-      const lines = file.patch ? file.patch.split('\n').slice(0, 50).join('\n') : 'No diff available';
+      const patch = file.patch ? sanitizeDiff(file.patch) : 'No diff available';
+      const lines = patch.split('\n').slice(0, 50).join('\n');
       return `File: ${file.filename}\nStatus: ${file.status}\nChanges: +${file.additions} -${file.deletions}\n\n${lines}`;
     })
     .join('\n\n---\n\n');
@@ -104,6 +110,8 @@ function buildPrompt(prMetadata, diffData, staticReport, ciReport) {
 
   const prompt = `You are a senior DevOps reviewer evaluating a Pull Request for a DevOps project.
 
+SECURITY NOTE: All sensitive data (secrets, tokens, passwords) has been redacted. If you encounter [REDACTED] markers, do not attempt to guess or infer the original values. If you are unsure about any aspect of the code, respond with "unknown" rather than making assumptions.
+
 INPUTS:
 
 PR Summary:
@@ -136,6 +144,8 @@ Evaluate this PR and score it on 10 parameters (0-10 each, where 10 is excellent
 8. Collaboration - Code review readiness, communication
 9. Delivery Speed - Time to implement, efficiency
 10. Security - Security best practices, vulnerability prevention
+
+IMPORTANT: If you are unsure about any score or aspect of the code, use "unknown" in your response. Do not guess or make assumptions.
 
 OUTPUT JSON ONLY (no markdown, no explanations, just valid JSON):
 {

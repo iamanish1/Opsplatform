@@ -5,13 +5,20 @@ const projectController = require('../controllers/project.controller');
 const { authenticate } = require('../middlewares/auth.middleware');
 const { validate } = require('../middlewares/validate.middleware');
 const { startSubmissionValidation } = require('../dto/submission.start.dto');
+const { projectIdValidation } = require('../dto/project.dto');
 
 /**
  * GET /api/projects/:projectId
  * Get project details
  * Auth: Required
  */
-router.get('/:projectId', authenticate, projectController.getProject);
+router.get(
+  '/:projectId',
+  authenticate,
+  projectIdValidation,
+  validate,
+  projectController.getProject
+);
 
 /**
  * POST /api/projects/:projectId/start

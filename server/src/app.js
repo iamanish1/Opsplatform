@@ -2,11 +2,21 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const Sentry = require('./utils/sentry');
 const routes = require('./routes');
 const errorHandler = require('./middlewares/error.middleware');
 const queueDashboard = require('./queues/dashboard');
+const {
+  httpRequestDuration,
+  httpRequestTotal,
+  httpRequestErrors,
+} = require('./utils/metrics');
 
 const app = express();
+
+// Sentry request handler (must be first)
+app.use(Sentry.Handlers.requestHandler());
+app.use(Sentry.Handlers.tracingHandler());
 
 // Security middleware
 app.use(helmet());
@@ -24,6 +34,30 @@ app.use('/api/webhooks', express.raw({ type: 'application/json' }), webhookRoute
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Metrics middleware - track HTTP requests
+app.use((req, res, next) => {
+  const start = Date.now();
+  const route = req.route ? req.route.path : req.path;
+
+  res.on('finish', () => {
+    const duration = (Date.now() - start) / 1000;
+    const labels = {
+      method: req.method,
+      route: route || req.path,
+      status_code: res.statusCode,
+    };
+
+    httpRequestDuration.observe(labels, duration);
+    httpRequestTotal.inc(labels);
+
+    if (res.statusCode >= 400) {
+      httpRequestErrors.inc(labels);
+    }
+  });
+
+  next();
+});
+
 // Logging middleware
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'));
@@ -32,7 +66,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 // Queue dashboard (mount before other routes)
-// TODO: Add authentication middleware for production
+// Authentication is handled in dashboard.js (requires ADMIN role)
 app.use('/admin/queues', queueDashboard);
 
 // Other routes (auth, user, etc.)
@@ -56,6 +90,9 @@ app.use((req, res) => {
     },
   });
 });
+
+// Sentry error handler (before custom error handler)
+app.use(Sentry.Handlers.errorHandler());
 
 // Global error handler (must be last)
 app.use(errorHandler);
