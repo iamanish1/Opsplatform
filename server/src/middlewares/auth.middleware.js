@@ -135,7 +135,60 @@ const authenticateOptional = (req, res, next) => {
   }
 };
 
+/**
+ * Role-based authorization middleware
+ * Requires user to have one of the specified roles
+ * @param {...string} roles - Allowed roles
+ * @returns {Function} Express middleware
+ */
+const requireRole = (...roles) => {
+  return (req, res, next) => {
+    // First ensure user is authenticated
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        error: {
+          code: 'UNAUTHORIZED',
+          message: 'Authentication required',
+        },
+      });
+    }
+
+    // Check if user has one of the required roles
+    if (!roles.includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        error: {
+          code: 'FORBIDDEN',
+          message: `Access denied. Required role: ${roles.join(' or ')}`,
+        },
+      });
+    }
+
+    next();
+  };
+};
+
+/**
+ * Require COMPANY role
+ */
+const requireCompany = requireRole('COMPANY');
+
+/**
+ * Require STUDENT role
+ */
+const requireStudent = requireRole('STUDENT');
+
+/**
+ * Require ADMIN role
+ */
+const requireAdmin = requireRole('ADMIN');
+
 module.exports = {
   authenticate,
   authenticateOptional,
+  requireRole,
+  requireCompany,
+  requireStudent,
+  requireAdmin,
 };

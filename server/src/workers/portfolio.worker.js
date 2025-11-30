@@ -9,10 +9,12 @@ const concurrency = parseInt(process.env.QUEUE_CONCURRENCY_PORTFOLIO || '1', 10)
 const worker = new Worker(
   'portfolioQueue',
   async (job) => {
-    const { userId } = job.data;
+    const { userId, submissionId, scoreId } = job.data;
     
     console.log(`[Portfolio Worker] Processing job ${job.id}:`, {
       userId,
+      submissionId,
+      scoreId,
     });
 
     try {

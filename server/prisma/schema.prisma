@@ -30,124 +30,154 @@ enum SubmissionStatus {
   REVIEWED
 }
 
+enum InterviewRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+  CANCELLED
+  COMPLETED
+}
+
 //// ======================
 // USER TABLE
 //// ======================
 model User {
-  id              String      @id @default(cuid())
+  id              String   @id @default(cuid())
   name            String?
-  email           String?     @unique
+  email           String?  @unique
+  password        String? // Hashed password for company email/password auth (nullable for GitHub OAuth users)
   avatar          String?
-  githubId        String?     @unique
+  githubId        String?  @unique
   githubUsername  String?
   githubProfile   String?
-  githubInstallId String?     // GitHub App installation ID
-  onboardingStep  Int         @default(0)
-  trustScore      Int         @default(0)
-  badge           Badge       @default(RED)
-  role            UserRole    @default(STUDENT)
+  githubInstallId String? // GitHub App installation ID
+  location        String? // User location for talent feed filtering
+  onboardingStep  Int      @default(0)
+  trustScore      Int      @default(0)
+  badge           Badge    @default(RED)
+  role            UserRole @default(STUDENT)
 
-  lessonProgress  LessonProgress[]
-  submissions     Submission[]
-  portfolio       Portfolio?
-  companyProfile  Company?
+  lessonProgress    LessonProgress[]
+  submissions       Submission[]
+  portfolios        Portfolio[]
+  companyProfile    Company?
   interviewRequests InterviewRequest[]
 
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 //// ======================
 // LESSONS
 //// ======================
 model Lesson {
-  id        String             @id @default(cuid())
+  id        String   @id @default(cuid())
   title     String
-  content   String             @db.Text
+  content   String   @db.Text
   order     Int
-  createdAt DateTime           @default(now())
+  createdAt DateTime @default(now())
 
   progresses LessonProgress[]
 }
 
 model LessonProgress {
-  id        String   @id @default(cuid())
-  userId    String
-  lessonId  String
-  completed Boolean  @default(false)
+  id          String    @id @default(cuid())
+  userId      String
+  lessonId    String
+  completed   Boolean   @default(false)
   completedAt DateTime?
 
-  user      User     @relation(fields: [userId], references: [id])
-  lesson    Lesson   @relation(fields: [lessonId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+  lesson Lesson @relation(fields: [lessonId], references: [id])
 }
 
 //// ======================
 // PROJECT
 //// ======================
 model Project {
-  id          String      @id @default(cuid())
+  id          String  @id @default(cuid())
   title       String
-  description String      @db.Text
+  description String  @db.Text
   starterRepo String?
   tasksJson   Json?
+  tags        Json? // Array of skill tags (e.g., ["DevOps", "Docker", "CI/CD"]) for talent feed filtering
 
   submissions Submission[]
-  createdAt   DateTime @default(now())
+  createdAt   DateTime     @default(now())
 }
 
 //// ======================
 // SUBMISSION (DevOps Project Work)
 //// ======================
 model Submission {
-  id          String             @id @default(cuid())
-  userId      String
-  projectId   String
-  repoUrl     String?
-  prNumber    Int?
-  status      SubmissionStatus   @default(IN_PROGRESS)
+  id        String           @id @default(cuid())
+  userId    String
+  projectId String
+  repoUrl   String?
+  prNumber  Int?
+  status    SubmissionStatus @default(IN_PROGRESS)
 
-  user        User               @relation(fields: [userId], references: [id])
-  project     Project            @relation(fields: [projectId], references: [id])
-  score       Score?
-  reviews     PRReview[]
+  user              User               @relation(fields: [userId], references: [id])
+  project           Project            @relation(fields: [projectId], references: [id])
+  score             Score?
+  reviews           PRReview[]
+  portfolio         Portfolio?
+  interviewRequests InterviewRequest[]
 
-  createdAt   DateTime           @default(now())
-  updatedAt   DateTime           @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 //// ======================
 // PR REVIEW (One per review run)
 //// ======================
 model PRReview {
-  id            String     @id @default(cuid())
-  submissionId  String
-  prNumber      Int
-  reviewJson    Json?      // AI review output
-  staticReport  Json?      // Linting / Docker / CI/CD analysis
-  suggestions   Json?      // Improvement suggestions
+  id           String @id @default(cuid())
+  submissionId String
+  prNumber     Int
+  reviewJson   Json? // AI review output
+  staticReport Json? // Linting / Docker / CI/CD analysis
+  suggestions  Json? // Improvement suggestions
 
-  submission    Submission @relation(fields: [submissionId], references: [id])
+  submission Submission @relation(fields: [submissionId], references: [id])
 
-  createdAt     DateTime   @default(now())
+  createdAt DateTime @default(now())
 }
 
 //// ======================
 // SCORE (One per submission)
 //// ======================
 model Score {
-  id                String    @id @default(cuid())
-  submissionId      String    @unique
-  codeQuality       Int       @default(0)
-  devopsExecution   Int       @default(0)
-  reliability       Int       @default(0)
-  deliverySpeed     Int       @default(0)
-  collaboration     Int       @default(0)
-  totalScore        Int       @default(0)
+  id           String @id @default(cuid())
+  submissionId String @unique
 
-  submission        Submission @relation(fields: [submissionId], references: [id])
+  // 10 Category Scores (0-10 each)
+  codeQuality     Int @default(0)
+  problemSolving  Int @default(0)
+  bugRisk         Int @default(0)
+  devopsExecution Int @default(0)
+  optimization    Int @default(0)
+  documentation   Int @default(0)
+  gitMaturity     Int @default(0)
+  collaboration   Int @default(0)
+  deliverySpeed   Int @default(0)
+  security        Int @default(0)
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  // Legacy fields (kept for backward compatibility, mapped from above)
+  reliability Int @default(0) // Inverse of bugRisk
+
+  // Final Score & Badge
+  totalScore Int   @default(0) // Sum of all 10 categories (0-100)
+  badge      Badge @default(RED)
+
+  // Detailed breakdown and evidence
+  detailsJson Json? // Stores breakdown, evidence, raw data, applied rules
+
+  submission Submission @relation(fields: [submissionId], references: [id])
+  portfolio  Portfolio?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 //// ======================
@@ -155,30 +185,38 @@ model Score {
 //// ======================
 model Portfolio {
   id            String   @id @default(cuid())
-  userId        String   @unique
-  summary       String?
-  slug          String?  @unique
-  scoreJson     Json?
-  projectsJson  Json?
+  userId        String
+  submissionId  String   @unique // One portfolio per submission
+  scoreId       String?  @unique // Optional direct reference to score (one-to-one relation)
+  summary       String? // User-customizable summary
+  slug          String   @unique // Public URL slug (githubUsername-submissionId)
+  portfolioJson Json? // Complete portfolio data (header, score, project, review, evidence, timeline)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  user          User     @relation(fields: [userId], references: [id])
+  user       User       @relation(fields: [userId], references: [id])
+  submission Submission @relation(fields: [submissionId], references: [id])
+  score      Score?     @relation(fields: [scoreId], references: [id])
 }
 
 //// ======================
 // COMPANY (Recruiters)
 //// ======================
 model Company {
-  id              String   @id @default(cuid())
-  userId          String   @unique
-  companyName     String
-  website         String?
-  logo            String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  companyName String
+  website     String?
+  logo        String?
+  about       String?  @db.Text
+  industry    String?
+  location    String?
+  teamSize    Int?
+  hiringNeeds Json? // Hiring preferences array (e.g., ["DevOps", "Backend", "Full-stack"])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  user            User     @relation(fields: [userId], references: [id])
+  user              User               @relation(fields: [userId], references: [id])
   interviewRequests InterviewRequest[]
 }
 
@@ -186,14 +224,17 @@ model Company {
 // INTERVIEW REQUEST
 //// ======================
 model InterviewRequest {
-  id        String   @id @default(cuid())
-  companyId String
-  userId    String
-  message   String?
-  status    String?  @default("pending")
+  id           String                 @id @default(cuid())
+  companyId    String
+  developerId  String // Developer user ID (renamed from userId for clarity)
+  submissionId String? // Optional link to specific submission/portfolio
+  position     String // Position they are hiring for
+  message      String?                @db.Text
+  status       InterviewRequestStatus @default(PENDING)
 
-  company   Company  @relation(fields: [companyId], references: [id])
-  user      User     @relation(fields: [userId], references: [id])
+  company    Company     @relation(fields: [companyId], references: [id])
+  developer  User        @relation(fields: [developerId], references: [id])
+  submission Submission? @relation(fields: [submissionId], references: [id])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -90,8 +90,8 @@ async function processPRReview(jobData) {
 
     // STEP 9: Apply Fusion Scoring
     console.log(`[Review Service] Step 9: Applying fusion scoring rules...`);
-    finalScores = scoringService.generateScore(llmScores, staticReport, ciReport);
-    console.log(`[Review Service] Final scores: total = ${finalScores.totalScore}/50`);
+    finalScores = scoringService.generateScore(llmScores, staticReport, ciReport, prMetadata);
+    console.log(`[Review Service] Final scores: total = ${finalScores.totalScore}/100, badge = ${finalScores.badge}`);
 
     // STEP 10: Save PRReview & Score
     console.log(`[Review Service] Step 10: Saving review and score to database...`);
@@ -106,21 +106,44 @@ async function processPRReview(jobData) {
     });
     console.log(`[Review Service] PRReview created: ${prReview.id}`);
 
-    // Create/Update Score record
+    // Create/Update Score record with all 10 categories
     const score = await scoreRepo.createOrUpdate({
       submissionId,
       codeQuality: finalScores.codeQuality,
+      problemSolving: finalScores.problemSolving,
+      bugRisk: finalScores.bugRisk,
       devopsExecution: finalScores.devopsExecution,
-      reliability: finalScores.reliability,
-      deliverySpeed: finalScores.deliverySpeed,
+      optimization: finalScores.optimization,
+      documentation: finalScores.documentation,
+      gitMaturity: finalScores.gitMaturity,
       collaboration: finalScores.collaboration,
+      deliverySpeed: finalScores.deliverySpeed,
+      security: finalScores.security,
+      reliability: finalScores.reliability, // Legacy field
       totalScore: finalScores.totalScore,
+      badge: finalScores.badge,
+      detailsJson: finalScores.detailsJson,
     });
     console.log(`[Review Service] Score saved: ${score.id}`);
 
     // Update Submission status
     await submissionRepo.updateStatus(submissionId, 'REVIEWED');
     console.log(`[Review Service] Submission status updated to REVIEWED`);
+
+    // Enqueue portfolio generation
+    console.log(`[Review Service] Enqueueing portfolio generation...`);
+    try {
+      const portfolioQueue = require('../queues/portfolio.queue');
+      await portfolioQueue.add('generate', {
+        userId: submission.userId,
+        submissionId: submission.id,
+        scoreId: score.id,
+      });
+      console.log(`[Review Service] Portfolio generation job enqueued`);
+    } catch (portfolioError) {
+      console.warn(`[Review Service] Failed to enqueue portfolio generation: ${portfolioError.message}`);
+      // Don't fail the whole review if portfolio queue fails
+    }
 
     // Post PR comment
     console.log(`[Review Service] Posting PR comment...`);
@@ -187,13 +210,18 @@ function generatePRComment(finalScores, llmScores, staticReport, ciReport) {
   const suggestions = llmScores.suggestions || [];
 
   let comment = `## 🤖 DevHubs AI Review\n\n`;
-  comment += `### Overall Score: **${totalScore}/50**\n\n`;
+  comment += `### Overall Score: **${totalScore}/100** (Badge: ${finalScores.badge})\n\n`;
   comment += `**Breakdown:**\n`;
   comment += `- Code Quality: ${finalScores.codeQuality}/10\n`;
+  comment += `- Problem Solving: ${finalScores.problemSolving}/10\n`;
+  comment += `- Bug Risk: ${finalScores.bugRisk}/10\n`;
   comment += `- DevOps Execution: ${finalScores.devopsExecution}/10\n`;
-  comment += `- Reliability: ${finalScores.reliability}/10\n`;
+  comment += `- Optimization: ${finalScores.optimization}/10\n`;
+  comment += `- Documentation: ${finalScores.documentation}/10\n`;
+  comment += `- Git Maturity: ${finalScores.gitMaturity}/10\n`;
+  comment += `- Collaboration: ${finalScores.collaboration}/10\n`;
   comment += `- Delivery Speed: ${finalScores.deliverySpeed}/10\n`;
-  comment += `- Collaboration: ${finalScores.collaboration}/10\n\n`;
+  comment += `- Security: ${finalScores.security}/10\n\n`;
 
   comment += `### Key Findings:\n${summary}\n\n`;
 

@@ -153,6 +153,44 @@ async function findByGithubInstallId(installationId) {
   });
 }
 
+/**
+ * Create user with hashed password (for company email/password auth)
+ * @param {Object} userData - User data including password (will be hashed by service)
+ * @returns {Promise<Object>} Created user
+ */
+async function createWithPassword(userData) {
+  return prisma.user.create({
+    data: userData,
+  });
+}
+
+/**
+ * Find user by email including password field (for password verification)
+ * @param {string} email - User email
+ * @returns {Promise<Object|null>} User object with password or null
+ */
+async function findByEmailWithPassword(email) {
+  return prisma.user.findUnique({
+    where: { email },
+    // Password field is included by default in Prisma queries
+  });
+}
+
+/**
+ * Update user password
+ * @param {string} userId - User ID
+ * @param {string} hashedPassword - Hashed password
+ * @returns {Promise<Object>} Updated user
+ */
+async function updatePassword(userId, hashedPassword) {
+  return prisma.user.update({
+    where: { id: userId },
+    data: {
+      password: hashedPassword,
+    },
+  });
+}
+
 module.exports = {
   findById,
   findByEmail,
@@ -165,4 +203,7 @@ module.exports = {
   linkGitHub,
   clearGithubInstall,
   findByGithubInstallId,
+  createWithPassword,
+  findByEmailWithPassword,
+  updatePassword,
 };
