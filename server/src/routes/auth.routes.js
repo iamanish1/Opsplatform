@@ -8,7 +8,7 @@ const { authLimiter } = require('../middlewares/rateLimit.middleware');
 /**
  * GET /api/auth/github
  * Initiate GitHub OAuth flow
- * Redirects to GitHub authorization page
+ * Re thr fronirects to GitHub authorization page
  */
 router.get('/github', authLimiter, authController.initiateGitHubOAuth);
 
