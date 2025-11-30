@@ -248,6 +248,18 @@ async function handleInstallationCreated(installationData) {
   if (user) {
     // Update existing user with installation ID
     user = await userRepo.setGithubInstall(user.id, installationId);
+
+    // Emit GithubAppInstalled event
+    try {
+      const eventBus = require('../utils/eventBus');
+      eventBus.emit('GithubAppInstalled', {
+        userId: user.id,
+        installationId,
+      });
+    } catch (eventError) {
+      console.warn(`[Auth Service] Failed to emit GithubAppInstalled event: ${eventError.message}`);
+      // Don't fail installation if event emission fails
+    }
   } else {
     // Installation created before OAuth - store partial user
     // This will be merged when user completes OAuth

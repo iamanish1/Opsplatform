@@ -130,6 +130,20 @@ async function processPRReview(jobData) {
     await submissionRepo.updateStatus(submissionId, 'REVIEWED');
     console.log(`[Review Service] Submission status updated to REVIEWED`);
 
+    // Emit ScoreReady event
+    try {
+      const eventBus = require('../utils/eventBus');
+      eventBus.emit('ScoreReady', {
+        userId: submission.userId,
+        submissionId: submission.id,
+        scoreId: score.id,
+      });
+      console.log(`[Review Service] ScoreReady event emitted`);
+    } catch (eventError) {
+      console.warn(`[Review Service] Failed to emit ScoreReady event: ${eventError.message}`);
+      // Don't fail the whole review if event emission fails
+    }
+
     // Enqueue portfolio generation
     console.log(`[Review Service] Enqueueing portfolio generation...`);
     try {

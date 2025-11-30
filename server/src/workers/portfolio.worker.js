@@ -23,6 +23,20 @@ const worker = new Worker(
       
       console.log(`[Portfolio Worker] Portfolio generated for job ${job.id}:`, result);
 
+      // Emit PortfolioReady event
+      try {
+        const eventBus = require('../utils/eventBus');
+        eventBus.emit('PortfolioReady', {
+          userId: job.data.userId,
+          submissionId: job.data.submissionId,
+          portfolioId: result.id,
+        });
+        console.log(`[Portfolio Worker] PortfolioReady event emitted`);
+      } catch (eventError) {
+        console.warn(`[Portfolio Worker] Failed to emit PortfolioReady event: ${eventError.message}`);
+        // Don't fail the job if event emission fails
+      }
+
       return result;
     } catch (error) {
       console.error(`[Portfolio Worker] Error processing job ${job.id}:`, {

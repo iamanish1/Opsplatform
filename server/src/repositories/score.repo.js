@@ -92,8 +92,22 @@ async function findBySubmissionId(submissionId) {
   });
 }
 
+/**
+ * Find score by ID
+ * @param {string} scoreId - Score ID
+ * @returns {Promise<Object|null>} Score or null
+ */
+async function findById(scoreId) {
+  return prisma.score.findUnique({
+    where: {
+      id: scoreId,
+    },
+  });
+}
+
 module.exports = {
   createOrUpdate,
   findBySubmissionId,
+  findById,
 };
 

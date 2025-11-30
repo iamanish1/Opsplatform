@@ -41,6 +41,18 @@ async function signup(email, password, companyName) {
     companyName,
   });
 
+  // Emit CompanySignup event
+  try {
+    const eventBus = require('../utils/eventBus');
+    eventBus.emit('CompanySignup', {
+      companyId: company.id,
+      userId: user.id,
+    });
+  } catch (eventError) {
+    console.warn(`[Company Service] Failed to emit CompanySignup event: ${eventError.message}`);
+    // Don't fail signup if event emission fails
+  }
+
   // Generate JWT token
   const token = jwt.sign(
     {

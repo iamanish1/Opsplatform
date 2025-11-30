@@ -51,6 +51,19 @@ async function createRequest(companyId, developerId, requestData) {
     message,
   });
 
+  // Emit InterviewRequested event
+  try {
+    const eventBus = require('../utils/eventBus');
+    eventBus.emit('InterviewRequested', {
+      developerId,
+      companyId,
+      requestId: request.id,
+    });
+  } catch (eventError) {
+    console.warn(`[Interview Request Service] Failed to emit InterviewRequested event: ${eventError.message}`);
+    // Don't fail the request creation if event emission fails
+  }
+
   return request;
 }
 
@@ -100,7 +113,21 @@ async function acceptRequest(requestId, developerId) {
   }
 
   // Update status to ACCEPTED
-  return interviewRequestRepo.updateStatus(requestId, 'ACCEPTED');
+  const updated = await interviewRequestRepo.updateStatus(requestId, 'ACCEPTED');
+
+  // Emit InterviewAccepted event
+  try {
+    const eventBus = require('../utils/eventBus');
+    eventBus.emit('InterviewAccepted', {
+      companyId: request.companyId,
+      developerId,
+      requestId,
+    });
+  } catch (eventError) {
+    console.warn(`[Interview Request Service] Failed to emit InterviewAccepted event: ${eventError.message}`);
+  }
+
+  return updated;
 }
 
 /**
@@ -127,7 +154,21 @@ async function rejectRequest(requestId, developerId) {
   }
 
   // Update status to REJECTED
-  return interviewRequestRepo.updateStatus(requestId, 'REJECTED');
+  const updated = await interviewRequestRepo.updateStatus(requestId, 'REJECTED');
+
+  // Emit InterviewRejected event
+  try {
+    const eventBus = require('../utils/eventBus');
+    eventBus.emit('InterviewRejected', {
+      companyId: request.companyId,
+      developerId,
+      requestId,
+    });
+  } catch (eventError) {
+    console.warn(`[Interview Request Service] Failed to emit InterviewRejected event: ${eventError.message}`);
+  }
+
+  return updated;
 }
 
 /**

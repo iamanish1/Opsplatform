@@ -75,6 +75,7 @@ async function findById(submissionId) {
         },
       },
       score: true,
+      portfolio: true,
       reviews: {
         orderBy: {
           createdAt: 'desc',

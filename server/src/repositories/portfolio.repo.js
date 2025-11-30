@@ -173,11 +173,43 @@ async function upsertBySubmission(submissionId, portfolioData) {
   });
 }
 
+/**
+ * Find portfolio by ID
+ * @param {string} portfolioId - Portfolio ID
+ * @returns {Promise<Object|null>} Portfolio or null
+ */
+async function findById(portfolioId) {
+  return prisma.portfolio.findUnique({
+    where: {
+      id: portfolioId,
+    },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          avatar: true,
+          githubUsername: true,
+          githubProfile: true,
+        },
+      },
+      submission: {
+        include: {
+          project: true,
+        },
+      },
+      score: true,
+    },
+  });
+}
+
 module.exports = {
   create,
   findByUserId,
   findBySlug,
   findBySubmissionId,
+  findById,
   update,
   upsertBySubmission,
 };
