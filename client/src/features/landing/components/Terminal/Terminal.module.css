@@ -1,0 +1,510 @@
+/* Terminal Container */
+.terminalContainer {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  position: relative;
+}
+
+/* Terminal Window with enhanced effects */
+.terminalWindow {
+  background: rgba(15, 15, 15, 0.98);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 
+    0 20px 60px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(255, 255, 255, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 0 80px var(--terminal-color, #8b5cf6)15;
+  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+  will-change: transform;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.terminalWindow::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  padding: 2px;
+  background: linear-gradient(135deg, var(--terminal-color, #8b5cf6)40, transparent);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.terminalWindow:hover {
+  box-shadow: 
+    0 30px 80px rgba(0, 0, 0, 0.7),
+    0 0 0 1px rgba(255, 255, 255, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 0 100px var(--terminal-color, #8b5cf6)25;
+  transform: translateY(-2px);
+}
+
+.terminalWindow:hover::before {
+  opacity: 0.3;
+}
+
+/* Scanline effect for retro terminal feel */
+.scanlines {
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0.15) 0px,
+    rgba(0, 0, 0, 0.15) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0.3;
+  mix-blend-mode: overlay;
+}
+
+/* Glitch effect */
+.terminalWindow.glitch {
+  animation: glitch 0.15s infinite;
+}
+
+@keyframes glitch {
+  0% {
+    transform: translate(0);
+    filter: hue-rotate(0deg);
+  }
+  20% {
+    transform: translate(-2px, 2px);
+    filter: hue-rotate(90deg);
+  }
+  40% {
+    transform: translate(-2px, -2px);
+    filter: hue-rotate(180deg);
+  }
+  60% {
+    transform: translate(2px, 2px);
+    filter: hue-rotate(270deg);
+  }
+  80% {
+    transform: translate(2px, -2px);
+    filter: hue-rotate(360deg);
+  }
+  100% {
+    transform: translate(0);
+    filter: hue-rotate(0deg);
+  }
+}
+
+/* Terminal Header */
+.terminalHeader {
+  background: linear-gradient(180deg, rgba(30, 30, 30, 0.95) 0%, rgba(20, 20, 20, 0.95) 100%);
+  backdrop-filter: blur(10px);
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+  z-index: 3;
+}
+
+.terminalControls {
+  display: flex;
+  gap: 8px;
+}
+
+.control {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.controlClose {
+  background: #ff5f56;
+  box-shadow: 0 0 8px rgba(255, 95, 86, 0.4);
+}
+
+.controlMinimize {
+  background: #ffbd2e;
+  box-shadow: 0 0 8px rgba(255, 189, 46, 0.4);
+}
+
+.controlMaximize {
+  background: #27c93f;
+  box-shadow: 0 0 8px rgba(39, 201, 63, 0.4);
+}
+
+.control:hover {
+  transform: scale(1.15);
+  opacity: 0.9;
+}
+
+.terminalTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  font-weight: 500;
+  margin-left: auto;
+  font-family: 'SF Mono', 'Monaco', 'Menlo', monospace;
+}
+
+.titleIcon {
+  color: var(--terminal-color, #8b5cf6);
+  filter: drop-shadow(0 0 4px currentColor);
+}
+
+.statusIndicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--terminal-color, #8b5cf6);
+  box-shadow: 0 0 8px var(--terminal-color, #8b5cf6);
+  margin-left: 8px;
+}
+
+/* Terminal Body */
+.terminalBody {
+  padding: 24px;
+  min-height: 360px;
+  background: 
+    radial-gradient(circle at 20% 50%, rgba(139, 92, 246, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.03) 0%, transparent 50%),
+    rgba(10, 10, 10, 0.95);
+  position: relative;
+  font-family: 'SF Mono', 'Monaco', 'Menlo', 'Courier New', monospace;
+}
+
+/* Command History */
+.commandHistory {
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+
+.historyLine {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 4px;
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.historyCommand {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+/* Terminal Content */
+.terminalContent {
+  font-size: 14px;
+  line-height: 1.8;
+  position: relative;
+  z-index: 1;
+}
+
+.outputContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Prompt Line */
+.promptLine {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  font-size: 14px;
+}
+
+.prompt {
+  color: var(--terminal-color, #8b5cf6);
+  font-weight: 600;
+  text-shadow: 0 0 8px currentColor;
+}
+
+.promptText {
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+}
+
+.cursor {
+  color: var(--terminal-color, #8b5cf6);
+  font-weight: bold;
+  display: inline-block;
+  text-shadow: 0 0 8px currentColor;
+  animation: cursorBlink 1s infinite;
+}
+
+@keyframes cursorBlink {
+  0%, 50% {
+    opacity: 1;
+  }
+  51%, 100% {
+    opacity: 0.3;
+  }
+}
+
+/* Output Lines */
+.outputLines {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.outputLine {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  line-height: 1.6;
+  padding: 2px 0;
+  transition: all 0.2s ease;
+}
+
+.emptyLine {
+  height: 8px;
+}
+
+.lineText {
+  flex: 1;
+}
+
+/* Output Types with Color Coding */
+.outputLine.info {
+  color: rgba(200, 200, 200, 0.8);
+}
+
+.outputLine.success {
+  color: #10b981;
+  font-weight: 500;
+}
+
+.outputLine.success .lineText {
+  text-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
+}
+
+.outputLine.loading {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.outputLine.highlight {
+  color: var(--terminal-color, #8b5cf6);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.outputLine.highlight .lineText {
+  text-shadow: 0 0 8px currentColor;
+}
+
+.outputLine.error {
+  color: #ef4444;
+  font-weight: 500;
+}
+
+.outputLine.error .lineText {
+  text-shadow: 0 0 6px rgba(239, 68, 68, 0.4);
+}
+
+.outputLine.warning {
+  color: #f59e0b;
+  font-weight: 500;
+}
+
+/* Icons */
+.inlineIcon {
+  flex-shrink: 0;
+  color: inherit;
+  filter: drop-shadow(0 0 4px currentColor);
+}
+
+.spinningIcon {
+  flex-shrink: 0;
+  color: var(--terminal-color, #8b5cf6);
+  animation: spin 1s linear infinite;
+  filter: drop-shadow(0 0 4px currentColor);
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.bullet {
+  color: #10b981;
+  font-size: 16px;
+  line-height: 1;
+  text-shadow: 0 0 6px currentColor;
+}
+
+/* Progress Bar */
+.progressBar {
+  width: 120px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-left: auto;
+  position: relative;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--terminal-color, #8b5cf6), rgba(139, 92, 246, 0.6));
+  border-radius: 2px;
+  box-shadow: 0 0 8px var(--terminal-color, #8b5cf6);
+  position: relative;
+}
+
+.progressFill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Terminal Footer */
+.terminalFooter {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.footerStats {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.statItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+  font-family: 'SF Mono', 'Monaco', 'Menlo', monospace;
+}
+
+.statItem svg {
+  color: var(--terminal-color, #8b5cf6);
+  filter: drop-shadow(0 0 4px currentColor);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .terminalContainer {
+    max-width: 100%;
+    padding: 0 16px;
+  }
+
+  .terminalBody {
+    padding: 18px;
+    min-height: 280px;
+  }
+
+  .terminalContent {
+    font-size: 12px;
+  }
+
+  .promptLine {
+    font-size: 12px;
+  }
+
+  .outputLine {
+    font-size: 11px;
+  }
+
+  .progressBar {
+    width: 80px;
+  }
+
+  .footerStats {
+    gap: 16px;
+  }
+
+  .statItem {
+    font-size: 11px;
+  }
+}
+
+@media (max-width: 480px) {
+  .terminalBody {
+    padding: 14px;
+    min-height: 240px;
+  }
+
+  .terminalContent {
+    font-size: 11px;
+  }
+
+  .outputLine {
+    font-size: 10px;
+    gap: 6px;
+  }
+
+  .inlineIcon,
+  .spinningIcon {
+    width: 12px;
+    height: 12px;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  .scanlines,
+  .glitch,
+  .spinningIcon,
+  .cursor,
+  .progressFill::after {
+    animation: none !important;
+  }
+
+  .terminalWindow {
+    transition: opacity 0.2s ease !important;
+  }
+
+  .outputLine {
+    transition: none !important;
+  }
+}
+
+/* Dark mode enhancements */
+@media (prefers-color-scheme: dark) {
+  .terminalWindow {
+    background: rgba(8, 8, 8, 0.98);
+  }
+
+  .terminalBody {
+    background: 
+      radial-gradient(circle at 20% 50%, rgba(139, 92, 246, 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.05) 0%, transparent 50%),
+      rgba(5, 5, 5, 0.98);
+  }
+}

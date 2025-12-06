@@ -1,0 +1,740 @@
+.landingPage {
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+  overflow-x: hidden;
+  background: linear-gradient(135deg, #000000 0%, #0a0a0a 50%, #000000 100%);
+  color: #ffffff;
+}
+
+.landingBackground {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.gradientOrb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.3;
+  animation: float 20s infinite ease-in-out;
+}
+
+.orb1 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1), transparent);
+  top: -200px;
+  left: -200px;
+  animation-delay: 0s;
+}
+
+.orb2 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.08), transparent);
+  bottom: -150px;
+  right: -150px;
+  animation-delay: 5s;
+}
+
+.orb3 {
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.06), transparent);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation-delay: 10s;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -30px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 20px) scale(0.9);
+  }
+}
+
+.particles {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.4);
+}
+
+.landingContainer {
+  position: relative;
+  z-index: 2;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.landingHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 0;
+  margin-bottom: 0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(10, 10, 15, 0.8);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.headerLogo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logoIcon {
+  color: #ffffff;
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+}
+
+.logoText {
+  font-size: 24px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #ffffff, #e0e0e0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.headerActions {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.headerLink {
+  color: rgba(255, 255, 255, 0.7);
+  background: none;
+  border: none;
+  font-size: 16px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  padding: 8px 16px;
+  border-radius: 8px;
+}
+
+.headerLink:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.landingContent {
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+  padding-bottom: 80px;
+}
+
+.heroSection {
+  position: relative;
+  padding: 80px 0;
+  min-height: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.heroContent {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.heroText {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.problemBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 12px;
+  font-weight: 500;
+  width: fit-content;
+  margin: 0 auto 24px auto;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.problemBadge svg {
+  color: rgba(255, 255, 255, 0.8);
+  flex-shrink: 0;
+}
+
+.heroTitle {
+  font-size: clamp(36px, 6vw, 64px);
+  font-weight: 900;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  margin: 0 0 24px 0;
+  color: #ffffff;
+  max-width: 100%;
+}
+
+.gradientText {
+  background: linear-gradient(135deg, #ffffff 0%, #e0e0e0 50%, #ffffff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  background-size: 300% 300%;
+  animation: gradientShift 6s ease infinite;
+  display: inline-block;
+  filter: brightness(1.2);
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.heroDescription {
+  font-size: clamp(16px, 1.5vw, 18px);
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.6;
+  max-width: 700px;
+  margin: 0 auto 32px auto;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+.heroBenefits {
+  width: 100%;
+  margin: 0 auto 32px auto;
+}
+
+.heroCTAs {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 0 auto 24px auto;
+  width: 100%;
+}
+
+.heroSocialProof {
+  display: flex;
+  gap: 24px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.socialProofItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 15px;
+  font-weight: 500;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
+}
+
+.socialProofItem:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.socialProofItem svg {
+  color: rgba(255, 255, 255, 0.9);
+  opacity: 0.9;
+}
+
+/* Workflow Section Styles */
+.workflowSection {
+  width: 100%;
+  padding: 80px 0;
+  position: relative;
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.02) 0%, transparent 70%);
+}
+
+.workflowSectionContainer {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+}
+
+.workflowSectionHeader {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.workflowSectionTitle {
+  font-size: clamp(32px, 4vw, 48px);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  margin: 0 0 20px 0;
+  color: #ffffff;
+}
+
+.workflowSectionSubtitle {
+  font-size: clamp(16px, 1.5vw, 18px);
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.6;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+.workflowSectionContent {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.scrollIndicator {
+  position: absolute;
+  bottom: 60px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  transition: color 0.3s ease;
+  z-index: 10;
+}
+
+.scrollIndicator:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.terminalSection,
+.trustScoreSection,
+.portfolioSection {
+  width: 100%;
+  padding: 0;
+}
+
+.terminalSection {
+  padding: 80px 0;
+}
+
+.trustScoreSection {
+  padding: 80px 0;
+}
+
+.portfolioSection {
+  padding: 80px 0;
+}
+
+.ctaSection {
+  text-align: center;
+  padding: 80px 0;
+  position: relative;
+  background: radial-gradient(ellipse at center, rgba(255, 255, 255, 0.05) 0%, transparent 70%);
+  border-radius: 32px;
+  margin: 60px 0;
+}
+
+.ctaTitle {
+  font-size: clamp(32px, 4vw, 48px);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  margin: 0 0 24px 0;
+  color: #ffffff;
+}
+
+.ctaDescription {
+  font-size: clamp(16px, 1.5vw, 18px);
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.6;
+  margin: 0 0 32px 0;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+.ctaButtons {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+}
+
+.ctaFooter {
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.sceneControls {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  padding: 20px;
+  margin-top: 40px;
+}
+
+.controlButton {
+  padding: 12px 24px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.controlButton:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-2px);
+}
+
+.controlButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.landingFooter {
+  padding: 60px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 80px;
+}
+
+.footerStats {
+  display: flex;
+  justify-content: center;
+  gap: 80px;
+  flex-wrap: wrap;
+}
+
+.stat {
+  text-align: center;
+}
+
+.statNumber {
+  font-size: 48px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #ffffff, #e0e0e0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 8px;
+}
+
+.statLabel {
+  font-size: 16px;
+  color: #a0a0a0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .heroSection {
+    padding: 60px 0 80px;
+  }
+
+  .heroContent {
+    gap: 40px;
+    padding: 0 24px;
+  }
+
+  .workflowSection {
+    padding: 60px 0;
+  }
+
+  .workflowSectionContainer {
+    gap: 48px;
+  }
+
+  .workflowSectionTitle {
+    font-size: 36px;
+    margin-bottom: 16px;
+  }
+
+  .workflowSectionSubtitle {
+    font-size: 16px;
+  }
+
+  .heroTitle {
+    font-size: 56px;
+    margin-bottom: 28px;
+  }
+
+  .heroDescription {
+    font-size: 18px;
+    max-width: 100%;
+    margin-bottom: 40px;
+  }
+
+  .problemBadge {
+    margin-bottom: 32px;
+    font-size: 12px;
+    padding: 8px 16px;
+  }
+
+  .heroBenefits {
+    margin-bottom: 32px;
+  }
+
+  .heroCTAs {
+    margin-bottom: 28px;
+  }
+
+  .ctaTitle {
+    font-size: 36px;
+  }
+
+  .footerStats {
+    gap: 60px;
+  }
+}
+
+@media (max-width: 768px) {
+  .landingContainer {
+    padding: 0 16px;
+  }
+
+  .landingHeader {
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px 0;
+  }
+
+  .headerActions {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .heroSection {
+    padding: 60px 0;
+    min-height: auto;
+  }
+
+  .heroContent {
+    gap: 32px;
+    padding: 0 24px;
+  }
+
+  .heroTitle {
+    font-size: 40px;
+    margin-bottom: 24px;
+    line-height: 1.15;
+  }
+
+  .heroDescription {
+    font-size: 17px;
+    margin-bottom: 32px;
+  }
+
+  .problemBadge {
+    margin-bottom: 24px;
+    font-size: 11px;
+    padding: 8px 14px;
+  }
+
+  .heroBenefits {
+    margin-bottom: 28px;
+  }
+
+  .heroCTAs {
+    flex-direction: column;
+    width: 100%;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .heroCTAs > * {
+    width: 100%;
+  }
+
+  .heroSocialProof {
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+  }
+
+  .heroWorkflowWrapper {
+    padding: 0 24px;
+  }
+
+  .scrollIndicator {
+    bottom: 40px;
+  }
+
+  .landingContent {
+    gap: 60px;
+    padding-bottom: 60px;
+  }
+
+  .terminalSection,
+  .trustScoreSection,
+  .portfolioSection {
+    padding: 60px 0;
+  }
+
+  .workflowSection {
+    padding: 60px 0;
+  }
+
+  .workflowSectionContainer {
+    gap: 48px;
+  }
+
+  .workflowSectionTitle {
+    font-size: 36px;
+    margin-bottom: 16px;
+  }
+
+  .workflowSectionSubtitle {
+    font-size: 16px;
+  }
+
+  .ctaSection {
+    padding: 60px 0;
+    margin: 40px 0;
+  }
+
+  .ctaTitle {
+    font-size: 28px;
+  }
+
+  .ctaDescription {
+    font-size: 16px;
+  }
+
+  .ctaButtons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .footerStats {
+    gap: 32px;
+  }
+
+  .statNumber {
+    font-size: 32px;
+  }
+}
+
+@media (max-width: 480px) {
+  .heroSection {
+    padding: 60px 0 80px;
+  }
+
+  .heroTitle {
+    font-size: 32px;
+  }
+
+  .heroDescription {
+    font-size: 16px;
+  }
+
+  .heroBadge {
+    font-size: 12px;
+    padding: 8px 16px;
+  }
+
+  .workflowSection {
+    padding: 60px 0;
+  }
+
+  .workflowSectionContainer {
+    gap: 40px;
+    padding: 0 16px;
+  }
+
+  .workflowSectionTitle {
+    font-size: 28px;
+    margin-bottom: 16px;
+  }
+
+  .workflowSectionSubtitle {
+    font-size: 15px;
+  }
+
+  .ctaTitle {
+    font-size: 28px;
+  }
+
+  .footerStats {
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .statNumber {
+    font-size: 32px;
+  }
+}
+

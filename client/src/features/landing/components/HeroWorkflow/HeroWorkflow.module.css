@@ -1,0 +1,759 @@
+/* Container with perspective for 3D effects */
+.workflowContainer {
+  width: 100%;
+  padding: 40px 20px;
+  position: relative;
+  perspective: 1200px;
+  min-height: 400px;
+}
+
+/* Background gradient orbs */
+.backgroundOrbs {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.gradientOrb {
+  position: absolute;
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--orb-color) 0%, transparent 70%);
+  opacity: var(--orb-opacity);
+  filter: blur(60px);
+  will-change: transform, opacity;
+}
+
+.gradientOrb:nth-child(1) {
+  top: 10%;
+  left: 5%;
+}
+
+.gradientOrb:nth-child(2) {
+  top: 20%;
+  right: 10%;
+}
+
+.gradientOrb:nth-child(3) {
+  bottom: 20%;
+  left: 15%;
+}
+
+.gradientOrb:nth-child(4) {
+  bottom: 10%;
+  right: 20%;
+}
+
+.gradientOrb:nth-child(5) {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.gradientOrb:nth-child(6) {
+  top: 30%;
+  right: 30%;
+}
+
+/* Navigation controls */
+.navigationControls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-bottom: 40px;
+  position: relative;
+  z-index: 2;
+}
+
+.navButton {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.navButton:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.navButton:active {
+  transform: scale(0.95);
+}
+
+.navButton:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+}
+
+.stepIndicators {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.stepIndicator {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  font-size: 14px;
+  font-weight: 600;
+  will-change: transform;
+}
+
+.stepIndicator:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: scale(1.1);
+}
+
+.stepIndicator.active {
+  background: var(--step-color, #8b5cf6);
+  border-color: var(--step-color, #8b5cf6);
+  color: white;
+  box-shadow: 0 0 20px var(--step-color, #8b5cf6)40;
+  transform: scale(1.15);
+}
+
+.stepIndicator:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 2px;
+}
+
+.indicatorNumber {
+  display: block;
+}
+
+/* Workflow steps container */
+.workflowSteps {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-wrap: wrap;
+  z-index: 1;
+}
+
+.stepWrapper {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-shrink: 0;
+  position: relative;
+}
+
+/* Enhanced workflow step with 3D effects */
+.workflowStep {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 24px 28px;
+  background: rgba(20, 20, 20, 0.6);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+  min-width: 200px;
+  max-width: 240px;
+  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+  overflow: visible;
+  will-change: transform, opacity;
+  cursor: pointer;
+  transform-style: preserve-3d;
+}
+
+/* Glassmorphism enhancement */
+.workflowStep::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  border-radius: 20px;
+  pointer-events: none;
+}
+
+.workflowStep::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: var(--step-gradient, linear-gradient(135deg, #8b5cf6, #6366f1));
+  border-radius: 22px;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: -1;
+  filter: blur(20px);
+  pointer-events: none;
+}
+
+/* Active state with 3D transform and glow */
+.workflowStep.active {
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(30, 30, 30, 0.8);
+  box-shadow: 
+    0 12px 48px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 0 60px var(--step-color, #8b5cf6)30;
+  transform: translateY(-8px) translateZ(20px);
+}
+
+.workflowStep.active::before {
+  opacity: 1;
+}
+
+.workflowStep.active::after {
+  opacity: 0.3;
+}
+
+/* Completed state */
+.workflowStep.completed {
+  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.08);
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+/* Pending state */
+.workflowStep.pending {
+  opacity: 0.4;
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Hovered state */
+.workflowStep.hovered:not(.active) {
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(30, 30, 30, 0.7);
+  transform: translateY(-4px) translateZ(10px);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(255, 255, 255, 0.15);
+}
+
+.workflowStep.hovered::before {
+  opacity: 0.6;
+}
+
+/* Expanded state */
+.workflowStep.expanded {
+  max-width: 320px;
+  min-width: 280px;
+}
+
+/* Glow effect */
+.glowEffect {
+  position: absolute;
+  inset: -4px;
+  border-radius: 24px;
+  background: radial-gradient(circle at center, var(--glow-color, #8b5cf6) 0%, transparent 70%);
+  opacity: 0;
+  filter: blur(20px);
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+  z-index: -1;
+}
+
+.workflowStep.active .glowEffect {
+  opacity: 0.4;
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.1);
+  }
+}
+
+/* Step badge */
+.stepBadge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--step-color, #8b5cf6);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 2;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.workflowStep.active .stepBadge {
+  box-shadow: 0 0 20px var(--step-color, #8b5cf6)60;
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+/* Particle container */
+.particleContainer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: visible;
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--particle-color, #8b5cf6);
+  box-shadow: 0 0 8px var(--particle-color, #8b5cf6);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+/* Enhanced icon container */
+.stepIcon {
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.9);
+  flex-shrink: 0;
+  transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+  overflow: hidden;
+  will-change: transform, box-shadow;
+}
+
+.stepIcon::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--step-gradient, linear-gradient(135deg, #8b5cf6, #6366f1));
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  border-radius: 14px;
+}
+
+.workflowStep.active .stepIcon {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: var(--step-color, #8b5cf6);
+  color: var(--step-color, #8b5cf6);
+}
+
+.workflowStep.active .stepIcon::before {
+  opacity: 0.2;
+}
+
+.workflowStep.completed .stepIcon {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Step content */
+.stepContent {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  text-align: center;
+  width: 100%;
+}
+
+.stepLabel {
+  font-size: 20px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  transition: color 0.3s ease;
+  letter-spacing: -0.01em;
+}
+
+.stepDescription {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 400;
+  transition: opacity 0.3s ease;
+  line-height: 1.4;
+}
+
+/* Expanded content */
+.expandedContent {
+  width: 100%;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+.detailedDescription {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Enhanced connector */
+.connector {
+  width: 60px;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.15);
+  position: relative;
+  transform-origin: left center;
+  margin: 0 8px;
+  border-radius: 2px;
+  overflow: hidden;
+  flex-shrink: 0;
+  will-change: transform, opacity;
+}
+
+.connector::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.4), rgba(255, 255, 255, 0.1));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.5s ease;
+}
+
+.connector.active::before,
+.connector.completed::before {
+  transform: scaleX(1);
+}
+
+.connector.completed {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1));
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+}
+
+/* Flowing animation line */
+.flowingLine {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 30%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, var(--flow-color, #8b5cf6), transparent);
+  opacity: 0.6;
+  filter: blur(1px);
+}
+
+.connectorArrow {
+  position: absolute;
+  right: -12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255, 255, 255, 0.9);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  filter: drop-shadow(0 0 4px currentColor);
+}
+
+.connector.active .connectorArrow,
+.connector.completed .connectorArrow {
+  opacity: 1;
+}
+
+/* Enhanced progress bar */
+.progressBar {
+  width: 100%;
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  margin-top: 48px;
+  overflow: hidden;
+  position: relative;
+  backdrop-filter: blur(10px);
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--progress-color, #8b5cf6), var(--progress-color, #8b5cf6)80);
+  border-radius: 4px;
+  box-shadow: 0 0 20px var(--progress-color, #8b5cf6)50;
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.progressFill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: shimmer 2s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.progressSteps {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  transform: translateY(-50%);
+  display: flex;
+  justify-content: space-between;
+  padding: 0 4px;
+  pointer-events: none;
+}
+
+.progressStep {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.progressStep.completed {
+  background: var(--step-color, #8b5cf6);
+  border-color: var(--step-color, #8b5cf6);
+  box-shadow: 0 0 12px var(--step-color, #8b5cf6)60;
+  transform: scale(1.3);
+}
+
+/* Focus states for accessibility */
+.workflowStep:focus-visible {
+  outline: 3px solid rgba(255, 255, 255, 0.5);
+  outline-offset: 4px;
+  border-radius: 20px;
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+  .workflowContainer {
+    padding: 32px 16px;
+  }
+
+  .workflowSteps {
+    gap: 16px;
+  }
+
+  .workflowStep {
+    min-width: 180px;
+    max-width: 220px;
+    padding: 20px 24px;
+  }
+
+  .stepIcon {
+    width: 56px;
+    height: 56px;
+  }
+
+  .stepLabel {
+    font-size: 18px;
+  }
+
+  .stepDescription {
+    font-size: 13px;
+  }
+
+  .connector {
+    width: 50px;
+  }
+
+  .navigationControls {
+    margin-bottom: 32px;
+  }
+}
+
+@media (max-width: 768px) {
+  .workflowContainer {
+    padding: 24px 12px;
+    min-height: auto;
+  }
+
+  .workflowSteps {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .stepWrapper {
+    flex-direction: row;
+    width: 100%;
+    max-width: 100%;
+    justify-content: flex-start;
+  }
+
+  .workflowStep {
+    width: 100%;
+    min-width: auto;
+    max-width: 100%;
+    flex-direction: row;
+    align-items: center;
+    text-align: left;
+    padding: 20px;
+  }
+
+  .stepContent {
+    text-align: left;
+    flex: 1;
+  }
+
+  .connector {
+    width: 3px;
+    height: 40px;
+    margin: 0;
+    transform-origin: top;
+  }
+
+  .connectorArrow {
+    right: auto;
+    bottom: -12px;
+    top: auto;
+    left: 50%;
+    transform: translateX(-50%) rotate(90deg);
+  }
+
+  .workflowStep.active {
+    transform: translateX(8px) translateZ(0);
+  }
+
+  .workflowStep.expanded {
+    max-width: 100%;
+    min-width: auto;
+  }
+
+  .navigationControls {
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .stepIndicators {
+    order: 3;
+    width: 100%;
+    justify-content: center;
+    margin-top: 8px;
+  }
+
+  .gradientOrb {
+    width: 200px;
+    height: 200px;
+    filter: blur(40px);
+  }
+}
+
+@media (max-width: 480px) {
+  .workflowContainer {
+    padding: 20px 8px;
+  }
+
+  .workflowStep {
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .stepIcon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .stepLabel {
+    font-size: 16px;
+  }
+
+  .stepDescription {
+    font-size: 12px;
+  }
+
+  .stepBadge {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+  }
+
+  .navButton {
+    width: 40px;
+    height: 40px;
+  }
+
+  .stepIndicator {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+
+  .progressBar {
+    margin-top: 32px;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .workflowStep,
+  .stepIcon,
+  .connector,
+  .progressFill,
+  .glowEffect,
+  .particle {
+    animation: none !important;
+    transition: opacity 0.2s ease, transform 0.2s ease !important;
+  }
+
+  .flowingLine {
+    display: none;
+  }
+
+  .gradientOrb {
+    animation: none !important;
+  }
+}
