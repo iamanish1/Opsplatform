@@ -147,7 +147,7 @@ const LandingPage = () => {
           </div>
           <div className={styles.headerActions}>
             <button className={styles.headerLink}>For Companies</button>
-            <CTAButton text="Get Started" variant="secondary" />
+            <CTAButton text="Get Started" variant="secondary" to="/auth/student" />
           </div>
         </motion.header>
 
@@ -196,7 +196,7 @@ const LandingPage = () => {
                   className={styles.heroCTAs}
                   variants={fadeInUp}
                 >
-                  <CTAButton text="Start Building" variant="primary" />
+                  <CTAButton text="Start Building" variant="primary" to="/auth/student" />
                   <CTAButton text="See How It Works" variant="secondary" />
                 </motion.div>
 
@@ -361,7 +361,7 @@ const LandingPage = () => {
               viewport={{ once: true, amount: 0.15 }}
               transition={{ duration: 0.5, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
             >
-              <CTAButton text="Start Building" variant="primary" />
+              <CTAButton text="Start Building" variant="primary" to="/auth/student" />
               <CTAButton text="For Companies" variant="secondary" />
             </motion.div>
             <motion.p
