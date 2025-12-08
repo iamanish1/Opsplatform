@@ -3,6 +3,7 @@ import LandingPage from './features/landing';
 import StudentAuth from './features/auth/pages/StudentAuth/StudentAuth';
 import CompanyLogin from './features/auth/pages/CompanyLogin/CompanyLogin';
 import CompanySignup from './features/auth/pages/CompanySignup/CompanySignup';
+import Dashboard from './features/dashboard';
 import './App.css';
 
 function App() {
@@ -13,6 +14,7 @@ function App() {
         <Route path="/auth/student" element={<StudentAuth />} />
         <Route path="/auth/company/login" element={<CompanyLogin />} />
         <Route path="/auth/company/signup" element={<CompanySignup />} />
+        <Route path="/dashboard/*" element={<Dashboard />} />
       </Routes>
     </BrowserRouter>
   );

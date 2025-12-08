@@ -1,0 +1,16 @@
+.dashboardContent {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 2rem;
+  width: 100%;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+@media (max-width: 768px) {
+  .dashboardContent {
+    padding: 1rem;
+    gap: 1.5rem;
+  }
+}

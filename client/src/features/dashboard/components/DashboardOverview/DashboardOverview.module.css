@@ -1,0 +1,48 @@
+.overview {
+  margin-bottom: 2rem;
+}
+
+.sectionTitle {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0 0 1.5rem 0;
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.widgetsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.widgetLarge {
+  grid-column: span 2;
+}
+
+.widgetMedium {
+  grid-column: span 1;
+}
+
+@media (max-width: 1200px) {
+  .widgetLarge {
+    grid-column: span 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .widgetsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .widgetLarge,
+  .widgetMedium {
+    grid-column: span 1;
+  }
+
+  .sectionTitle {
+    font-size: 1.5rem;
+  }
+}

@@ -22,7 +22,16 @@ const scoreQueue = new Queue('scoreQueue', {
 });
 
 // Log queue events for debugging
+// Suppress connection errors - they're already handled by Redis config
 scoreQueue.on('error', (error) => {
+  // Suppress ECONNREFUSED errors - Redis config already logs these
+  if (error.code === 'ECONNREFUSED' || 
+      error.message?.includes('ECONNREFUSED') ||
+      error.message?.includes('connect ECONNREFUSED')) {
+    // Silently ignore - Redis connection errors are already logged
+    return;
+  }
+  // Log other errors normally
   console.error('Score queue error:', error);
 });
 
