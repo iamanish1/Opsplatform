@@ -1,0 +1,126 @@
+.floatingContainer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.valueText {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: rgba(236, 72, 153, 0.15);
+  border: 1px solid rgba(236, 72, 153, 0.4);
+  border-radius: 6px;
+  font-family: 'system-ui', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(236, 72, 153, 0.95);
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 8px rgba(236, 72, 153, 0.25);
+  will-change: transform, opacity;
+}
+
+.valueIcon {
+  color: rgba(236, 72, 153, 0.9);
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 4px rgba(236, 72, 153, 0.6));
+}
+
+.valueTextContent {
+  letter-spacing: 0.3px;
+  text-shadow: 0 0 8px rgba(236, 72, 153, 0.4);
+}
+
+.benefitText {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 9px;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  border-radius: 6px;
+  font-family: 'system-ui', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(16, 185, 129, 0.95);
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+  will-change: transform, opacity;
+}
+
+.benefitIcon {
+  color: rgba(16, 185, 129, 0.9);
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 4px rgba(16, 185, 129, 0.6));
+}
+
+.benefitTextContent {
+  letter-spacing: 0.3px;
+  text-shadow: 0 0 8px rgba(16, 185, 129, 0.4);
+}
+
+.iconElement {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(4px);
+  box-shadow: 0 2px 12px rgba(236, 72, 153, 0.3);
+  will-change: transform, opacity;
+}
+
+.iconSvg {
+  filter: drop-shadow(0 0 8px currentColor);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .valueText,
+  .benefitText {
+    font-size: 10px;
+    padding: 5px 8px;
+  }
+
+  .iconElement {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+@media (max-width: 480px) {
+  .floatingContainer {
+    opacity: 0.9;
+  }
+
+  .valueText,
+  .benefitText {
+    font-size: 9px;
+    padding: 4px 6px;
+  }
+
+  .iconElement {
+    width: 32px;
+    height: 32px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .valueText,
+  .benefitText,
+  .iconElement {
+    animation: none;
+  }
+}

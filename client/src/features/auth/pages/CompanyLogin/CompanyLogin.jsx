@@ -1,7 +1,7 @@
 import { memo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Mail, ArrowLeft, Github, UserPlus } from 'lucide-react';
+import { Mail, ArrowLeft, Github, UserPlus, Users, Clock, DollarSign, TrendingDown } from 'lucide-react';
 import AuthLayout from '../../components/AuthLayout/AuthLayout';
 import AuthForm from '../../components/AuthForm/AuthForm';
 import { fadeInUp, staggerContainer } from '../../../../utils/animations';
@@ -71,14 +71,18 @@ const CompanyLogin = memo(() => {
         animate="visible"
       >
         <motion.div className={styles.cardHeader} variants={fadeInUp}>
-          <div className={styles.iconWrapper}>
+          <motion.div 
+            className={styles.iconWrapper}
+            whileHover={{ scale: 1.1 }}
+            transition={{ duration: 0.3 }}
+          >
             <Mail size={28} />
-          </div>
+          </motion.div>
           <h1 className={styles.cardTitle}>
             Company <span className={styles.gradientText}>Login</span>
           </h1>
           <p className={styles.cardDescription}>
-            Sign in to access your company dashboard and talent feed.
+            Access verified DevOps talent. Skip OA rounds, reduce hiring costs, and hire industry-ready developers.
           </p>
         </motion.div>
 
@@ -90,6 +94,39 @@ const CompanyLogin = memo(() => {
             loading={loading}
             errors={errors}
           />
+        </motion.div>
+
+        {/* Quick Value Props */}
+        <motion.div 
+          className={styles.valueProps}
+          variants={fadeInUp}
+          initial="hidden"
+          animate="visible"
+          transition={{ delay: 0.3 }}
+        >
+          <div className={styles.valuePropItem}>
+            <Users size={18} className={styles.valuePropIcon} />
+            <div className={styles.valuePropContent}>
+              <span className={styles.valuePropNumber}>2.5K+</span>
+              <span className={styles.valuePropLabel}>Verified Developers</span>
+            </div>
+          </div>
+          <div className={styles.valuePropDivider} />
+          <div className={styles.valuePropItem}>
+            <Clock size={18} className={styles.valuePropIcon} />
+            <div className={styles.valuePropContent}>
+              <span className={styles.valuePropNumber}>70%</span>
+              <span className={styles.valuePropLabel}>Time Saved</span>
+            </div>
+          </div>
+          <div className={styles.valuePropDivider} />
+          <div className={styles.valuePropItem}>
+            <DollarSign size={18} className={styles.valuePropIcon} />
+            <div className={styles.valuePropContent}>
+              <span className={styles.valuePropNumber}>50%</span>
+              <span className={styles.valuePropLabel}>Cost Reduced</span>
+            </div>
+          </div>
         </motion.div>
 
         <motion.div className={styles.cardFooter} variants={fadeInUp}>

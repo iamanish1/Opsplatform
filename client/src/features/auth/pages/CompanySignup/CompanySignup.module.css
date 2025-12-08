@@ -3,26 +3,28 @@
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 24px;
-  padding: 48px 40px;
+  border-radius: 20px;
+  padding: 32px 36px;
   width: 100%;
+  max-width: 520px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  position: relative;
 }
 
 .cardHeader {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 28px;
 }
 
 .iconWrapper {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 64px;
-  height: 64px;
+  width: 56px;
+  height: 56px;
   background: rgba(236, 72, 153, 0.1);
-  border-radius: 16px;
-  margin-bottom: 24px;
+  border-radius: 14px;
+  margin-bottom: 20px;
   border: 2px solid rgba(236, 72, 153, 0.2);
 }
 
@@ -31,11 +33,11 @@
 }
 
 .cardTitle {
-  font-size: clamp(28px, 4vw, 36px);
+  font-size: clamp(24px, 3.5vw, 32px);
   font-weight: 800;
   line-height: 1.2;
   letter-spacing: -0.02em;
-  margin: 0 0 16px 0;
+  margin: 0 0 12px 0;
   color: #ffffff;
 }
 
@@ -44,20 +46,72 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  display: inline-block;
 }
 
 .cardDescription {
-  font-size: 16px;
+  font-size: 14px;
   color: rgba(255, 255, 255, 0.7);
   line-height: 1.6;
   margin: 0;
-  max-width: 400px;
+  max-width: 420px;
   margin-left: auto;
   margin-right: auto;
 }
 
+.painPointsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.painPointCard {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.painPointCard:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(236, 72, 153, 0.3);
+}
+
+.painPointIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: rgba(236, 72, 153, 0.1);
+  border-radius: 8px;
+  flex-shrink: 0;
+  color: #ec4899;
+}
+
+.painPointText {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+  line-height: 1.3;
+  flex: 1;
+}
+
+.solvedIcon {
+  color: #10b981;
+  flex-shrink: 0;
+  margin-left: auto;
+}
+
 .cardContent {
-  margin-bottom: 32px;
+  margin-bottom: 24px;
 }
 
 .passwordRequirements {
@@ -165,9 +219,9 @@
 }
 
 .formInput:focus {
-  border-color: rgba(139, 92, 246, 0.5);
+  border-color: rgba(236, 72, 153, 0.5);
   background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1);
 }
 
 .formInputError {
@@ -220,7 +274,7 @@
   font-size: 16px;
   font-weight: 600;
   font-family: inherit;
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  background: linear-gradient(135deg, #ec4899, #db2777);
   color: #ffffff;
   border: none;
   border-radius: 12px;
@@ -235,8 +289,8 @@
 }
 
 .submitButton:hover:not(:disabled) {
-  background: linear-gradient(135deg, #7c3aed, #6d28d9);
-  box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
+  background: linear-gradient(135deg, #db2777, #be185d);
+  box-shadow: 0 10px 30px rgba(236, 72, 153, 0.3);
   transform: translateY(-2px);
 }
 
@@ -260,7 +314,7 @@
 .cardFooter {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
   align-items: center;
 }
 
@@ -280,7 +334,7 @@
   text-decoration: none;
   font-size: 14px;
   font-weight: 500;
-  padding: 10px 16px;
+  padding: 10px 18px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 10px;
@@ -299,7 +353,7 @@
   gap: 6px;
   color: rgba(255, 255, 255, 0.6);
   text-decoration: none;
-  font-size: 14px;
+  font-size: 13px;
   transition: color 0.3s ease;
 }
 
@@ -310,16 +364,22 @@
 /* Responsive */
 @media (max-width: 768px) {
   .companySignupCard {
-    padding: 36px 28px;
-    border-radius: 20px;
+    padding: 28px 24px;
+    border-radius: 18px;
+    max-width: 100%;
   }
 
   .cardTitle {
-    font-size: 28px;
+    font-size: 24px;
   }
 
   .cardDescription {
-    font-size: 15px;
+    font-size: 13px;
+  }
+
+  .painPointsGrid {
+    grid-template-columns: 1fr;
+    gap: 8px;
   }
 
   .footerLinks {
@@ -335,30 +395,38 @@
 
 @media (max-width: 480px) {
   .companySignupCard {
-    padding: 32px 24px;
+    padding: 24px 20px;
     border-radius: 16px;
   }
 
   .iconWrapper {
-    width: 56px;
-    height: 56px;
-    margin-bottom: 20px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 16px;
   }
 
   .cardTitle {
-    font-size: 24px;
-    margin-bottom: 12px;
+    font-size: 22px;
+    margin-bottom: 10px;
   }
 
   .cardDescription {
-    font-size: 14px;
+    font-size: 12px;
   }
 
   .cardContent {
-    margin-bottom: 28px;
+    margin-bottom: 20px;
   }
 
   .passwordRequirements {
     padding: 12px;
+  }
+
+  .painPointCard {
+    padding: 8px 10px;
+  }
+
+  .painPointText {
+    font-size: 11px;
   }
 }

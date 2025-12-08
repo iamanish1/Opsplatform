@@ -1,7 +1,7 @@
 import { memo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Building2, ArrowLeft, Github, LogIn, CheckCircle2, XCircle, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { Building2, ArrowLeft, Github, LogIn, CheckCircle2, XCircle, Eye, EyeOff, AlertCircle, Users, Clock, DollarSign, Target } from 'lucide-react';
 import AuthLayout from '../../components/AuthLayout/AuthLayout';
 import { fadeInUp, staggerContainer } from '../../../../utils/animations';
 import styles from './CompanySignup.module.css';
@@ -96,6 +96,13 @@ const CompanySignup = memo(() => {
     }, 1500);
   };
 
+  const painPoints = [
+    { icon: Users, text: 'Industry-Ready Talent', solved: true },
+    { icon: DollarSign, text: 'Reduce Hiring Costs', solved: true },
+    { icon: Clock, text: 'Save Time on Interviews', solved: true },
+    { icon: Target, text: 'Skip OA Rounds', solved: true },
+  ];
+
   return (
     <AuthLayout>
       <motion.div
@@ -105,15 +112,48 @@ const CompanySignup = memo(() => {
         animate="visible"
       >
         <motion.div className={styles.cardHeader} variants={fadeInUp}>
-          <div className={styles.iconWrapper}>
+          <motion.div 
+            className={styles.iconWrapper}
+            whileHover={{ scale: 1.1 }}
+            transition={{ duration: 0.3 }}
+          >
             <Building2 size={28} />
-          </div>
+          </motion.div>
           <h1 className={styles.cardTitle}>
             Company <span className={styles.gradientText}>Sign Up</span>
           </h1>
           <p className={styles.cardDescription}>
-            Create your company account to access the talent feed and hire verified developers.
+            Join leading companies hiring verified DevOps talent. Access pre-vetted developers with Trust Scores.
           </p>
+        </motion.div>
+
+        {/* Pain Points Solutions */}
+        <motion.div 
+          className={styles.painPointsGrid}
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
+        >
+          {painPoints.map((point, index) => {
+            const Icon = point.icon;
+            return (
+              <motion.div
+                key={index}
+                className={styles.painPointCard}
+                variants={fadeInUp}
+                whileHover={{ y: -2, scale: 1.02 }}
+                transition={{ type: 'spring', stiffness: 300 }}
+              >
+                <div className={styles.painPointIcon}>
+                  <Icon size={18} />
+                </div>
+                <span className={styles.painPointText}>{point.text}</span>
+                {point.solved && (
+                  <CheckCircle2 size={14} className={styles.solvedIcon} />
+                )}
+              </motion.div>
+            );
+          })}
         </motion.div>
 
         <motion.div className={styles.cardContent} variants={fadeInUp}>

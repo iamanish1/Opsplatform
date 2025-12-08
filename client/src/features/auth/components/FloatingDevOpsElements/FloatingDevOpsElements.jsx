@@ -44,7 +44,7 @@ const FloatingDevOpsElements = memo(() => {
 
   const floatingAnimation = prefersReducedMotion ? {} : {
     y: [0, -30, 0],
-    opacity: [0.15, 0.25, 0.15],
+    opacity: [0.4, 0.6, 0.4],
     rotate: [0, 5, -5, 0]
   };
 
@@ -62,9 +62,9 @@ const FloatingDevOpsElements = memo(() => {
               top: `calc(50% + ${position.y})`,
             }}
             initial={{ opacity: 0, scale: 0 }}
-            animate={prefersReducedMotion ? { opacity: 0.2 } : {
+            animate={prefersReducedMotion ? { opacity: 0.5 } : {
               ...floatingAnimation,
-              opacity: [0.15, 0.25, 0.15],
+              opacity: [0.4, 0.6, 0.4],
             }}
             transition={{
               delay: snippet.delay,
@@ -121,9 +121,9 @@ const FloatingDevOpsElements = memo(() => {
               top: `calc(50% + ${position.y})`,
             }}
             initial={{ opacity: 0, scale: 0 }}
-            animate={prefersReducedMotion ? { opacity: 0.2 } : {
+            animate={prefersReducedMotion ? { opacity: 0.6 } : {
               ...floatingAnimation,
-              opacity: [0.15, 0.25, 0.15],
+              opacity: [0.5, 0.7, 0.5],
               scale: [1, 1.1, 1],
             }}
             transition={{
