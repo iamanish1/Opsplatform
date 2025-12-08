@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, memo, lazy, Suspense } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import { Link } from 'react-router-dom';
 import { Zap, ArrowDown, Users, Building2, AlertCircle } from 'lucide-react';
 import CTAButton from '../CTAButton/CTAButton';
 import HeroWorkflow from '../HeroWorkflow/HeroWorkflow';
@@ -146,7 +147,7 @@ const LandingPage = () => {
             <span className={styles.logoText}>DevHubs</span>
           </div>
           <div className={styles.headerActions}>
-            <button className={styles.headerLink}>For Companies</button>
+            <Link to="/auth/company/login" className={styles.headerLink}>For Companies</Link>
             <CTAButton text="Get Started" variant="secondary" to="/auth/student" />
           </div>
         </motion.header>
@@ -362,7 +363,7 @@ const LandingPage = () => {
               transition={{ duration: 0.5, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
             >
               <CTAButton text="Start Building" variant="primary" to="/auth/student" />
-              <CTAButton text="For Companies" variant="secondary" />
+              <CTAButton text="For Companies" variant="secondary" to="/auth/company/login" />
             </motion.div>
             <motion.p
               className={styles.ctaFooter}
