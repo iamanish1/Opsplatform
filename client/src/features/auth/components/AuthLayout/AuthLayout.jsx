@@ -3,6 +3,8 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Zap } from 'lucide-react';
 import useReducedMotion from '../../../../hooks/useReducedMotion';
+import MushroomMascot from '../MushroomMascot/MushroomMascot';
+import FloatingDevOpsElements from '../FloatingDevOpsElements/FloatingDevOpsElements';
 import styles from './AuthLayout.module.css';
 
 const AuthLayout = memo(({ children, showBackToHome = true }) => {
@@ -43,6 +45,31 @@ const AuthLayout = memo(({ children, showBackToHome = true }) => {
           );
         })}
       </div>
+
+      {/* Mushroom Mascots */}
+      <MushroomMascot 
+        size="medium" 
+        position={{ top: '15%', left: '8%' }}
+        delay={0.2}
+      />
+      <MushroomMascot 
+        size="small" 
+        position={{ top: '70%', right: '10%' }}
+        delay={0.5}
+      />
+      <MushroomMascot 
+        size="small" 
+        position={{ top: '40%', right: '5%' }}
+        delay={0.8}
+      />
+      <MushroomMascot 
+        size="medium" 
+        position={{ bottom: '20%', left: '5%' }}
+        delay={1.1}
+      />
+
+      {/* Floating DevOps Elements */}
+      <FloatingDevOpsElements />
 
       {/* Header */}
       {showBackToHome && (

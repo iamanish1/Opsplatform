@@ -3,39 +3,111 @@
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 24px;
-  padding: 48px 40px;
+  border-radius: 20px;
+  padding: 32px 36px;
   width: 100%;
+  max-width: 520px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+/* Trust Score Badge */
+.trustScoreBadge {
+  position: absolute;
+  top: -20px;
+  right: 24px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(236, 72, 153, 0.2));
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  padding: 12px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 80px;
+  z-index: 10;
+}
+
+.trustScoreValue {
+  font-size: 24px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+
+.trustScoreLabel {
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.trustScoreBar {
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 4px;
+  position: relative;
+}
+
+.trustScoreBar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 87%;
+  height: 100%;
+  background: linear-gradient(90deg, #8b5cf6, #ec4899);
+  border-radius: 2px;
 }
 
 .cardHeader {
   text-align: center;
-  margin-bottom: 40px;
+  margin-bottom: 28px;
+  margin-top: 20px;
 }
 
 .iconWrapper {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 64px;
-  height: 64px;
+  width: 56px;
+  height: 56px;
   background: rgba(139, 92, 246, 0.1);
-  border-radius: 16px;
-  margin-bottom: 24px;
+  border-radius: 14px;
+  margin-bottom: 20px;
   border: 2px solid rgba(139, 92, 246, 0.2);
+  position: relative;
 }
 
 .iconWrapper svg {
   color: #8b5cf6;
+  z-index: 1;
+  position: relative;
+}
+
+.iconPulse {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border-radius: 14px;
+  background: rgba(139, 92, 246, 0.3);
+  z-index: 0;
 }
 
 .cardTitle {
-  font-size: clamp(28px, 4vw, 36px);
+  font-size: clamp(24px, 3.5vw, 32px);
   font-weight: 800;
   line-height: 1.2;
   letter-spacing: -0.02em;
-  margin: 0 0 16px 0;
+  margin: 0 0 12px 0;
   color: #ffffff;
 }
 
@@ -44,26 +116,112 @@
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  display: inline-block;
 }
 
 .cardDescription {
-  font-size: 16px;
+  font-size: 14px;
   color: rgba(255, 255, 255, 0.7);
   line-height: 1.6;
   margin: 0;
-  max-width: 400px;
+  max-width: 420px;
   margin-left: auto;
   margin-right: auto;
 }
 
 .cardContent {
-  margin-bottom: 32px;
+  margin-bottom: 24px;
+}
+
+.quickStats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 20px;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.statItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.statNumber {
+  font-size: 20px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #ffffff, rgba(255, 255, 255, 0.8));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+
+.statLabel {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+.statDivider {
+  width: 1px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Benefits Grid */
+.benefitsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.benefitCard {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.benefitCard:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.benefitIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.benefitText {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+  line-height: 1.3;
 }
 
 .cardFooter {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 16px;
   align-items: center;
 }
 
@@ -73,7 +231,7 @@
   width: 100%;
   gap: 16px;
   color: rgba(255, 255, 255, 0.4);
-  font-size: 14px;
+  font-size: 13px;
 }
 
 .divider::before,
@@ -90,9 +248,9 @@
   gap: 8px;
   color: rgba(255, 255, 255, 0.8);
   text-decoration: none;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
-  padding: 12px 20px;
+  padding: 10px 18px;
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 10px;
@@ -113,7 +271,7 @@
   gap: 6px;
   color: rgba(255, 255, 255, 0.6);
   text-decoration: none;
-  font-size: 14px;
+  font-size: 13px;
   transition: color 0.3s ease;
 }
 
@@ -121,90 +279,82 @@
   color: rgba(255, 255, 255, 0.9);
 }
 
-.benefits {
-  margin-top: 40px;
-  padding-top: 32px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.benefitsTitle {
-  font-size: 16px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.9);
-  margin: 0 0 16px 0;
-}
-
-.benefitsList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.benefitsList li {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.7);
-  padding-left: 24px;
-  position: relative;
-}
-
-.benefitsList li::before {
-  content: '✓';
-  position: absolute;
-  left: 0;
-  color: #10b981;
-  font-weight: 700;
-  font-size: 16px;
-}
-
 /* Responsive */
 @media (max-width: 768px) {
   .studentAuthCard {
-    padding: 36px 28px;
-    border-radius: 20px;
+    padding: 28px 24px;
+    border-radius: 18px;
+    max-width: 100%;
+  }
+
+  .trustScoreBadge {
+    top: -16px;
+    right: 20px;
+    padding: 10px 14px;
+    min-width: 70px;
+  }
+
+  .trustScoreValue {
+    font-size: 20px;
   }
 
   .cardTitle {
-    font-size: 28px;
+    font-size: 24px;
   }
 
   .cardDescription {
-    font-size: 15px;
+    font-size: 13px;
+  }
+
+  .benefitsGrid {
+    grid-template-columns: 1fr;
+    gap: 10px;
   }
 }
 
 @media (max-width: 480px) {
   .studentAuthCard {
-    padding: 32px 24px;
+    padding: 24px 20px;
     border-radius: 16px;
   }
 
+  .trustScoreBadge {
+    position: relative;
+    top: 0;
+    right: 0;
+    margin: 0 auto 20px auto;
+    width: fit-content;
+  }
+
   .iconWrapper {
-    width: 56px;
-    height: 56px;
-    margin-bottom: 20px;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 16px;
   }
 
   .cardTitle {
-    font-size: 24px;
-    margin-bottom: 12px;
+    font-size: 22px;
+    margin-bottom: 10px;
   }
 
   .cardDescription {
-    font-size: 14px;
+    font-size: 12px;
   }
 
   .cardContent {
-    margin-bottom: 28px;
+    margin-bottom: 20px;
   }
 
-  .benefits {
-    margin-top: 32px;
-    padding-top: 24px;
+  .quickStats {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .statNumber {
+    font-size: 18px;
+  }
+
+  .statLabel {
+    font-size: 10px;
   }
 }

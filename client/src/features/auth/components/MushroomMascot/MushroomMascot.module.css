@@ -1,0 +1,38 @@
+.mushroomContainer {
+  position: absolute;
+  pointer-events: none;
+  z-index: 1;
+  will-change: transform;
+}
+
+.mushroomSvg {
+  filter: drop-shadow(0 0 20px rgba(139, 92, 246, 0.3));
+  will-change: transform;
+}
+
+.mushroomCap {
+  filter: drop-shadow(0 4px 8px rgba(139, 92, 246, 0.2));
+}
+
+.mushroomStem {
+  filter: drop-shadow(0 2px 4px rgba(255, 255, 255, 0.1));
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .mushroomContainer {
+    opacity: 0.6;
+  }
+}
+
+@media (max-width: 480px) {
+  .mushroomContainer {
+    opacity: 0.4;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mushroomSvg {
+    animation: none;
+  }
+}
