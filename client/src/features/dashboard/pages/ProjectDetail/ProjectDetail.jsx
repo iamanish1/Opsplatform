@@ -39,6 +39,7 @@ const ProjectDetail = memo(() => {
   const [starting, setStarting] = useState(false);
   const [error, setError] = useState(null);
   const [isLocked, setIsLocked] = useState(false);
+  const [repoUrl, setRepoUrl] = useState('');
 
   useEffect(() => {
     fetchProjectDetails();
@@ -68,11 +69,32 @@ const ProjectDetail = memo(() => {
   const handleStartProject = async () => {
     if (!project || isLocked) return;
 
+    // Validate repo URL
+    if (!repoUrl || !repoUrl.trim()) {
+      setError('Please provide a GitHub repository URL');
+      return;
+    }
+
+    // Validate GitHub URL format
+    const trimmedRepoUrl = repoUrl.trim();
+    if (!trimmedRepoUrl.startsWith('https://github.com/')) {
+      setError('Repository URL must be a valid GitHub URL (e.g., https://github.com/username/repo)');
+      return;
+    }
+
     try {
       setStarting(true);
-      await startProject(id);
-      // Refresh project data to get updated status
-      await fetchProjectDetails();
+      setError(null);
+      const result = await startProject(id, trimmedRepoUrl);
+      
+      // Redirect to submission detail page after successful start
+      if (result && result.submissionId) {
+        navigate(`/dashboard/submissions/${result.submissionId}`);
+      } else {
+        // Fallback: refresh project data if no submissionId in response
+        await fetchProjectDetails();
+        setRepoUrl('');
+      }
     } catch (err) {
       console.error('Error starting project:', err);
       setError(err.message || 'Failed to start project');
@@ -338,13 +360,30 @@ const ProjectDetail = memo(() => {
                     <div className={styles.actionText}>
                       <h3 className={styles.actionTitle}>Ready to Start?</h3>
                       <p className={styles.actionDescription}>
-                        Begin working on this project to build your DevOps portfolio and showcase
-                        your skills.
+                        Enter your GitHub repository URL to begin working on this project and build your DevOps portfolio.
                       </p>
                     </div>
+                    <div className={styles.repoUrlInputContainer}>
+                      <input
+                        type="text"
+                        placeholder="https://github.com/username/repository"
+                        value={repoUrl}
+                        onChange={(e) => {
+                          setRepoUrl(e.target.value);
+                          setError(null);
+                        }}
+                        className={styles.repoUrlInput}
+                        disabled={starting}
+                      />
+                    </div>
+                    {error && (
+                      <div className={styles.errorMessage}>
+                        {error}
+                      </div>
+                    )}
                     <button
                       onClick={handleStartProject}
-                      disabled={starting}
+                      disabled={starting || !repoUrl.trim()}
                       className={styles.startButton}
                     >
                       {starting ? (

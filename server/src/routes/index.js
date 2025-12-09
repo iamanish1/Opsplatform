@@ -56,6 +56,7 @@ const userRoutes = require('./user.routes');
 const lessonsRoutes = require('./lessons.routes');
 const projectRoutes = require('./project.routes');
 const submissionRoutes = require('./submission.routes');
+const taskProgressRoutes = require('./taskProgress.routes');
 const scoringRoutes = require('./scoring.routes');
 const portfolioRoutes = require('./portfolio.routes');
 const companyRoutes = require('./company.routes');
@@ -70,6 +71,7 @@ router.use('/user', userRoutes);
 router.use('/lessons', lessonsRoutes);
 router.use('/projects', projectRoutes);
 router.use('/submissions', submissionRoutes);
+router.use('/submissions', taskProgressRoutes); // Task progress routes (nested under submissions)
 router.use('/internal/score', scoringRoutes);
 router.use('/portfolios', portfolioRoutes);
 router.use('/company', companyRoutes);

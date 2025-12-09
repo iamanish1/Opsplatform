@@ -8,6 +8,13 @@ const { startSubmissionValidation } = require('../dto/submission.start.dto');
 const { projectIdValidation } = require('../dto/project.dto');
 
 /**
+ * GET /api/projects
+ * Get all projects with user's submission status
+ * Auth: Required
+ */
+router.get('/', authenticate, projectController.getProjects);
+
+/**
  * GET /api/projects/:projectId
  * Get project details
  * Auth: Required

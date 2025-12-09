@@ -2,6 +2,7 @@ const submissionRepo = require('../repositories/submission.repo');
 const projectRepo = require('../repositories/project.repo');
 const projectService = require('./project.service');
 const userRepo = require('../repositories/user.repo');
+const taskProgressService = require('./taskProgress.service');
 
 /**
  * Validate repository URL format
@@ -88,6 +89,15 @@ async function startSubmission(userId, projectId, repoUrl) {
   // Create new submission
   const submission = await submissionRepo.create(userId, projectId, repoUrl);
   
+  // Initialize task progress records for this submission
+  try {
+    await taskProgressService.initializeTasks(submission.id);
+  } catch (error) {
+    // Log error but don't fail submission creation
+    // Task progress initialization can be retried later
+    console.error('Failed to initialize task progress:', error);
+  }
+  
   // Update user onboarding step to 3
   await userRepo.update(userId, { onboardingStep: 3 });
   
@@ -143,20 +153,95 @@ async function getSubmission(submissionId, userId) {
   return {
     id: submission.id,
     projectId: submission.projectId,
+    project: submission.project ? {
+      id: submission.project.id,
+      title: submission.project.title,
+      description: submission.project.description,
+    } : null,
     repoUrl: submission.repoUrl,
     prNumber: submission.prNumber,
     status: submission.status,
     latestReview: latestReview,
     score: submission.score ? {
       codeQuality: submission.score.codeQuality,
+      problemSolving: submission.score.problemSolving,
+      bugRisk: submission.score.bugRisk,
       devopsExecution: submission.score.devopsExecution,
-      reliability: submission.score.reliability,
-      deliverySpeed: submission.score.deliverySpeed,
+      optimization: submission.score.optimization,
+      documentation: submission.score.documentation,
+      gitMaturity: submission.score.gitMaturity,
       collaboration: submission.score.collaboration,
+      deliverySpeed: submission.score.deliverySpeed,
+      security: submission.score.security,
+      reliability: submission.score.reliability,
       totalScore: submission.score.totalScore,
+      badge: submission.score.badge,
     } : null,
     createdAt: submission.createdAt,
     updatedAt: submission.updatedAt,
+  };
+}
+
+/**
+ * Submit project for review (all tasks must be complete)
+ * @param {string} submissionId - Submission ID
+ * @param {string} userId - User ID (for ownership verification)
+ * @returns {Promise<Object>} Submission result with updated status
+ */
+async function submitForReview(submissionId, userId) {
+  // Verify submission exists and user owns it
+  const submission = await submissionRepo.findById(submissionId);
+  
+  if (!submission) {
+    const error = new Error('Submission not found');
+    error.statusCode = 404;
+    error.code = 'SUBMISSION_NOT_FOUND';
+    throw error;
+  }
+
+  if (submission.userId !== userId) {
+    const error = new Error('Unauthorized access to submission');
+    error.statusCode = 403;
+    error.code = 'UNAUTHORIZED';
+    throw error;
+  }
+
+  // Check if already submitted or reviewed
+  if (submission.status === 'SUBMITTED' || submission.status === 'REVIEWED') {
+    return {
+      submissionId: submission.id,
+      status: submission.status,
+      message: submission.status === 'REVIEWED' 
+        ? 'Project has already been reviewed' 
+        : 'Project is already submitted for review',
+    };
+  }
+
+  // Validate all tasks are complete
+  const allTasksComplete = await taskProgressService.validateAllTasksComplete(submissionId, userId);
+  
+  if (!allTasksComplete) {
+    const error = new Error('All tasks must be completed before submitting for review');
+    error.statusCode = 400;
+    error.code = 'TASKS_INCOMPLETE';
+    throw error;
+  }
+
+  // Update status to SUBMITTED
+  await submissionRepo.updateStatus(submissionId, 'SUBMITTED');
+
+  // TODO: Trigger AI review process here
+  // This will be implemented later to:
+  // 1. Analyze the repository
+  // 2. Run code quality checks
+  // 3. Generate scores
+  // 4. Create portfolio
+  // 5. Generate certificate
+
+  return {
+    submissionId: submission.id,
+    status: 'SUBMITTED',
+    message: 'Project submitted for review successfully. Your project will be reviewed by our AI engine.',
   };
 }
 
@@ -178,5 +263,6 @@ function getBadgeFromScore(totalScore) {
 module.exports = {
   startSubmission,
   getSubmission,
+  submitForReview,
 };
 

@@ -209,6 +209,28 @@ async function attachScore(submissionId, scoreId) {
   });
 }
 
+/**
+ * Find all submissions for a user
+ * @param {string} userId - User ID
+ * @returns {Promise<Array>} Array of submissions with project info
+ */
+async function findByUserId(userId) {
+  return prisma.submission.findMany({
+    where: {
+      userId,
+    },
+    select: {
+      id: true,
+      projectId: true,
+      status: true,
+      repoUrl: true,
+      prNumber: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+}
+
 module.exports = {
   findByUserAndProject,
   create,
@@ -220,5 +242,6 @@ module.exports = {
   attachPR,
   updateStatus,
   attachScore,
+  findByUserId,
 };
 

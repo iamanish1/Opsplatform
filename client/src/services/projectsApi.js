@@ -7,21 +7,10 @@ import { get, post } from './api';
 
 /**
  * Get all projects with user's submission status
- * Note: This endpoint will be implemented in the backend
- * For now, returns empty array - ready for backend integration
  * @returns {Promise<Array>} Array of projects with submission status
  */
 export const getProjects = async () => {
-  // TODO: Update endpoint when backend implements GET /api/projects
-  // For now, return empty array to prevent errors
-  try {
-    // When backend is ready, uncomment:
-    // return get('/projects');
-    return [];
-  } catch (error) {
-    console.error('Error fetching projects:', error);
-    throw error;
-  }
+  return get('/projects');
 };
 
 /**

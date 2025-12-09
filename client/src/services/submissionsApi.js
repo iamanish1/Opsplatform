@@ -3,7 +3,7 @@
  * Handles all submission-related API calls
  */
 
-import { get } from './api';
+import { get, post } from './api';
 
 /**
  * Get all submissions for the current user
@@ -33,7 +33,17 @@ export const getSubmissionDetails = async (submissionId) => {
   return get(`/submissions/${submissionId}`);
 };
 
+/**
+ * Submit project for review (all tasks must be complete)
+ * @param {string} submissionId - Submission ID
+ * @returns {Promise<Object>} Submission result with updated status
+ */
+export const submitForReview = async (submissionId) => {
+  return post(`/submissions/${submissionId}/submit`);
+};
+
 export default {
   getSubmissions,
   getSubmissionDetails,
+  submitForReview,
 };

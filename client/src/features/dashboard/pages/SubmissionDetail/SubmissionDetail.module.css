@@ -139,6 +139,14 @@
   transform: translateY(-2px);
 }
 
+.headerSubtitle {
+  margin: 0.5rem 0 0 0;
+  font-size: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.6;
+  max-width: 800px;
+}
+
 /* Content Section */
 .content {
   display: flex;
@@ -401,6 +409,298 @@
 }
 
 /* Info Card */
+/* Tasks Card */
+.tasksCard {
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.tasksHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.tasksIcon {
+  color: #8b5cf6;
+  flex-shrink: 0;
+  margin-top: 0.25rem;
+}
+
+.tasksHeaderContent {
+  flex: 1;
+}
+
+.tasksSubtitle {
+  margin: 0.5rem 0 0 0;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.progressBarContainer {
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.progressBar {
+  flex: 1;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  overflow: hidden;
+  position: relative;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #8b5cf6, #ec4899);
+  border-radius: 6px;
+  transition: width 0.3s ease;
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
+}
+
+.progressPercentage {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #ffffff;
+  min-width: 50px;
+  text-align: right;
+}
+
+.tasksList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.taskItem {
+  display: flex;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.taskItem:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.taskItem.taskCompleted {
+  background: rgba(16, 185, 129, 0.05);
+  border-color: rgba(16, 185, 129, 0.2);
+}
+
+.taskCheckbox {
+  flex-shrink: 0;
+}
+
+.checkboxButton {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+
+.checkboxButton:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(139, 92, 246, 0.5);
+  transform: scale(1.05);
+}
+
+.checkboxButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.checkboxEmpty {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.checkboxIcon {
+  color: #10b981;
+}
+
+.checkboxLoader {
+  animation: spin 1s linear infinite;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.taskContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.taskHeader {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.taskNumber {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.taskPoints {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.25rem 0.625rem;
+  background: rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: 4px;
+  color: #a78bfa;
+}
+
+.taskTitle {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.taskDescription {
+  margin: 0;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.6;
+}
+
+.taskCompletedAt {
+  font-size: 0.75rem;
+  color: rgba(16, 185, 129, 0.8);
+  font-weight: 500;
+  margin-top: 0.25rem;
+}
+
+.noTasksMessage {
+  padding: 3rem 2rem;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.noTasksMessage p {
+  margin: 0.5rem 0;
+  font-size: 1rem;
+}
+
+.noTasksSubtext {
+  font-size: 0.9rem !important;
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+/* Submit Section */
+.submitSection {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.submitInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.submitMessage {
+  margin: 0;
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.6;
+}
+
+.submitButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  border: none;
+  border-radius: 12px;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+
+.submitButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px rgba(139, 92, 246, 0.4);
+}
+
+.submitButton:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.submittedMessage {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.submittedIcon {
+  color: #fbbf24;
+  flex-shrink: 0;
+  margin-top: 0.25rem;
+}
+
+.submittedTitle {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.submittedText {
+  margin: 0;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.6;
+}
+
 .infoCard {
   padding: 2rem;
 }
@@ -517,6 +817,34 @@
 
   .sectionTitle {
     font-size: 1.25rem;
+  }
+
+  .tasksCard,
+  .scoreCard,
+  .breakdownCard,
+  .reviewCard,
+  .infoCard {
+    padding: 1.5rem;
+  }
+
+  .taskItem {
+    padding: 1rem;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .taskCheckbox {
+    align-self: flex-start;
+  }
+
+  .progressBarContainer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .progressPercentage {
+    text-align: left;
   }
 
   .totalScore {

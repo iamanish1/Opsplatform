@@ -1,4 +1,4 @@
-import { memo, useState, useEffect } from 'react';
+import { memo, useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -13,11 +13,14 @@ import {
   Award,
   FileText,
   AlertCircle,
+  ListChecks,
+  Check,
 } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import GlassCard from '../../../../components/ui/GlassCard/GlassCard';
 import { fadeInUp, staggerContainer } from '../../../../utils/animations';
-import { getSubmissionDetails } from '../../../../services/submissionsApi';
+import { getSubmissionDetails, submitForReview } from '../../../../services/submissionsApi';
+import { getSubmissionTasks, updateTaskStatus } from '../../../../services/taskProgressApi';
 import styles from './SubmissionDetail.module.css';
 
 /**
@@ -35,24 +38,189 @@ const SubmissionDetail = memo(() => {
   const [submission, setSubmission] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [tasks, setTasks] = useState([]);
+  const [progress, setProgress] = useState({ completed: 0, total: 0, percentage: 0 });
+  const [loadingTasks, setLoadingTasks] = useState(true);
+  const [updatingTask, setUpdatingTask] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
 
-  useEffect(() => {
-    fetchSubmissionDetails();
-  }, [id]);
+  const fetchSubmissionDetails = useCallback(async () => {
+    if (!id) {
+      setError('Submission ID is required');
+      setLoading(false);
+      return;
+    }
 
-  const fetchSubmissionDetails = async () => {
     try {
       setLoading(true);
       setError(null);
+      console.log('Fetching submission details for ID:', id);
       const data = await getSubmissionDetails(id);
+      console.log('Submission data received:', data);
+      
+      if (!data || typeof data !== 'object') {
+        throw new Error('Invalid submission data received');
+      }
+      
       setSubmission(data);
     } catch (err) {
       console.error('Error fetching submission details:', err);
-      setError(err.message || 'Failed to load submission');
+      const errorMessage = err.message || 'Failed to load submission';
+      setError(errorMessage);
+      setSubmission(null);
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  const fetchTasks = useCallback(async () => {
+    if (!id) {
+      setLoadingTasks(false);
+      return;
+    }
+
+    try {
+      setLoadingTasks(true);
+      console.log('Fetching tasks for submission ID:', id);
+      const data = await getSubmissionTasks(id);
+      console.log('Tasks data received:', data);
+      
+      const tasksArray = Array.isArray(data?.tasks) ? data.tasks : [];
+      setTasks(tasksArray);
+      
+      // Handle progress - backend returns progress as an object with completed, total, percentage
+      if (data?.progress && typeof data.progress === 'object' && !Array.isArray(data.progress)) {
+        // Backend returns progress as an object: { completed, total, percentage }
+        setProgress({
+          completed: Number(data.progress.completed) || 0,
+          total: Number(data.progress.total) || 0,
+          percentage: Number(data.progress.percentage) || 0,
+        });
+      } else {
+        // Fallback: calculate from tasks if progress object not available
+        const completed = tasksArray.filter(t => t.completed === true).length;
+        const total = tasksArray.length;
+        setProgress({
+          completed,
+          total,
+          percentage: total > 0 ? Math.round((completed / total) * 100) : 0,
+        });
+      }
+    } catch (err) {
+      console.error('Error fetching tasks:', err);
+      // Reset to safe defaults on error
+      setTasks([]);
+      setProgress({ completed: 0, total: 0, percentage: 0 });
+    } finally {
+      setLoadingTasks(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    fetchSubmissionDetails();
+    fetchTasks();
+  }, [id, fetchSubmissionDetails, fetchTasks]);
+
+  const handleTaskToggle = useCallback(async (taskId, currentStatus) => {
+    const newStatus = !currentStatus;
+    
+    // Optimistic update for tasks
+    setTasks((prevTasks) =>
+      prevTasks.map((task) =>
+        task.id === taskId
+          ? { ...task, completed: newStatus, completedAt: newStatus ? new Date() : null }
+          : task
+      )
+    );
+
+    // Optimistic update for progress
+    setProgress((prevProgress) => {
+      const newCompleted = newStatus 
+        ? prevProgress.completed + 1 
+        : prevProgress.completed - 1;
+      const total = prevProgress.total;
+      return {
+        completed: newCompleted,
+        total,
+        percentage: total > 0 ? Math.round((newCompleted / total) * 100) : 0,
+      };
+    });
+
+    setUpdatingTask(taskId);
+
+    try {
+      await updateTaskStatus(id, taskId, newStatus);
+      // Success - optimistic update already applied, no need to update again
+    } catch (err) {
+      console.error('Error updating task status:', err);
+      // Revert optimistic update for tasks
+      setTasks((prevTasks) =>
+        prevTasks.map((task) =>
+          task.id === taskId
+            ? { ...task, completed: currentStatus, completedAt: null }
+            : task
+        )
+      );
+      // Revert optimistic update for progress
+      setProgress((prevProgress) => {
+        const revertedCompleted = currentStatus 
+          ? prevProgress.completed + 1 
+          : prevProgress.completed - 1;
+        const total = prevProgress.total;
+        return {
+          completed: revertedCompleted,
+          total,
+          percentage: total > 0 ? Math.round((revertedCompleted / total) * 100) : 0,
+        };
+      });
+      // Show error message
+      alert('Failed to update task status. Please try again.');
+    } finally {
+      setUpdatingTask(null);
+    }
+  }, [id]);
+
+  const handleSubmitForReview = useCallback(async () => {
+    // Check if all tasks are complete
+    const completedCount = progress.completed || 0;
+    const totalCount = progress.total || 0;
+    
+    if (completedCount !== totalCount || totalCount === 0) {
+      alert('Please complete all tasks before submitting for review.');
+      return;
+    }
+
+    // Confirm submission
+    const confirmed = window.confirm(
+      'Are you sure you want to submit this project for review? Make sure all tasks are completed and your code is pushed to the repository.'
+    );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      const result = await submitForReview(id);
+      
+      // Refresh submission data to get updated status
+      await fetchSubmissionDetails();
+      
+      // Show success message
+      alert(result.message || 'Project submitted for review successfully!');
+    } catch (err) {
+      console.error('Error submitting for review:', err);
+      const errorMessage = err.message || 'Failed to submit project for review';
+      
+      if (errorMessage.includes('tasks')) {
+        alert(errorMessage);
+      } else {
+        alert(errorMessage);
+      }
+    } finally {
+      setSubmitting(false);
+    }
+  }, [id, progress.completed, progress.total, fetchSubmissionDetails]);
 
   const getStatusConfig = () => {
     if (!submission) return null;
@@ -156,6 +324,11 @@ const SubmissionDetail = memo(() => {
                 View Repository
               </a>
             )}
+            {submission.status === 'IN_PROGRESS' && (
+              <p className={styles.headerSubtitle}>
+                Work through the tasks below. Mark each task as complete as you finish implementing it.
+              </p>
+            )}
           </div>
         </motion.div>
 
@@ -166,8 +339,143 @@ const SubmissionDetail = memo(() => {
           initial="hidden"
           animate="visible"
         >
-          {/* Score Overview Card */}
-          {submission.score && (
+          {/* Task Progress Card */}
+          <motion.div variants={fadeInUp}>
+            <GlassCard className={styles.tasksCard}>
+                <div className={styles.tasksHeader}>
+                  <ListChecks size={24} className={styles.tasksIcon} />
+                  <div className={styles.tasksHeaderContent}>
+                    <h2 className={styles.sectionTitle}>Project Tasks</h2>
+                    <p className={styles.tasksSubtitle}>
+                      {loadingTasks 
+                        ? 'Loading tasks...' 
+                        : tasks.length > 0 
+                          ? `${progress.completed} of ${progress.total} tasks completed`
+                          : 'No tasks available'}
+                    </p>
+                  </div>
+                </div>
+                
+                {loadingTasks ? (
+                  <div className={styles.loadingState}>
+                    <Loader2 size={32} className={styles.loader} />
+                    <p>Loading tasks...</p>
+                  </div>
+                ) : tasks.length > 0 ? (
+                  <>
+                    {/* Progress Bar */}
+                    <div className={styles.progressBarContainer}>
+                      <div className={styles.progressBar}>
+                        <motion.div
+                          className={styles.progressFill}
+                          initial={{ width: 0 }}
+                          animate={{ width: `${progress.percentage}%` }}
+                          transition={{ duration: 0.5, ease: 'easeOut' }}
+                        />
+                      </div>
+                      <span className={styles.progressPercentage}>{progress.percentage}%</span>
+                    </div>
+
+                    {/* Tasks List */}
+                    <div className={styles.tasksList}>
+                      {tasks.map((task, index) => (
+                    <div
+                      key={task.id}
+                      className={`${styles.taskItem} ${task.completed ? styles.taskCompleted : ''}`}
+                    >
+                      <div className={styles.taskCheckbox}>
+                        <button
+                          onClick={() => handleTaskToggle(task.id, task.completed)}
+                          disabled={updatingTask === task.id}
+                          className={styles.checkboxButton}
+                          aria-label={task.completed ? 'Mark task as incomplete' : 'Mark task as complete'}
+                        >
+                          {updatingTask === task.id ? (
+                            <Loader2 size={20} className={styles.checkboxLoader} />
+                          ) : task.completed ? (
+                            <CheckCircle2 size={20} className={styles.checkboxIcon} />
+                          ) : (
+                            <div className={styles.checkboxEmpty} />
+                          )}
+                        </button>
+                      </div>
+                      <div className={styles.taskContent}>
+                        <div className={styles.taskHeader}>
+                          <span className={styles.taskNumber}>Task {index + 1}</span>
+                          {task.points > 0 && (
+                            <span className={styles.taskPoints}>{task.points} points</span>
+                          )}
+                        </div>
+                        <h3 className={styles.taskTitle}>{task.title}</h3>
+                        {task.description && (
+                          <p className={styles.taskDescription}>{task.description}</p>
+                        )}
+                        {task.completed && task.completedAt && (
+                          <span className={styles.taskCompletedAt}>
+                            Completed {new Date(task.completedAt).toLocaleDateString()}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <div className={styles.noTasksMessage}>
+                    <p>No tasks have been defined for this project yet.</p>
+                    <p className={styles.noTasksSubtext}>
+                      Tasks will appear here once they are configured for this project.
+                    </p>
+                  </div>
+                )}
+
+                {/* Submit for Review Button */}
+                {submission.status === 'IN_PROGRESS' && (
+                  <div className={styles.submitSection}>
+                    <div className={styles.submitInfo}>
+                      <p className={styles.submitMessage}>
+                        {progress.completed === progress.total && progress.total > 0
+                          ? 'All tasks completed! Ready to submit for review.'
+                          : `Complete ${progress.total - progress.completed} more task${progress.total - progress.completed === 1 ? '' : 's'} to submit for review.`}
+                      </p>
+                    </div>
+                    <button
+                      onClick={handleSubmitForReview}
+                      disabled={submitting || progress.completed !== progress.total || progress.total === 0}
+                      className={styles.submitButton}
+                    >
+                      {submitting ? (
+                        <>
+                          <Loader2 size={20} className={styles.buttonLoader} />
+                          Submitting...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 size={20} />
+                          Submit for Review
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
+
+                {/* Submitted Status Message */}
+                {submission.status === 'SUBMITTED' && (
+                  <div className={styles.submittedMessage}>
+                    <Clock size={24} className={styles.submittedIcon} />
+                    <div>
+                      <h3 className={styles.submittedTitle}>Project Submitted for Review</h3>
+                      <p className={styles.submittedText}>
+                        Your project is currently being reviewed by our AI engine. You'll receive a notification once the review is complete.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </GlassCard>
+            </motion.div>
+
+          {/* Score Overview Card - Only show when REVIEWED */}
+          {submission.status === 'REVIEWED' && submission.score && (
             <motion.div variants={fadeInUp}>
               <GlassCard className={styles.scoreCard}>
                 <div className={styles.scoreHeader}>
@@ -189,8 +497,8 @@ const SubmissionDetail = memo(() => {
             </motion.div>
           )}
 
-          {/* Score Breakdown */}
-          {submission.score && (
+          {/* Score Breakdown - Only show when REVIEWED */}
+          {submission.status === 'REVIEWED' && submission.score && (
             <motion.div variants={fadeInUp}>
               <GlassCard className={styles.breakdownCard}>
                 <h2 className={styles.sectionTitle}>Score Breakdown</h2>
@@ -225,8 +533,8 @@ const SubmissionDetail = memo(() => {
             </motion.div>
           )}
 
-          {/* Latest Review */}
-          {submission.latestReview && (
+          {/* Latest Review - Only show when REVIEWED */}
+          {submission.status === 'REVIEWED' && submission.latestReview && (
             <motion.div variants={fadeInUp}>
               <GlassCard className={styles.reviewCard}>
                 <h2 className={styles.sectionTitle}>Latest Review</h2>

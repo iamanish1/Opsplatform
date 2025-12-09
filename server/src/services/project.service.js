@@ -1,6 +1,7 @@
 const projectRepo = require('../repositories/project.repo');
 const userRepo = require('../repositories/user.repo');
 const lessonRepo = require('../repositories/lesson.repo');
+const submissionRepo = require('../repositories/submission.repo');
 
 /**
  * Get project details by ID
@@ -82,7 +83,94 @@ async function validateUserEligibility(userId) {
   };
 }
 
+/**
+ * Get all projects with user's submission status and lock status
+ * @param {string} userId - User ID
+ * @returns {Promise<Array>} Array of projects with submission status, lock status, and progress
+ */
+async function getProjectsWithSubmissionStatus(userId) {
+  // Get all projects
+  const projects = await projectRepo.findAll();
+  
+  // Get all user submissions
+  const userSubmissions = await submissionRepo.findByUserId(userId);
+  
+  // Create a map of projectId -> submission for quick lookup
+  const submissionMap = new Map();
+  userSubmissions.forEach((submission) => {
+    submissionMap.set(submission.projectId, submission);
+  });
+  
+  // Check user eligibility once (handle errors gracefully)
+  let isEligible = false;
+  try {
+    const eligibility = await validateUserEligibility(userId);
+    isEligible = eligibility.eligible;
+  } catch (error) {
+    // If user not found or other error, assume not eligible (all projects locked)
+    isEligible = false;
+  }
+  
+  // Merge projects with submission status
+  return projects.map((project) => {
+    const submission = submissionMap.get(project.id);
+    const submissionStatus = submission ? submission.status : 'NOT_STARTED';
+    
+    // Determine lock status
+    const locked = !isEligible;
+    
+    // Calculate progress based on submission status
+    // For now, we'll use a simple mapping:
+    // NOT_STARTED: 0%, IN_PROGRESS: 25%, SUBMITTED: 75%, REVIEWED: 100%
+    let progress = 0;
+    switch (submissionStatus) {
+      case 'REVIEWED':
+        progress = 100;
+        break;
+      case 'SUBMITTED':
+        progress = 75;
+        break;
+      case 'IN_PROGRESS':
+        progress = 25;
+        break;
+      case 'NOT_STARTED':
+      default:
+        progress = 0;
+        break;
+    }
+    
+    // Parse tags if they exist
+    let tags = [];
+    if (project.tags) {
+      try {
+        tags = typeof project.tags === 'string' 
+          ? JSON.parse(project.tags) 
+          : project.tags;
+        if (!Array.isArray(tags)) {
+          tags = [];
+        }
+      } catch {
+        tags = [];
+      }
+    }
+    
+    return {
+      id: project.id,
+      title: project.title,
+      description: project.description,
+      starterRepo: project.starterRepo,
+      tags: tags,
+      submissionStatus: submissionStatus,
+      locked: locked,
+      progress: progress,
+      submissionId: submission ? submission.id : null,
+      createdAt: project.createdAt,
+    };
+  });
+}
+
 module.exports = {
   getProject,
   validateUserEligibility,
+  getProjectsWithSubmissionStatus,
 };
