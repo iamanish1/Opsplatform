@@ -1,14 +1,24 @@
 import { memo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, User, Settings, LogOut, Menu, X, ChevronDown } from 'lucide-react';
 import { fadeIn, scaleIn } from '../../../../utils/animations';
 import useReducedMotion from '../../../../hooks/useReducedMotion';
+import { useAuth } from '../../../../contexts/AuthContext';
 import styles from './DashboardHeader.module.css';
 
 const DashboardHeader = memo(({ onMenuClick, sidebarOpen, onSidebarToggle }) => {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const prefersReducedMotion = useReducedMotion();
+  const { logout, user } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/auth/student');
+    setUserMenuOpen(false);
+  };
 
   const notifications = [
     { id: 1, message: 'Your PR #124 has been reviewed', time: '5m ago', unread: true },
@@ -134,8 +144,8 @@ const DashboardHeader = memo(({ onMenuClick, sidebarOpen, onSidebarToggle }) => 
                       <User size={24} />
                     </div>
                     <div className={styles.userMenuInfo}>
-                      <p className={styles.userMenuName}>John Doe</p>
-                      <p className={styles.userMenuEmail}>john@example.com</p>
+                      <p className={styles.userMenuName}>{user?.name || 'User'}</p>
+                      <p className={styles.userMenuEmail}>{user?.email || user?.githubUsername || 'user@example.com'}</p>
                     </div>
                   </div>
                   <div className={styles.userMenuDivider} />
@@ -149,7 +159,10 @@ const DashboardHeader = memo(({ onMenuClick, sidebarOpen, onSidebarToggle }) => 
                       <span>Settings</span>
                     </button>
                     <div className={styles.userMenuDivider} />
-                    <button className={`${styles.userMenuItem} ${styles.logoutItem}`}>
+                    <button 
+                      className={`${styles.userMenuItem} ${styles.logoutItem}`}
+                      onClick={handleLogout}
+                    >
                       <LogOut size={16} />
                       <span>Logout</span>
                     </button>

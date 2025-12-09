@@ -96,5 +96,8 @@ module.exports = {
     fromEmail: process.env.EMAIL_FROM || 'notifications@devhubs.com',
     fromName: process.env.EMAIL_FROM_NAME || 'DevHubs',
   },
+  
+  // Frontend Configuration
+  frontendUrl: process.env.FRONTEND_URL || 'http://localhost:5173',
 };
 

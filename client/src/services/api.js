@@ -3,20 +3,32 @@
  * Handles authentication, error handling, and request configuration
  */
 
+import { getStoredToken, clearAuth } from './authApi';
+
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 
 /**
- * Get authentication token from localStorage
+ * Callback function for handling authentication errors
+ * Set by AuthProvider to handle logout on 401
  */
-const getAuthToken = () => {
-  return localStorage.getItem('token') || localStorage.getItem('authToken');
+let onAuthError = null;
+
+/**
+ * Set callback for authentication errors
+ * @param {Function} callback - Function to call on 401 errors
+ */
+export const setAuthErrorHandler = (callback) => {
+  onAuthError = callback;
 };
 
 /**
  * Make an authenticated API request
+ * @param {string} endpoint - API endpoint
+ * @param {Object} options - Request options
+ * @returns {Promise<Object>} Response data
  */
 const apiRequest = async (endpoint, options = {}) => {
-  const token = getAuthToken();
+  const token = getStoredToken();
   
   const config = {
     ...options,
@@ -27,22 +39,64 @@ const apiRequest = async (endpoint, options = {}) => {
     },
   };
 
+  // Remove Content-Type if body is FormData
+  if (options.body instanceof FormData) {
+    delete config.headers['Content-Type'];
+  }
+
   const url = `${API_BASE_URL}${endpoint}`;
 
   try {
     const response = await fetch(url, config);
     
+    // Handle 401 Unauthorized - token expired or invalid
+    if (response.status === 401) {
+      // Clear authentication data
+      clearAuth();
+      
+      // Call auth error handler if set (e.g., logout from context)
+      if (onAuthError) {
+        onAuthError();
+      }
+      
+      // Throw error with specific message
+      const error = new Error('Authentication required. Please log in again.');
+      error.status = 401;
+      error.code = 'UNAUTHORIZED';
+      throw error;
+    }
+    
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({
         message: `HTTP error! status: ${response.status}`,
       }));
-      throw new Error(errorData.message || errorData.error?.message || 'Request failed');
+      const error = new Error(errorData.message || errorData.error?.message || 'Request failed');
+      error.status = response.status;
+      error.code = errorData.error?.code || 'REQUEST_FAILED';
+      throw error;
     }
 
-    return await response.json();
+    // Handle empty responses
+    const contentType = response.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      return await response.json();
+    }
+    
+    // Return text or empty object for non-JSON responses
+    const text = await response.text();
+    return text ? JSON.parse(text) : {};
   } catch (error) {
+    // Re-throw if it's already our custom error
+    if (error.status || error.code) {
+      throw error;
+    }
+    
+    // Handle network errors
     console.error('API request failed:', error);
-    throw error;
+    const networkError = new Error('Network error. Please check your connection.');
+    networkError.code = 'NETWORK_ERROR';
+    networkError.originalError = error;
+    throw networkError;
   }
 };
 

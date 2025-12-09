@@ -3,23 +3,45 @@ const config = require('../config');
 const userRepo = require('../repositories/user.repo');
 const githubOAuth = require('../utils/github-oauth');
 const githubApp = require('../utils/github-app');
+const redis = require('../config/redis');
 
-// Store state tokens temporarily (in production, use Redis or database)
+// Fallback in-memory store for when Redis is unavailable
 const stateStore = new Map();
+
+// Check if Redis is available
+const isRedisAvailable = async () => {
+  try {
+    await redis.ping();
+    return true;
+  } catch {
+    return false;
+  }
+};
 
 /**
  * Generate OAuth URL with state parameter
  * @returns {Object} { state, oauthUrl }
  */
-function initiateOAuth() {
+async function initiateOAuth() {
   // Generate state token
   const state = githubOAuth.generateState();
   
-  // Store state with timestamp (expires in 10 minutes)
-  stateStore.set(state, {
+  const stateData = {
     timestamp: Date.now(),
-    expiresAt: Date.now() + 10 * 60 * 1000,
-  });
+    expiresAt: Date.now() + 10 * 60 * 1000, // 10 minutes
+  };
+
+  // Try to use Redis, fallback to in-memory store
+  const useRedis = await isRedisAvailable();
+  
+  if (useRedis) {
+    const key = `oauth:state:${state}`;
+    const expiresIn = 10 * 60; // 10 minutes in seconds
+    await redis.setex(key, expiresIn, JSON.stringify(stateData));
+  } else {
+    // Fallback to in-memory store
+    stateStore.set(state, stateData);
+  }
 
   const oauthUrl = githubOAuth.getOAuthUrl(state);
   
@@ -29,24 +51,48 @@ function initiateOAuth() {
 /**
  * Validate state parameter
  * @param {string} state - State token to validate
- * @returns {boolean} True if valid
+ * @returns {Promise<boolean>} True if valid
  */
-function validateState(state) {
-  const stored = stateStore.get(state);
+async function validateState(state) {
+  const useRedis = await isRedisAvailable();
   
-  if (!stored) {
-    return false;
-  }
+  if (useRedis) {
+    const key = `oauth:state:${state}`;
+    const stored = await redis.get(key);
+    
+    if (!stored) {
+      return false;
+    }
 
-  // Check if expired
-  if (Date.now() > stored.expiresAt) {
+    const stateData = JSON.parse(stored);
+    
+    // Check if expired
+    if (Date.now() > stateData.expiresAt) {
+      await redis.del(key);
+      return false;
+    }
+
+    // Remove used state
+    await redis.del(key);
+    return true;
+  } else {
+    // Fallback to in-memory store
+    const stored = stateStore.get(state);
+    
+    if (!stored) {
+      return false;
+    }
+
+    // Check if expired
+    if (Date.now() > stored.expiresAt) {
+      stateStore.delete(state);
+      return false;
+    }
+
+    // Remove used state
     stateStore.delete(state);
-    return false;
+    return true;
   }
-
-  // Remove used state
-  stateStore.delete(state);
-  return true;
 }
 
 /**

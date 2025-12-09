@@ -13,6 +13,9 @@ import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import GlassCard from '../../../../components/ui/GlassCard/GlassCard';
 import { fadeInUp, staggerContainer } from '../../../../utils/animations';
 import { getMockLessonDetails, completeMockLesson, getMockLessons } from '../../../../services/mockLessonsData';
+
+// Alias for consistency
+const getLessonDetails = getMockLessonDetails;
 import styles from './LessonDetail.module.css';
 
 const LessonDetail = memo(() => {

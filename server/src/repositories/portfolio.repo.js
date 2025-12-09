@@ -32,14 +32,18 @@ async function create(portfolioData) {
  * @returns {Promise<Array>} Array of portfolios
  */
 async function findByUserId(userId) {
-  return prisma.portfolio.findMany({
+  const portfolios = await prisma.portfolio.findMany({
     where: {
       userId,
     },
     include: {
-      submission: {
-        include: {
-          project: true,
+      user: {
+        select: {
+          id: true,
+          name: true,
+          avatar: true,
+          githubUsername: true,
+          githubProfile: true,
         },
       },
       score: true,
@@ -48,6 +52,34 @@ async function findByUserId(userId) {
       createdAt: 'desc',
     },
   });
+
+  // Manually fetch submissions and projects for each portfolio
+  // This is a workaround if Prisma client relation is not available
+  const portfoliosWithSubmission = await Promise.all(
+    portfolios.map(async (portfolio) => {
+      try {
+        const submission = await prisma.submission.findUnique({
+          where: {
+            id: portfolio.submissionId,
+          },
+          include: {
+            project: true,
+          },
+        });
+
+        return {
+          ...portfolio,
+          submission,
+        };
+      } catch (error) {
+        // If submission fetch fails, return portfolio without submission
+        console.warn(`Failed to fetch submission for portfolio ${portfolio.id}:`, error.message);
+        return portfolio;
+      }
+    })
+  );
+
+  return portfoliosWithSubmission;
 }
 
 /**
@@ -56,7 +88,7 @@ async function findByUserId(userId) {
  * @returns {Promise<Object|null>} Portfolio or null
  */
 async function findBySlug(slug) {
-  return prisma.portfolio.findUnique({
+  const portfolio = await prisma.portfolio.findUnique({
     where: {
       slug,
     },
@@ -70,14 +102,33 @@ async function findBySlug(slug) {
           githubProfile: true,
         },
       },
-      submission: {
-        include: {
-          project: true,
-        },
-      },
       score: true,
     },
   });
+
+  if (!portfolio) {
+    return null;
+  }
+
+  // Manually fetch submission and project
+  try {
+    const submission = await prisma.submission.findUnique({
+      where: {
+        id: portfolio.submissionId,
+      },
+      include: {
+        project: true,
+      },
+    });
+
+    return {
+      ...portfolio,
+      submission,
+    };
+  } catch (error) {
+    console.warn(`Failed to fetch submission for portfolio ${portfolio.id}:`, error.message);
+    return portfolio;
+  }
 }
 
 /**
@@ -86,7 +137,7 @@ async function findBySlug(slug) {
  * @returns {Promise<Object|null>} Portfolio or null
  */
 async function findBySubmissionId(submissionId) {
-  return prisma.portfolio.findUnique({
+  const portfolio = await prisma.portfolio.findUnique({
     where: {
       submissionId,
     },
@@ -100,14 +151,33 @@ async function findBySubmissionId(submissionId) {
           githubProfile: true,
         },
       },
-      submission: {
-        include: {
-          project: true,
-        },
-      },
       score: true,
     },
   });
+
+  if (!portfolio) {
+    return null;
+  }
+
+  // Manually fetch submission and project
+  try {
+    const submission = await prisma.submission.findUnique({
+      where: {
+        id: portfolio.submissionId,
+      },
+      include: {
+        project: true,
+      },
+    });
+
+    return {
+      ...portfolio,
+      submission,
+    };
+  } catch (error) {
+    console.warn(`Failed to fetch submission for portfolio ${portfolio.id}:`, error.message);
+    return portfolio;
+  }
 }
 
 /**
@@ -134,7 +204,7 @@ async function update(portfolioId, portfolioData) {
 async function upsertBySubmission(submissionId, portfolioData) {
   const { userId, slug, scoreId, summary, portfolioJson } = portfolioData;
 
-  return prisma.portfolio.upsert({
+  const result = await prisma.portfolio.upsert({
     where: {
       submissionId,
     },
@@ -163,14 +233,33 @@ async function upsertBySubmission(submissionId, portfolioData) {
           githubProfile: true,
         },
       },
-      submission: {
-        include: {
-          project: true,
-        },
-      },
       score: true,
     },
   });
+
+  // Manually fetch submission and project
+  if (result) {
+    try {
+      const submission = await prisma.submission.findUnique({
+        where: {
+          id: result.submissionId,
+        },
+        include: {
+          project: true,
+        },
+      });
+
+      return {
+        ...result,
+        submission,
+      };
+    } catch (error) {
+      console.warn(`Failed to fetch submission for portfolio ${result.id}:`, error.message);
+      return result;
+    }
+  }
+
+  return result;
 }
 
 /**
@@ -179,7 +268,7 @@ async function upsertBySubmission(submissionId, portfolioData) {
  * @returns {Promise<Object|null>} Portfolio or null
  */
 async function findById(portfolioId) {
-  return prisma.portfolio.findUnique({
+  const portfolio = await prisma.portfolio.findUnique({
     where: {
       id: portfolioId,
     },
@@ -194,14 +283,33 @@ async function findById(portfolioId) {
           githubProfile: true,
         },
       },
-      submission: {
-        include: {
-          project: true,
-        },
-      },
       score: true,
     },
   });
+
+  if (!portfolio) {
+    return null;
+  }
+
+  // Manually fetch submission and project
+  try {
+    const submission = await prisma.submission.findUnique({
+      where: {
+        id: portfolio.submissionId,
+      },
+      include: {
+        project: true,
+      },
+    });
+
+    return {
+      ...portfolio,
+      submission,
+    };
+  } catch (error) {
+    console.warn(`Failed to fetch submission for portfolio ${portfolio.id}:`, error.message);
+    return portfolio;
+  }
 }
 
 module.exports = {

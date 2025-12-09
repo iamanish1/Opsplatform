@@ -5,15 +5,23 @@ import { Github, ArrowLeft, Building2, Code, Zap, TrendingUp, Users } from 'luci
 import AuthLayout from '../../components/AuthLayout/AuthLayout';
 import GitHubButton from '../../components/GitHubButton/GitHubButton';
 import { fadeInUp, staggerContainer } from '../../../../utils/animations';
+import { initiateGitHubAuth } from '../../../../services/authApi';
 import styles from './StudentAuth.module.css';
 
 const StudentAuth = memo(() => {
   const [hoveredBenefit, setHoveredBenefit] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleGitHubClick = () => {
-    // Placeholder for GitHub OAuth - will redirect to backend endpoint
-    // In production: window.location.href = '/api/auth/github';
-    console.log('GitHub OAuth initiated');
+    try {
+      setLoading(true);
+      // Redirect to backend OAuth endpoint
+      initiateGitHubAuth();
+    } catch (error) {
+      console.error('Failed to initiate GitHub OAuth:', error);
+      setLoading(false);
+      // Error will be handled by the auth service
+    }
   };
 
   const benefits = [
@@ -75,6 +83,8 @@ const StudentAuth = memo(() => {
           <GitHubButton
             onClick={handleGitHubClick}
             size="large"
+            loading={loading}
+            disabled={loading}
           />
           
           {/* Quick Stats */}

@@ -1,5 +1,6 @@
 const authService = require('../services/auth.service');
 const githubOAuth = require('../utils/github-oauth');
+const config = require('../config');
 
 /**
  * GET /api/auth/github
@@ -7,8 +8,8 @@ const githubOAuth = require('../utils/github-oauth');
  */
 async function initiateGitHubOAuth(req, res, next) {
   try {
-    // Generate OAuth URL with state
-    const { oauthUrl } = authService.initiateOAuth();
+    // Generate OAuth URL with state (now async due to Redis)
+    const { oauthUrl } = await authService.initiateOAuth();
 
     // Redirect to GitHub
     res.redirect(oauthUrl);
@@ -20,33 +21,35 @@ async function initiateGitHubOAuth(req, res, next) {
 /**
  * GET /api/auth/github/callback
  * Handle GitHub OAuth callback
+ * Redirects to frontend with token and user data
  */
 async function handleGitHubCallback(req, res, next) {
   try {
     const { code, state, error } = req.query;
+    const frontendUrl = config.frontendUrl;
 
     // Check if user cancelled
     if (error) {
-      return res.status(400).json({
-        success: false,
-        error: {
-          code: 'OAUTH_CANCELLED',
-          message: 'GitHub OAuth authorization was cancelled',
-        },
-      });
+      const errorMsg = encodeURIComponent('GitHub OAuth authorization was cancelled');
+      return res.redirect(`${frontendUrl}/auth/callback?error=${errorMsg}`);
     }
 
     // Handle OAuth callback
     const result = await authService.handleOAuthCallback(code, state);
 
-    // In production, you might want to set a cookie or redirect to frontend
-    // For now, return JSON response
-    res.json({
-      success: true,
-      ...result,
-    });
+    // Redirect to frontend with token and user data in URL parameters
+    // Note: In production, consider using httpOnly cookies for better security
+    const token = encodeURIComponent(result.token);
+    const userData = encodeURIComponent(JSON.stringify(result.user));
+    
+    res.redirect(`${frontendUrl}/auth/callback?token=${token}&user=${userData}`);
   } catch (error) {
-    next(error);
+    // Redirect to frontend with error message
+    const frontendUrl = config.frontendUrl;
+    const errorMsg = encodeURIComponent(
+      error.message || 'Authentication failed. Please try again.'
+    );
+    res.redirect(`${frontendUrl}/auth/callback?error=${errorMsg}`);
   }
 }
 
