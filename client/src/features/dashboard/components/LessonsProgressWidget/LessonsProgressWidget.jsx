@@ -1,12 +1,49 @@
-import { memo } from 'react';
+import { memo, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { BookOpen, CheckCircle2 } from 'lucide-react';
+import { BookOpen, CheckCircle2, Loader2 } from 'lucide-react';
 import GlassCard from '../../../../components/ui/GlassCard/GlassCard';
 import { fadeInUp } from '../../../../utils/animations';
+import { getLessons } from '../../../../services/lessonsApi';
 import styles from './LessonsProgressWidget.module.css';
 
-const LessonsProgressWidget = memo(({ completed = 8, total = 12 }) => {
-  const percentage = Math.round((completed / total) * 100);
+const LessonsProgressWidget = memo(() => {
+  const [completed, setCompleted] = useState(0);
+  const [total, setTotal] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchProgress();
+  }, []);
+
+  const fetchProgress = async () => {
+    try {
+      setLoading(true);
+      const lessons = await getLessons();
+      const lessonsArray = Array.isArray(lessons) ? lessons : [];
+      const completedCount = lessonsArray.filter((lesson) => lesson.completed).length;
+      setCompleted(completedCount);
+      setTotal(lessonsArray.length);
+    } catch (err) {
+      console.error('Error fetching lesson progress:', err);
+      // Set defaults on error
+      setCompleted(0);
+      setTotal(0);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+  if (loading) {
+    return (
+      <GlassCard className={styles.lessonsWidget}>
+        <div className={styles.loadingState}>
+          <Loader2 size={24} className={styles.loader} />
+        </div>
+      </GlassCard>
+    );
+  }
 
   return (
     <GlassCard className={styles.lessonsWidget}>

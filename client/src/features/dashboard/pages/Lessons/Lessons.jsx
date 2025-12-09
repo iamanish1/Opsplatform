@@ -5,7 +5,7 @@ import { BookOpen, Lock, CheckCircle2, ArrowRight, Loader2 } from 'lucide-react'
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import GlassCard from '../../../../components/ui/GlassCard/GlassCard';
 import { fadeInUp, staggerContainer } from '../../../../utils/animations';
-import { getMockLessons } from '../../../../services/mockLessonsData';
+import { getLessons } from '../../../../services/lessonsApi';
 import styles from './Lessons.module.css';
 
 const Lessons = memo(() => {
@@ -22,9 +22,10 @@ const Lessons = memo(() => {
     try {
       setLoading(true);
       setError(null);
-      const data = await getMockLessons();
-      // Sort lessons by order
-      const sortedLessons = data.sort((a, b) => a.order - b.order);
+      const data = await getLessons();
+      // Ensure data is an array and sort lessons by order
+      const lessonsArray = Array.isArray(data) ? data : [];
+      const sortedLessons = lessonsArray.sort((a, b) => a.order - b.order);
       setLessons(sortedLessons);
     } catch (err) {
       setError(err.message || 'Failed to load lessons');

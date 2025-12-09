@@ -11,8 +11,6 @@ import styles from './DashboardOverview.module.css';
 const DashboardOverview = memo(() => {
   // Mock data - will be replaced with API calls
   const trustScore = 88;
-  const lessonsCompleted = 8;
-  const lessonsTotal = 12;
   const activeProject = {
     id: '1',
     title: 'Nebula Core',
@@ -45,10 +43,7 @@ const DashboardOverview = memo(() => {
 
         {/* Lessons Progress Widget */}
         <motion.div variants={fadeInUp} className={styles.widgetMedium}>
-          <LessonsProgressWidget 
-            completed={lessonsCompleted} 
-            total={lessonsTotal} 
-          />
+          <LessonsProgressWidget />
         </motion.div>
 
         {/* Active Project Widget */}

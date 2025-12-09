@@ -1,4 +1,4 @@
-import { memo, useState, useEffect } from 'react';
+import { memo, useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -12,10 +12,7 @@ import {
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import GlassCard from '../../../../components/ui/GlassCard/GlassCard';
 import { fadeInUp, staggerContainer } from '../../../../utils/animations';
-import { getMockLessonDetails, completeMockLesson, getMockLessons } from '../../../../services/mockLessonsData';
-
-// Alias for consistency
-const getLessonDetails = getMockLessonDetails;
+import { getLessonDetails, completeLesson, getLessons } from '../../../../services/lessonsApi';
 import styles from './LessonDetail.module.css';
 
 const LessonDetail = memo(() => {
@@ -27,12 +24,7 @@ const LessonDetail = memo(() => {
   const [error, setError] = useState(null);
   const [isUnlocked, setIsUnlocked] = useState(false);
 
-  useEffect(() => {
-    fetchLessonDetails();
-    checkUnlockStatus();
-  }, [id]);
-
-  const fetchLessonDetails = async () => {
+  const fetchLessonDetails = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -44,12 +36,14 @@ const LessonDetail = memo(() => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
 
-  const checkUnlockStatus = async () => {
+  const checkUnlockStatus = useCallback(async () => {
     try {
-      const lessons = await getMockLessons();
-      const sortedLessons = lessons.sort((a, b) => a.order - b.order);
+      const lessons = await getLessons();
+      // Ensure data is an array and sort by order
+      const lessonsArray = Array.isArray(lessons) ? lessons : [];
+      const sortedLessons = lessonsArray.sort((a, b) => a.order - b.order);
       const currentIndex = sortedLessons.findIndex((l) => l.id === id);
       
       if (currentIndex === 0) {
@@ -60,18 +54,27 @@ const LessonDetail = memo(() => {
       }
     } catch (err) {
       console.error('Error checking unlock status:', err);
+      // If we can't check unlock status, allow access (fail open)
+      setIsUnlocked(true);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    fetchLessonDetails();
+    checkUnlockStatus();
+  }, [fetchLessonDetails, checkUnlockStatus]);
 
   const handleComplete = async () => {
     if (!lesson || lesson.completed) return;
 
     try {
       setCompleting(true);
-      await completeMockLesson(id);
+      setError(null);
+      await completeLesson(id);
+      // Update local state to reflect completion
       setLesson({ ...lesson, completed: true });
       
-      // Show success message briefly
+      // Show success message briefly before redirecting
       setTimeout(() => {
         navigate('/dashboard/lessons');
       }, 1500);
