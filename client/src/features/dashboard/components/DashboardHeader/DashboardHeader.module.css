@@ -109,6 +109,15 @@
   align-items: center;
   justify-content: center;
   color: #ffffff;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
 }
 
 .chevron {
@@ -258,6 +267,14 @@
   justify-content: center;
   color: #ffffff;
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.avatarImageLarge {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
 }
 
 .userMenuInfo {

@@ -117,7 +117,15 @@ const DashboardHeader = memo(({ onMenuClick, sidebarOpen, onSidebarToggle }) => 
             aria-label="User menu"
           >
             <div className={styles.userAvatar}>
-              <User size={18} />
+              {user?.avatar ? (
+                <img 
+                  src={user.avatar} 
+                  alt={user?.name || user?.githubUsername || 'User'} 
+                  className={styles.avatarImage}
+                />
+              ) : (
+                <User size={18} />
+              )}
             </div>
             <ChevronDown size={16} className={styles.chevron} />
           </button>
@@ -141,10 +149,18 @@ const DashboardHeader = memo(({ onMenuClick, sidebarOpen, onSidebarToggle }) => 
                 >
                   <div className={styles.userMenuHeader}>
                     <div className={styles.userMenuAvatar}>
-                      <User size={24} />
+                      {user?.avatar ? (
+                        <img 
+                          src={user.avatar} 
+                          alt={user?.name || user?.githubUsername || 'User'} 
+                          className={styles.avatarImageLarge}
+                        />
+                      ) : (
+                        <User size={24} />
+                      )}
                     </div>
                     <div className={styles.userMenuInfo}>
-                      <p className={styles.userMenuName}>{user?.name || 'User'}</p>
+                      <p className={styles.userMenuName}>{user?.name || user?.githubUsername || 'User'}</p>
                       <p className={styles.userMenuEmail}>{user?.email || user?.githubUsername || 'user@example.com'}</p>
                     </div>
                   </div>
