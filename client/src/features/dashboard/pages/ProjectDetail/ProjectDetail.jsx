@@ -55,6 +55,14 @@ const ProjectDetail = memo(() => {
       const data = await getProjectDetails(id);
       setProject(data);
       setIsLocked(data.locked || false);
+      
+      // If project already started, redirect immediately to submission detail page
+      if (data.submissionStatus && data.submissionStatus !== 'NOT_STARTED' && data.submissionId) {
+        // Small delay to ensure state is set before navigation
+        setTimeout(() => {
+          navigate(`/dashboard/submissions/${data.submissionId}`, { replace: true });
+        }, 100);
+      }
     } catch (err) {
       console.error('Error fetching project details:', err);
       setError(err.message || 'Failed to load project');

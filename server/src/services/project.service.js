@@ -6,9 +6,10 @@ const submissionRepo = require('../repositories/submission.repo');
 /**
  * Get project details by ID
  * @param {string} projectId - Project ID
- * @returns {Promise<Object>} Project object with tasks
+ * @param {string} userId - User ID (optional, for submission lookup)
+ * @returns {Promise<Object>} Project object with tasks and submission info if started
  */
-async function getProject(projectId) {
+async function getProject(projectId, userId = null) {
   const project = await projectRepo.findById(projectId);
   
   if (!project) {
@@ -21,12 +22,41 @@ async function getProject(projectId) {
   // Parse tasksJson if it exists
   const tasks = project.tasksJson || [];
   
+  // Get submission info if userId provided
+  let submissionId = null;
+  let submissionStatus = 'NOT_STARTED';
+  if (userId) {
+    const submission = await submissionRepo.findByUserAndProject(userId, projectId);
+    if (submission) {
+      submissionId = submission.id;
+      submissionStatus = submission.status;
+    }
+  }
+  
+  // Parse tags if they exist
+  let tags = [];
+  if (project.tags) {
+    try {
+      tags = typeof project.tags === 'string' 
+        ? JSON.parse(project.tags) 
+        : project.tags;
+      if (!Array.isArray(tags)) {
+        tags = [];
+      }
+    } catch {
+      tags = [];
+    }
+  }
+  
   return {
     id: project.id,
     title: project.title,
     description: project.description,
     starterRepo: project.starterRepo,
     tasks: tasks,
+    tags: tags,
+    submissionId: submissionId,
+    submissionStatus: submissionStatus,
     createdAt: project.createdAt,
   };
 }

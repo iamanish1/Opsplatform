@@ -65,6 +65,7 @@ async function getProjects(req, res, next) {
 async function getProject(req, res, next) {
   try {
     const projectId = req.params.projectId;
+    const userId = req.user.id;
     
     if (!projectId) {
       return res.status(400).json({
@@ -76,7 +77,7 @@ async function getProject(req, res, next) {
       });
     }
     
-    const project = await projectService.getProject(projectId);
+    const project = await projectService.getProject(projectId, userId);
     
     res.json(project);
   } catch (error) {

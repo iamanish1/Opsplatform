@@ -5,6 +5,45 @@ const userRepo = require('../repositories/user.repo');
 const taskProgressService = require('./taskProgress.service');
 
 /**
+ * Get all submissions for a user
+ * @param {string} userId - User ID
+ * @returns {Promise<Array>} Array of submissions with project and score data
+ */
+async function getSubmissionsByUserId(userId) {
+  const submissions = await submissionRepo.findByUserId(userId);
+  
+  // Format response
+  return submissions.map((submission) => ({
+    id: submission.id,
+    projectId: submission.projectId,
+    project: submission.project ? {
+      id: submission.project.id,
+      title: submission.project.title,
+      description: submission.project.description,
+    } : null,
+    repoUrl: submission.repoUrl,
+    prNumber: submission.prNumber,
+    status: submission.status,
+    score: submission.score ? {
+      codeQuality: submission.score.codeQuality,
+      problemSolving: submission.score.problemSolving,
+      bugRisk: submission.score.bugRisk,
+      devopsExecution: submission.score.devopsExecution,
+      optimization: submission.score.optimization,
+      documentation: submission.score.documentation,
+      gitMaturity: submission.score.gitMaturity,
+      collaboration: submission.score.collaboration,
+      deliverySpeed: submission.score.deliverySpeed,
+      security: submission.score.security,
+      totalScore: submission.score.totalScore,
+      badge: submission.score.badge,
+    } : null,
+    createdAt: submission.createdAt,
+    updatedAt: submission.updatedAt,
+  }));
+}
+
+/**
  * Validate repository URL format
  * @param {string} repoUrl - Repository URL
  * @returns {boolean} True if valid
@@ -261,6 +300,7 @@ function getBadgeFromScore(totalScore) {
 }
 
 module.exports = {
+  getSubmissionsByUserId,
   startSubmission,
   getSubmission,
   submitForReview,

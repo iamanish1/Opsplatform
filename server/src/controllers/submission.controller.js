@@ -1,6 +1,23 @@
 const submissionService = require('../services/submission.service');
 
 /**
+ * GET /api/submissions
+ * Get all submissions for the current user
+ * Auth: Required
+ */
+async function getSubmissions(req, res, next) {
+  try {
+    const userId = req.user.id;
+    
+    const submissions = await submissionService.getSubmissionsByUserId(userId);
+    
+    res.json(submissions);
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
  * GET /api/submissions/:submissionId
  * Get submission details
  * Auth: Required
@@ -110,6 +127,7 @@ async function submitForReview(req, res, next) {
 }
 
 module.exports = {
+  getSubmissions,
   getSubmission,
   submitForReview,
 };
