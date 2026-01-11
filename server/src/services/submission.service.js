@@ -3,6 +3,8 @@ const projectRepo = require('../repositories/project.repo');
 const projectService = require('./project.service');
 const userRepo = require('../repositories/user.repo');
 const taskProgressService = require('./taskProgress.service');
+const githubService = require('./github.service');
+const logger = require('../utils/logger');
 
 /**
  * Get all submissions for a user
@@ -269,6 +271,51 @@ async function submitForReview(submissionId, userId) {
   // Update status to SUBMITTED
   await submissionRepo.updateStatus(submissionId, 'SUBMITTED');
 
+  // Cascading PR fetching mechanism:
+  // 1. Try primary mechanism (30 second timeout with 5s intervals)
+  // 2. If that fails, automatically trigger diagnostic mechanism (60 second timeout)
+  // 3. Save PR info to database once found
+  // 4. Non-blocking - doesn't fail submission
+  if (!submission.prNumber && submission.repoUrl) {
+    try {
+      logger.info({ submissionId, repoUrl: submission.repoUrl }, 'Starting cascading PR fetch mechanism');
+      
+      // Primary mechanism: Try to find PR with moderate timeout
+      let prNumber = await githubService.findLatestOpenPR(submission.repoUrl, 30000);
+      
+      if (!prNumber) {
+        // Primary failed - automatically trigger diagnostic mechanism
+        logger.info(
+          { submissionId, repoUrl: submission.repoUrl },
+          'Primary PR fetch failed, triggering diagnostic mechanism'
+        );
+        
+        // Diagnostic mechanism: More aggressive retry with longer timeout
+        prNumber = await githubService.findPRWithDiagnostic(submission.repoUrl, 60000);
+      }
+      
+      // Save PR to database if found
+      if (prNumber) {
+        await submissionRepo.attachPR(submissionId, prNumber);
+        logger.info(
+          { submissionId, prNumber, repoUrl: submission.repoUrl },
+          'Successfully attached PR number to submission'
+        );
+      } else {
+        logger.warn(
+          { submissionId, repoUrl: submission.repoUrl },
+          'Both primary and diagnostic mechanisms failed to find PR. User may need to manually trigger or check PR status.'
+        );
+      }
+    } catch (error) {
+      // Non-blocking - log error but don't fail submission
+      logger.error(
+        { error: error.message, submissionId, repoUrl: submission.repoUrl },
+        'Error in PR fetching mechanism'
+      );
+    }
+  }
+
   // TODO: Trigger AI review process here
   // This will be implemented later to:
   // 1. Analyze the repository
@@ -277,10 +324,20 @@ async function submitForReview(submissionId, userId) {
   // 4. Create portfolio
   // 5. Generate certificate
 
+  // Fetch updated submission to include PR information in response
+  const updatedSubmission = await submissionRepo.findById(submissionId);
+
   return {
     submissionId: submission.id,
     status: 'SUBMITTED',
     message: 'Project submitted for review successfully. Your project will be reviewed by our AI engine.',
+    submission: {
+      id: updatedSubmission.id,
+      status: updatedSubmission.status,
+      prNumber: updatedSubmission.prNumber,
+      repoUrl: updatedSubmission.repoUrl,
+      prAttached: !!updatedSubmission.prNumber,
+    },
   };
 }
 

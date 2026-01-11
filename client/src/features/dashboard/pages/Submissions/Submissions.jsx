@@ -11,11 +11,15 @@ import {
   Loader2,
   Filter,
   SortAsc,
+  Zap,
 } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import GlassCard from '../../../../components/ui/GlassCard/GlassCard';
+import SubmissionCard from '../../components/SubmissionCard/SubmissionCard';
+import ReviewStatusIndicator from '../../../../components/ReviewStatusIndicator/ReviewStatusIndicator';
 import { fadeInUp, staggerContainer } from '../../../../utils/animations';
 import { getSubmissions } from '../../../../services/submissionsApi';
+import { useReviewStatus } from '../../../../hooks/useReviewStatus';
 import styles from './Submissions.module.css';
 
 /**
@@ -238,79 +242,14 @@ const Submissions = memo(() => {
             animate="visible"
           >
             <div className={styles.submissionsGrid}>
-              {filteredAndSorted.map((submission) => {
-                const status = getSubmissionStatus(submission);
-                const StatusIcon = status.icon;
-                const projectTitle = submission.project?.title || 'Unknown Project';
-                const score = submission.score?.totalScore;
-                const badgeColor = getBadgeColor(score);
-
-                return (
-                  <motion.div key={submission.id} variants={fadeInUp}>
-                    <GlassCard
-                      className={styles.submissionCard}
-                      onClick={() => navigate(`/dashboard/submissions/${submission.id}`)}
-                    >
-                      <div className={styles.cardHeader}>
-                        <div className={styles.projectIcon}>
-                          <GitPullRequest size={24} />
-                          {submission.prNumber && (
-                            <span className={styles.prBadge}>#{submission.prNumber}</span>
-                          )}
-                        </div>
-                        <div className={`${styles.statusBadge} ${styles[status.variant]}`}>
-                          <StatusIcon size={14} />
-                          <span>{status.label}</span>
-                        </div>
-                      </div>
-
-                      <div className={styles.cardContent}>
-                        <h3 className={styles.projectTitle}>{projectTitle}</h3>
-                        <div className={styles.metaInfo}>
-                          <span className={styles.timeAgo}>
-                            {formatTimeAgo(submission.updatedAt || submission.createdAt)}
-                          </span>
-                          {submission.repoUrl && (
-                            <a
-                              href={submission.repoUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className={styles.repoLink}
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              <ExternalLink size={14} />
-                              Repository
-                            </a>
-                          )}
-                        </div>
-
-                        {score !== null && score !== undefined && (
-                          <div className={styles.scoreSection}>
-                            <div className={styles.scoreLabel}>Total Score</div>
-                            <div className={styles.scoreRow}>
-                              <div className={`${styles.scoreValue} ${styles[badgeColor]}`}>
-                                {score}/100
-                              </div>
-                              {submission.score?.badge && (
-                                <div className={`${styles.badge} ${styles[submission.score.badge.toLowerCase()]}`}>
-                                  {submission.score.badge}
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
-                      <div className={styles.cardFooter}>
-                        <button className={styles.viewButton}>
-                          View Details
-                          <ArrowRight size={16} />
-                        </button>
-                      </div>
-                    </GlassCard>
-                  </motion.div>
-                );
-              })}
+              {filteredAndSorted.map((submission) => (
+                <SubmissionCard
+                  key={submission.id}
+                  submission={submission}
+                  onNavigate={navigate}
+                  fadeInUp={fadeInUp}
+                />
+              ))}
             </div>
           </motion.div>
         )}

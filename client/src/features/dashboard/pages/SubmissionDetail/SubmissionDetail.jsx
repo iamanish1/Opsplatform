@@ -18,9 +18,12 @@ import {
 } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import GlassCard from '../../../../components/ui/GlassCard/GlassCard';
+import AIReviewPanel from '../../../../components/AIReviewPanel/AIReviewPanel';
 import { fadeInUp, staggerContainer } from '../../../../utils/animations';
-import { getSubmissionDetails, submitForReview } from '../../../../services/submissionsApi';
+import { getSubmissionDetails, submitForReview, fetchAndAttachPR } from '../../../../services/submissionsApi';
 import { getSubmissionTasks, updateTaskStatus } from '../../../../services/taskProgressApi';
+import { useReviewStatus } from '../../../../hooks/useReviewStatus';
+import { useReviewCache } from '../../../../hooks/useReviewCache';
 import styles from './SubmissionDetail.module.css';
 
 /**
@@ -43,6 +46,13 @@ const SubmissionDetail = memo(() => {
   const [loadingTasks, setLoadingTasks] = useState(true);
   const [updatingTask, setUpdatingTask] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [fetchingPR, setFetchingPR] = useState(false);
+  const [prFetchError, setPrFetchError] = useState(null);
+  const [prFetchAttempted, setPrFetchAttempted] = useState(false);
+
+  // AI Review hooks
+  const { status: reviewStatus, progress: reviewProgress, review, loading: reviewLoading, error: reviewError } = useReviewStatus(id);
+  const { cache: cachedReview, cacheReview, clearCache } = useReviewCache(id);
 
   const fetchSubmissionDetails = useCallback(async () => {
     if (!id) {
@@ -201,13 +211,33 @@ const SubmissionDetail = memo(() => {
 
     try {
       setSubmitting(true);
+      setPrFetchError(null);
       const result = await submitForReview(id);
       
-      // Refresh submission data to get updated status
+      // Update submission state with response data
+      // This ensures we have latest PR information right after submission
+      if (result.submission) {
+        setSubmission(prev => ({
+          ...prev,
+          status: result.submission.status,
+          prNumber: result.submission.prNumber,
+        }));
+        // Mark that automatic PR fetch was attempted
+        setPrFetchAttempted(true);
+      }
+      
+      // Refresh submission data to get updated status and all details
       await fetchSubmissionDetails();
       
+      // Clear any cached review and start polling for new review
+      clearCache();
+      
       // Show success message
-      alert(result.message || 'Project submitted for review successfully!');
+      const successMessage = result.submission?.prAttached 
+        ? `Project submitted successfully! PR #${result.submission.prNumber} detected and attached.`
+        : result.message || 'Project submitted for review successfully!';
+      
+      alert(successMessage);
     } catch (err) {
       console.error('Error submitting for review:', err);
       const errorMessage = err.message || 'Failed to submit project for review';
@@ -220,7 +250,38 @@ const SubmissionDetail = memo(() => {
     } finally {
       setSubmitting(false);
     }
-  }, [id, progress.completed, progress.total, fetchSubmissionDetails]);
+  }, [id, progress.completed, progress.total, fetchSubmissionDetails, clearCache]);
+
+  const handleFetchPR = useCallback(async () => {
+    try {
+      setFetchingPR(true);
+      setPrFetchError(null);
+      const result = await fetchAndAttachPR(id);
+      
+      // Update submission state with PR information
+      setSubmission(prev => ({
+        ...prev,
+        prNumber: result.submission.prNumber,
+      }));
+      
+      // Refresh submission data to get updated prNumber
+      await fetchSubmissionDetails();
+      
+      // Mark PR fetch as completed
+      setPrFetchAttempted(true);
+      
+      // Show success message
+      alert(result.message || `PR #${result.submission.prNumber} successfully attached!`);
+    } catch (err) {
+      console.error('Error fetching PR:', err);
+      const errorMessage = err.message || 'Failed to fetch PR information';
+      setPrFetchError(errorMessage);
+      setPrFetchAttempted(true);
+      alert(errorMessage);
+    } finally {
+      setFetchingPR(false);
+    }
+  }, [id, fetchSubmissionDetails]);
 
   const getStatusConfig = () => {
     if (!submission) return null;
@@ -463,16 +524,85 @@ const SubmissionDetail = memo(() => {
                 {submission.status === 'SUBMITTED' && (
                   <div className={styles.submittedMessage}>
                     <Clock size={24} className={styles.submittedIcon} />
-                    <div>
+                    <div style={{ width: '100%' }}>
                       <h3 className={styles.submittedTitle}>Project Submitted for Review</h3>
                       <p className={styles.submittedText}>
                         Your project is currently being reviewed by our AI engine. You'll receive a notification once the review is complete.
                       </p>
+                      
+                      {/* PR Status Section */}
+                      {submission.prNumber && (
+                        <div className={styles.prSuccessContainer}>
+                          <CheckCircle2 size={18} className={styles.prSuccessIcon} />
+                          <span className={styles.prSuccessText}>
+                            PR #{submission.prNumber} successfully attached
+                          </span>
+                        </div>
+                      )}
+                      
+                      {!submission.prNumber && (
+                        <div className={styles.prActionContainer}>
+                          {!prFetchAttempted && (
+                            <div className={styles.prAutoFetchingContainer}>
+                              <Loader2 size={18} className={styles.prFetchingSpinner} />
+                              <span className={styles.prAutoFetchingText}>
+                                Automatically detecting PR from your repository...
+                              </span>
+                            </div>
+                          )}
+                          
+                          {prFetchAttempted && (
+                            <>
+                              <p className={styles.prMissingText}>
+                                <AlertCircle size={16} style={{ display: 'inline', marginRight: '8px' }} />
+                                PR not automatically detected. Please verify your PR exists on GitHub.
+                              </p>
+                              <button
+                                onClick={handleFetchPR}
+                                disabled={fetchingPR}
+                                className={styles.fetchPRButton}
+                                title="Manually fetch PR information from GitHub"
+                              >
+                                {fetchingPR ? (
+                                  <>
+                                    <Loader2 size={18} className={styles.buttonLoader} />
+                                    Retrying...
+                                  </>
+                                ) : (
+                                  <>
+                                    <GitPullRequest size={18} />
+                                    Retry: Fetch PR Manually
+                                  </>
+                                )}
+                              </button>
+                              {prFetchError && (
+                                <p className={styles.prErrorText}>
+                                  <AlertCircle size={14} style={{ display: 'inline', marginRight: '6px' }} />
+                                  {prFetchError}
+                                </p>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}
               </GlassCard>
             </motion.div>
+
+          {/* AI Review Panel - Show when submission is submitted or reviewed */}
+          {(submission.status === 'SUBMITTED' || submission.status === 'REVIEWED') && (
+            <motion.div variants={fadeInUp}>
+              <AIReviewPanel
+                status={reviewStatus}
+                progress={reviewProgress}
+                review={review || cachedReview}
+                error={reviewError}
+                loading={reviewLoading}
+              />
+            </motion.div>
+          )}
 
           {/* Score Overview Card - Only show when REVIEWED */}
           {submission.status === 'REVIEWED' && submission.score && (

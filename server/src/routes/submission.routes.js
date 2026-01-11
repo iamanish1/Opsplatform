@@ -89,5 +89,18 @@ router.get(
   submissionController.getSubmission
 );
 
+/**
+ * POST /api/submissions/:submissionId/fetch-pr
+ * Manually fetch PR number from GitHub (diagnostic endpoint)
+ * Auth: Required
+ */
+router.post(
+  '/:submissionId/fetch-pr',
+  authenticate,
+  submissionIdValidation,
+  validate,
+  submissionController.fetchAndAttachPR
+);
+
 module.exports = router;
 

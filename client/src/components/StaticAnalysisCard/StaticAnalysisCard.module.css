@@ -1,0 +1,24 @@
+.analysisCard {
+  background: rgba(239, 68, 68, 0.05);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  backdrop-filter: blur(20px);
+  border-radius: 1rem;
+  padding: 1.5rem;
+}
+
+.analysisSection {
+  margin-top: 1rem;
+}
+
+.analysisTitle {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.analysisIssue {
+  font-size: 0.8rem;
+  padding-left: 0.5rem;
+  color: #fee2e2;
+  margin-bottom: 0.25rem;
+}

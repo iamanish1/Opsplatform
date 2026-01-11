@@ -1,0 +1,40 @@
+.categoryGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1rem;
+  width: 100%;
+}
+
+.categoryCard {
+  padding: 1rem;
+  border-radius: 0.75rem;
+  background: rgba(31, 41, 55, 0.5);
+  border: 1px solid rgba(107, 114, 128, 0.5);
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.categoryCard:hover {
+  border-color: rgba(139, 92, 246, 0.5);
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.1);
+}
+
+.scoreValue {
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: #a78bfa;
+}
+
+.scoreBar {
+  height: 4px;
+  background: rgba(107, 114, 128, 0.5);
+  border-radius: 9999px;
+  overflow: hidden;
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 768px) {
+  .categoryGrid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  }
+}

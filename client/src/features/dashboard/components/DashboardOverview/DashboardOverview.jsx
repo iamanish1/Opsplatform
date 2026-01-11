@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Shield, BookOpen, FolderKanban, Award, TrendingUp } from 'lucide-react';
 import TrustScoreWidget from '../TrustScoreWidget/TrustScoreWidget';
@@ -6,11 +6,14 @@ import LessonsProgressWidget from '../LessonsProgressWidget/LessonsProgressWidge
 import ActiveProjectWidget from '../ActiveProjectWidget/ActiveProjectWidget';
 import QuickStatsWidget from '../QuickStatsWidget/QuickStatsWidget';
 import { fadeInUp, staggerContainer } from '../../../../utils/animations';
+import { getSubmissions } from '../../../../services/submissionsApi';
 import styles from './DashboardOverview.module.css';
 
 const DashboardOverview = memo(() => {
-  // Mock data - will be replaced with API calls
-  const trustScore = 88;
+  const [trustScore, setTrustScore] = useState(0);
+  const [stats, setStats] = useState({ submissions: 0, portfolios: 0, certificates: 0 });
+  const [loading, setLoading] = useState(true);
+
   const activeProject = {
     id: '1',
     title: 'Nebula Core',
@@ -18,10 +21,36 @@ const DashboardOverview = memo(() => {
     lastCommit: '25 minutes ago',
     teamMembers: 3,
   };
-  const stats = {
-    submissions: 5,
-    portfolios: 3,
-    certificates: 2,
+
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
+
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      const submissions = await getSubmissions();
+      const submissionsArray = Array.isArray(submissions) ? submissions : [];
+
+      // Calculate average trust score from reviewed submissions
+      const reviewedSubmissions = submissionsArray.filter(s => s.status === 'REVIEWED' && s.score?.totalScore);
+      const avgScore = reviewedSubmissions.length > 0
+        ? Math.round(reviewedSubmissions.reduce((sum, s) => sum + (s.score?.totalScore || 0), 0) / reviewedSubmissions.length)
+        : 0;
+
+      setTrustScore(avgScore);
+      setStats({
+        submissions: submissionsArray.length,
+        portfolios: 0, // Can be fetched from another API
+        certificates: 0, // Can be fetched from another API
+      });
+    } catch (err) {
+      console.error('Error fetching dashboard data:', err);
+      // Fallback to default values
+      setTrustScore(0);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
