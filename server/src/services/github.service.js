@@ -217,4 +217,85 @@ module.exports = {
   findLatestOpenPR,
   findPRWithDiagnostic,
   getPRDetails,
+  findLatestOpenPRWithApp,
 };
+
+/**
+ * Find latest open PR using GitHub App installation
+ * More powerful than OAuth - can access private repos the app was installed to
+ * @param {string} repoUrl - Repository URL
+ * @param {string} appAccessToken - GitHub App installation access token
+ * @param {number} maxWaitTime - Maximum time to wait (ms)
+ * @returns {Promise<number|null>} PR number or null if not found
+ */
+async function findLatestOpenPRWithApp(repoUrl, appAccessToken, maxWaitTime = 30000) {
+  if (!appAccessToken) {
+    return null; // App token not available
+  }
+
+  // Parse repo URL
+  const match = repoUrl.match(/github\.com\/([^/]+)\/([^/]+?)(?:\.git)?$/);
+  if (!match) {
+    throw new Error(`Invalid GitHub URL: ${repoUrl}`);
+  }
+
+  const [, owner, repo] = match;
+
+  try {
+    logger.info(
+      { repoUrl, hasAppToken: !!appAccessToken },
+      'Fetching PR with GitHub App installation token'
+    );
+
+    const startTime = Date.now();
+    let attempts = 0;
+    const maxAttempts = 6;
+
+    while (attempts < maxAttempts && (Date.now() - startTime) < maxWaitTime) {
+      try {
+        const response = await axios.get(
+          `https://api.github.com/repos/${owner}/${repo}/pulls?state=open&per_page=1&sort=created&direction=desc`,
+          {
+            headers: {
+              'Authorization': `Bearer ${appAccessToken}`,
+              'Accept': 'application/vnd.github.v3+json',
+              'User-Agent': 'Opsplatform-AI-Engine',
+            },
+            timeout: 10000,
+          }
+        );
+
+        const prs = response.data;
+        if (prs && prs.length > 0) {
+          logger.info(
+            { repoUrl, prNumber: prs[0].number, mechanism: 'github-app' },
+            'Found PR with GitHub App token'
+          );
+          return prs[0].number;
+        }
+
+        // No PR found, retry
+        attempts++;
+        if (attempts < maxAttempts) {
+          await new Promise(resolve => setTimeout(resolve, 5000));
+        }
+      } catch (error) {
+        if (error.response?.status === 404) {
+          logger.warn({ repoUrl }, 'Repository not found with GitHub App token');
+          return null;
+        }
+        throw error;
+      }
+    }
+
+    logger.warn({ repoUrl, attempts }, 'No open PR found with GitHub App token');
+    return null;
+
+  } catch (error) {
+    logger.error(
+      { error: error.message, repoUrl },
+      'Error finding PR with GitHub App token'
+    );
+    return null;
+  }
+}

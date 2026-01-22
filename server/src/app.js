@@ -28,6 +28,12 @@ app.use(cors());
 // Webhook routes need raw body for signature verification
 // Mount webhook routes with raw body parser before JSON parser
 const webhookRoutes = require('./routes/webhook.routes');
+const githubAppWebhookRoutes = require('./routes/github-app-webhook.routes');
+
+// GitHub App webhooks (must use raw body for signature verification)
+app.use('/webhooks', express.raw({ type: 'application/json' }), githubAppWebhookRoutes);
+
+// Regular webhook routes
 app.use('/api/webhooks', express.raw({ type: 'application/json' }), webhookRoutes);
 
 // Regular JSON body parsing for other routes (must come after webhook routes)

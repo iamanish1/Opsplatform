@@ -272,34 +272,87 @@ async function submitForReview(submissionId, userId) {
   await submissionRepo.updateStatus(submissionId, 'SUBMITTED');
 
   // Cascading PR fetching mechanism:
-  // 1. Try primary mechanism (30 second timeout with 5s intervals)
-  // 2. If that fails, automatically trigger diagnostic mechanism (60 second timeout)
-  // 3. Save PR info to database once found
-  // 4. Non-blocking - doesn't fail submission
+  // 1. Try GitHub App installation (if user has it installed)
+  // 2. Then try OAuth token (all users have this)
+  // 3. Then try diagnostic mechanism with longer timeout
+  // 4. Save PR info to database once found
+  // 5. Non-blocking - doesn't fail submission
   if (!submission.prNumber && submission.repoUrl) {
     try {
-      // Get user's GitHub token from database for PR fetching
+      // Get user's GitHub data from database for PR fetching
       const user = await userRepo.findById(userId);
       const userGithubToken = user?.githubToken;
+      const userGithubInstallId = user?.githubInstallId;
       
-      if (!userGithubToken) {
-        logger.warn({ userId, submissionId }, 'User has no GitHub token stored. PR fetching will use public API only.');
+      logger.info({ 
+        submissionId, 
+        repoUrl: submission.repoUrl,
+        hasAppInstall: !!userGithubInstallId,
+        hasOAuthToken: !!userGithubToken 
+      }, 'Starting cascading PR fetch mechanism (App → OAuth → Diagnostic)');
+      
+      let prNumber = null;
+
+      // Step 1: Try GitHub App installation (most powerful - access to installed repos)
+      if (userGithubInstallId) {
+        try {
+          const githubAppService = require('./github-app.service');
+          const appAccessToken = await githubAppService.getInstallationAccessToken(userGithubInstallId);
+          
+          if (appAccessToken) {
+            prNumber = await githubService.findLatestOpenPRWithApp(
+              submission.repoUrl,
+              appAccessToken,
+              30000
+            );
+            
+            if (prNumber) {
+              logger.info(
+                { submissionId, prNumber, mechanism: 'github-app' },
+                'PR found using GitHub App installation'
+              );
+            }
+          }
+        } catch (appError) {
+          logger.warn({ error: appError.message }, 'GitHub App PR fetch failed, will try OAuth');
+        }
       }
-      
-      logger.info({ submissionId, repoUrl: submission.repoUrl, hasUserToken: !!userGithubToken }, 'Starting cascading PR fetch mechanism');
-      
-      // Primary mechanism: Try to find PR with moderate timeout (use user's token if available)
-      let prNumber = await githubService.findLatestOpenPR(submission.repoUrl, userGithubToken, 30000);
-      
-      if (!prNumber) {
-        // Primary failed - automatically trigger diagnostic mechanism
-        logger.info(
-          { submissionId, repoUrl: submission.repoUrl },
-          'Primary PR fetch failed, triggering diagnostic mechanism'
+
+      // Step 2: Fallback to OAuth token (all users have this)
+      if (!prNumber && userGithubToken) {
+        prNumber = await githubService.findLatestOpenPR(
+          submission.repoUrl,
+          userGithubToken,
+          30000
         );
         
-        // Diagnostic mechanism: More aggressive retry with longer timeout (use user's token if available)
-        prNumber = await githubService.findPRWithDiagnostic(submission.repoUrl, userGithubToken, 60000);
+        if (prNumber) {
+          logger.info(
+            { submissionId, prNumber, mechanism: 'oauth' },
+            'PR found using OAuth token'
+          );
+        }
+      }
+
+      // Step 3: If still not found, try diagnostic mechanism with longer timeout
+      if (!prNumber) {
+        logger.info(
+          { submissionId },
+          'OAuth failed, triggering diagnostic mechanism'
+        );
+        
+        prNumber = await githubService.findPRWithDiagnostic(
+          submission.repoUrl,
+          userGithubToken || null,
+          60000
+        );
+        
+        if (prNumber) {
+          logger.info(
+            { submissionId, prNumber, mechanism: 'diagnostic' },
+            'PR found using diagnostic mechanism'
+          );
+        }
       }
       
       // Save PR to database if found
@@ -312,7 +365,7 @@ async function submitForReview(submissionId, userId) {
       } else {
         logger.warn(
           { submissionId, repoUrl: submission.repoUrl },
-          'Both primary and diagnostic mechanisms failed to find PR. User may need to manually trigger or check PR status.'
+          'All PR fetching mechanisms failed. User may need to manually trigger or check PR status.'
         );
       }
     } catch (error) {
