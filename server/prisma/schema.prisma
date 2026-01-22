@@ -50,6 +50,7 @@ model User {
   githubId        String?  @unique
   githubUsername  String?
   githubProfile   String?
+  githubToken     String?  @db.Text // GitHub OAuth access token for PR fetching
   githubInstallId String? // GitHub App installation ID
   location        String? // User location for talent feed filtering
   onboardingStep  Int      @default(0)

@@ -37,9 +37,10 @@ function parseGitHubUrl(repoUrl) {
 /**
  * Get open PRs for a repository
  * @param {string} repoUrl - Repository URL
+ * @param {string} userToken - User's GitHub OAuth access token (optional, for private repos)
  * @returns {Promise<Array>} Array of PR objects or empty array
  */
-async function getOpenPRs(repoUrl) {
+async function getOpenPRs(repoUrl, userToken) {
   try {
     const parsed = parseGitHubUrl(repoUrl);
     
@@ -51,14 +52,19 @@ async function getOpenPRs(repoUrl) {
     const { owner, repo } = parsed;
     const apiUrl = `https://api.github.com/repos/${owner}/${repo}/pulls?state=open&per_page=100`;
     
-    logger.info({ apiUrl }, 'Fetching open PRs from GitHub API');
+    logger.info({ apiUrl, hasUserToken: !!userToken }, 'Fetching open PRs from GitHub API');
     
-    // GitHub API doesn't require authentication for public repos
+    const headers = {
+      'Accept': 'application/vnd.github.v3+json',
+      'User-Agent': 'Opsplatform-AI-Engine',
+    };
+    
+    if (userToken) {
+      headers['Authorization'] = `Bearer ${userToken}`;
+    }
+    
     const response = await axios.get(apiUrl, {
-      headers: {
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'Opsplatform-AI-Engine',
-      },
+      headers,
       timeout: 10000,
     });
     
@@ -75,17 +81,18 @@ async function getOpenPRs(repoUrl) {
 /**
  * Find PR number for a repository (latest open PR)
  * @param {string} repoUrl - Repository URL
+ * @param {string} userToken - User's GitHub OAuth access token (optional, for private repos)
  * @param {number} maxWaitTime - Maximum time to wait for PR to appear (ms)
  * @returns {Promise<number|null>} PR number or null if not found
  */
-async function findLatestOpenPR(repoUrl, maxWaitTime = 30000) {
+async function findLatestOpenPR(repoUrl, userToken, maxWaitTime = 30000) {
   try {
     const startTime = Date.now();
     let attempts = 0;
     const maxAttempts = 6; // Try for ~30 seconds with 5s intervals
     
     while (attempts < maxAttempts && (Date.now() - startTime) < maxWaitTime) {
-      const prs = await getOpenPRs(repoUrl);
+      const prs = await getOpenPRs(repoUrl, userToken);
       
       if (prs.length > 0) {
         // Return the most recent PR number
@@ -117,19 +124,20 @@ async function findLatestOpenPR(repoUrl, maxWaitTime = 30000) {
  * Used as fallback when primary mechanism fails
  * Retries with shorter intervals and longer total timeout
  * @param {string} repoUrl - Repository URL
+ * @param {string} userToken - User's GitHub OAuth access token (optional, for private repos)
  * @param {number} maxWaitTime - Maximum time to wait (ms), default 60 seconds
  * @returns {Promise<number|null>} PR number or null if not found
  */
-async function findPRWithDiagnostic(repoUrl, maxWaitTime = 60000) {
+async function findPRWithDiagnostic(repoUrl, userToken, maxWaitTime = 60000) {
   try {
-    logger.info({ repoUrl, maxWaitTime }, 'Starting diagnostic PR fetch mechanism');
+    logger.info({ repoUrl, maxWaitTime, hasUserToken: !!userToken }, 'Starting diagnostic PR fetch mechanism');
     
     const startTime = Date.now();
     let attempts = 0;
     const maxAttempts = 12; // More aggressive: try every 5 seconds for ~60 seconds
     
     while (attempts < maxAttempts && (Date.now() - startTime) < maxWaitTime) {
-      const prs = await getOpenPRs(repoUrl);
+      const prs = await getOpenPRs(repoUrl, userToken);
       
       if (prs.length > 0) {
         const latestPr = prs[0];
@@ -165,9 +173,10 @@ async function findPRWithDiagnostic(repoUrl, maxWaitTime = 60000) {
  * Get PR details
  * @param {string} repoUrl - Repository URL
  * @param {number} prNumber - PR number
+ * @param {string} userToken - User's GitHub OAuth access token (optional, for private repos)
  * @returns {Promise<Object|null>} PR object or null
  */
-async function getPRDetails(repoUrl, prNumber) {
+async function getPRDetails(repoUrl, prNumber, userToken) {
   try {
     const parsed = parseGitHubUrl(repoUrl);
     
@@ -178,11 +187,17 @@ async function getPRDetails(repoUrl, prNumber) {
     const { owner, repo } = parsed;
     const apiUrl = `https://api.github.com/repos/${owner}/${repo}/pulls/${prNumber}`;
     
+    const headers = {
+      'Accept': 'application/vnd.github.v3+json',
+      'User-Agent': 'Opsplatform-AI-Engine',
+    };
+    
+    if (userToken) {
+      headers['Authorization'] = `Bearer ${userToken}`;
+    }
+    
     const response = await axios.get(apiUrl, {
-      headers: {
-        'Accept': 'application/vnd.github.v3+json',
-        'User-Agent': 'Opsplatform-AI-Engine',
-      },
+      headers,
       timeout: 10000,
     });
     

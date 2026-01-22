@@ -98,7 +98,7 @@ async function main() {
   // Seed DevOps Project #1
   const project = {
     title: 'Build a CI/CD Pipeline for a Web Application',
-    starterRepo: 'https://github.com/devhubs/starter-web-app',
+    starterRepo: 'https://github.com/iamanish34/test-repo.git',
     description: 'Create a complete CI/CD pipeline for a Node.js web application. This project will teach you how to set up automated testing, building, and deployment using GitHub Actions, Docker, and cloud services.',
     tasksJson: JSON.stringify([
       {

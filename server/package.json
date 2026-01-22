@@ -13,7 +13,10 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "test:user": "node scripts/test-endpoints.js",
-    "token": "node scripts/generate-token.js"
+    "token": "node scripts/generate-token.js",
+    "manage:projects": "node scripts/manage-projects.js",
+    "delete:users": "node scripts/delete-users-cascade.js",
+    "test:github-pr": "node scripts/test-github-pr.js"
   },
   "keywords": [],
   "author": "",

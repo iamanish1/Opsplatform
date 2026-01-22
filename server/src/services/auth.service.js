@@ -133,8 +133,8 @@ async function handleOAuthCallback(code, state) {
       }
     }
 
-    // Upsert user in database
-    const user = await upsertUserFromGitHub(githubUser);
+    // Upsert user in database with access token
+    const user = await upsertUserFromGitHub(githubUser, accessToken);
 
     // Generate JWT token
     const token = generateJWT(user.id, user.role);
@@ -168,9 +168,10 @@ async function handleOAuthCallback(code, state) {
 /**
  * Upsert user from GitHub data
  * @param {Object} githubData - GitHub user data
+ * @param {string} accessToken - GitHub OAuth access token for PR fetching
  * @returns {Promise<Object>} User object
  */
-async function upsertUserFromGitHub(githubData) {
+async function upsertUserFromGitHub(githubData, accessToken) {
   try {
     // Check if user exists by GitHub ID
     let user = await userRepo.findByGithubId(githubData.githubId);
@@ -181,6 +182,7 @@ async function upsertUserFromGitHub(githubData) {
         githubId: githubData.githubId,
         githubUsername: githubData.githubUsername,
         githubProfile: githubData.githubProfile,
+        githubToken: accessToken, // ✅ Save GitHub OAuth token
         name: githubData.name || user.name,
         avatar: githubData.avatar || user.avatar,
         email: githubData.email || user.email,
@@ -203,6 +205,7 @@ async function upsertUserFromGitHub(githubData) {
         githubId: githubData.githubId,
         githubUsername: githubData.githubUsername,
         githubProfile: githubData.githubProfile,
+        githubToken: accessToken, // ✅ Save GitHub OAuth token
         name: githubData.name,
         avatar: githubData.avatar,
         email: githubData.email,

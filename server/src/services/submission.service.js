@@ -278,10 +278,18 @@ async function submitForReview(submissionId, userId) {
   // 4. Non-blocking - doesn't fail submission
   if (!submission.prNumber && submission.repoUrl) {
     try {
-      logger.info({ submissionId, repoUrl: submission.repoUrl }, 'Starting cascading PR fetch mechanism');
+      // Get user's GitHub token from database for PR fetching
+      const user = await userRepo.findById(userId);
+      const userGithubToken = user?.githubToken;
       
-      // Primary mechanism: Try to find PR with moderate timeout
-      let prNumber = await githubService.findLatestOpenPR(submission.repoUrl, 30000);
+      if (!userGithubToken) {
+        logger.warn({ userId, submissionId }, 'User has no GitHub token stored. PR fetching will use public API only.');
+      }
+      
+      logger.info({ submissionId, repoUrl: submission.repoUrl, hasUserToken: !!userGithubToken }, 'Starting cascading PR fetch mechanism');
+      
+      // Primary mechanism: Try to find PR with moderate timeout (use user's token if available)
+      let prNumber = await githubService.findLatestOpenPR(submission.repoUrl, userGithubToken, 30000);
       
       if (!prNumber) {
         // Primary failed - automatically trigger diagnostic mechanism
@@ -290,8 +298,8 @@ async function submitForReview(submissionId, userId) {
           'Primary PR fetch failed, triggering diagnostic mechanism'
         );
         
-        // Diagnostic mechanism: More aggressive retry with longer timeout
-        prNumber = await githubService.findPRWithDiagnostic(submission.repoUrl, 60000);
+        // Diagnostic mechanism: More aggressive retry with longer timeout (use user's token if available)
+        prNumber = await githubService.findPRWithDiagnostic(submission.repoUrl, userGithubToken, 60000);
       }
       
       // Save PR to database if found

@@ -1,6 +1,7 @@
 const submissionService = require('../services/submission.service');
 const githubService = require('../services/github.service');
 const submissionRepo = require('../repositories/submission.repo');
+const userRepo = require('../repositories/user.repo');
 const logger = require('../utils/logger');
 
 /**
@@ -206,17 +207,25 @@ async function fetchAndAttachPR(req, res, next) {
       'Manual PR fetch initiated - using cascading fallback mechanism'
     );
 
-    // Cascading PR fetching mechanism
-    // 1. Try primary mechanism with shorter timeout (for manual/quick fetch)
-    let prNumber = await githubService.findLatestOpenPR(submission.repoUrl, 10000); // 10 seconds
+    // Get user's GitHub token for this operation
+    const user = await userRepo.findById(userId);
+    const userGithubToken = user?.githubToken;
+    
+    if (!userGithubToken) {
+      logger.warn({ userId, submissionId }, 'User has no GitHub token. PR fetching will use public API only.');
+    }
 
-    // 2. If primary fails, automatically trigger diagnostic mechanism
+    // Cascading PR fetching mechanism
+    // 1. Try primary mechanism with shorter timeout (for manual/quick fetch) - use user's token if available
+    let prNumber = await githubService.findLatestOpenPR(submission.repoUrl, userGithubToken, 10000); // 10 seconds
+
+    // 2. If primary fails, automatically trigger diagnostic mechanism - use user's token if available
     if (!prNumber) {
       logger.info(
         { submissionId },
         'Manual fetch: primary mechanism failed, triggering diagnostic mechanism'
       );
-      prNumber = await githubService.findPRWithDiagnostic(submission.repoUrl, 30000); // 30 seconds for manual
+      prNumber = await githubService.findPRWithDiagnostic(submission.repoUrl, userGithubToken, 30000); // 30 seconds for manual
     }
 
     // 3. Save to database if found
