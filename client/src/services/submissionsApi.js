@@ -3,7 +3,7 @@
  * Handles all submission-related API calls
  */
 
-import { get, post } from './api';
+import { get, post, patch } from './api';
 
 /**
  * Get all submissions for the current user
@@ -66,6 +66,10 @@ export const getReviewCategories = async (submissionId) => {
  */
 export const fetchAndAttachPR = async (submissionId) => {
   return post(`/submissions/${submissionId}/fetch-pr`);
+};
+
+export const updateSubmissionRepoUrl = async (submissionId, repoUrl) => {
+  return patch(`/submissions/${submissionId}/repo-url`, { repoUrl });
 };
 
 export default {

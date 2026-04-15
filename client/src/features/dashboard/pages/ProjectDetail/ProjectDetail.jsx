@@ -1,6 +1,5 @@
-import { memo, useState, useEffect } from 'react';
+import { memo, useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
 import {
   ArrowLeft,
   CheckCircle2,
@@ -12,7 +11,6 @@ import {
   Sparkles,
   FolderKanban,
   Play,
-  Check,
   ListChecks,
 } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
@@ -41,35 +39,28 @@ const ProjectDetail = memo(() => {
   const [isLocked, setIsLocked] = useState(false);
   const [repoUrl, setRepoUrl] = useState('');
 
-  useEffect(() => {
-    fetchProjectDetails();
-  }, [id]);
-
-  /**
-   * Fetch project details from API
-   */
-  const fetchProjectDetails = async () => {
+  const fetchProjectDetails = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
       const data = await getProjectDetails(id);
       setProject(data);
       setIsLocked(data.locked || false);
-      
-      // If project already started, redirect immediately to submission detail page
       if (data.submissionStatus && data.submissionStatus !== 'NOT_STARTED' && data.submissionId) {
-        // Small delay to ensure state is set before navigation
         setTimeout(() => {
           navigate(`/dashboard/submissions/${data.submissionId}`, { replace: true });
         }, 100);
       }
     } catch (err) {
-      console.error('Error fetching project details:', err);
       setError(err.message || 'Failed to load project');
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, navigate]);
+
+  useEffect(() => {
+    fetchProjectDetails();
+  }, [fetchProjectDetails]);
 
   /**
    * Handle start project action
@@ -374,7 +365,7 @@ const ProjectDetail = memo(() => {
                     <div className={styles.repoUrlInputContainer}>
                       <input
                         type="text"
-                        placeholder="https://github.com/username/repository"
+                        placeholder="https://github.com/your-username/your-repo"
                         value={repoUrl}
                         onChange={(e) => {
                           setRepoUrl(e.target.value);
@@ -383,6 +374,10 @@ const ProjectDetail = memo(() => {
                         className={styles.repoUrlInput}
                         disabled={starting}
                       />
+                      <p className={styles.repoUrlHint}>
+                        ⚠️ You must have an <strong>open Pull Request</strong> in this repo for AI review to work.
+                        Fork the starter repo → do your work on a branch → open a PR → paste your repo URL here.
+                      </p>
                     </div>
                     {error && (
                       <div className={styles.errorMessage}>

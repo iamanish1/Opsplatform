@@ -358,6 +358,17 @@
   cursor: not-allowed;
 }
 
+.repoUrlHint {
+  margin: 0.5rem 0 0;
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.45);
+  line-height: 1.5;
+}
+
+.repoUrlHint strong {
+  color: #f59e0b;
+}
+
 .errorMessage {
   padding: 0.75rem 1rem;
   background: rgba(239, 68, 68, 0.1);

@@ -287,10 +287,46 @@ async function fetchAndAttachPR(req, res, next) {
   }
 }
 
+/**
+ * PATCH /api/submissions/:submissionId/repo-url
+ * Update the repository URL for a submission (only allowed when IN_PROGRESS)
+ */
+async function updateRepoUrl(req, res, next) {
+  try {
+    const { submissionId } = req.params;
+    const userId = req.user.id;
+    const { repoUrl } = req.body;
+
+    if (!repoUrl || typeof repoUrl !== 'string') {
+      return res.status(400).json({ success: false, error: { code: 'INVALID_REPO_URL', message: 'repoUrl is required' } });
+    }
+
+    const trimmed = repoUrl.trim();
+    if (!trimmed.startsWith('https://github.com/')) {
+      return res.status(400).json({ success: false, error: { code: 'INVALID_REPO_URL', message: 'Must be a valid GitHub URL starting with https://github.com/' } });
+    }
+
+    const submission = await submissionRepo.findById(submissionId);
+    if (!submission) return res.status(404).json({ success: false, error: { code: 'SUBMISSION_NOT_FOUND', message: 'Submission not found' } });
+    if (submission.userId !== userId) return res.status(403).json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized' } });
+    if (submission.status === 'REVIEWED') {
+      return res.status(400).json({ success: false, error: { code: 'ALREADY_REVIEWED', message: 'Cannot change repo URL after review is complete' } });
+    }
+
+    const updated = await submissionRepo.updateRepoUrl(submissionId, trimmed);
+    logger.info({ submissionId, repoUrl: trimmed }, 'Repo URL updated by user');
+
+    res.json({ success: true, message: 'Repository URL updated successfully', submission: { id: updated.id, repoUrl: updated.repoUrl, prNumber: updated.prNumber } });
+  } catch (error) {
+    next(error);
+  }
+}
+
 module.exports = {
   getSubmissions,
   getSubmission,
   submitForReview,
   fetchAndAttachPR,
+  updateRepoUrl,
 };
 

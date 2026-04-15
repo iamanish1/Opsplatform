@@ -229,6 +229,13 @@ async function findByUserId(userId) {
   });
 }
 
+async function updateRepoUrl(submissionId, repoUrl) {
+  return prisma.submission.update({
+    where: { id: submissionId },
+    data: { repoUrl, prNumber: null }, // clear old PR when repo changes
+  });
+}
+
 module.exports = {
   findByUserAndProject,
   create,
@@ -241,5 +248,6 @@ module.exports = {
   updateStatus,
   attachScore,
   findByUserId,
+  updateRepoUrl,
 };
 

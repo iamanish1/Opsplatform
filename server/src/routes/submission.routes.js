@@ -102,5 +102,18 @@ router.post(
   submissionController.fetchAndAttachPR
 );
 
+/**
+ * PATCH /api/submissions/:submissionId/repo-url
+ * Update repository URL (allowed when IN_PROGRESS or SUBMITTED)
+ * Auth: Required
+ */
+router.patch(
+  '/:submissionId/repo-url',
+  authenticate,
+  submissionIdValidation,
+  validate,
+  submissionController.updateRepoUrl
+);
+
 module.exports = router;
 

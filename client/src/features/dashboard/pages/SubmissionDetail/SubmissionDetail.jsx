@@ -20,7 +20,7 @@ import GlassCard from '../../../../components/ui/GlassCard/GlassCard';
 import AIReviewPanel from '../../../../components/AIReviewPanel/AIReviewPanel';
 import ProofCard from '../../../../components/ProofCard/ProofCard';
 import { fadeInUp, staggerContainer } from '../../../../utils/animations';
-import { getSubmissionDetails, submitForReview, fetchAndAttachPR } from '../../../../services/submissionsApi';
+import { getSubmissionDetails, submitForReview, fetchAndAttachPR, updateSubmissionRepoUrl } from '../../../../services/submissionsApi';
 import { getSubmissionTasks, updateTaskStatus } from '../../../../services/taskProgressApi';
 import { useReviewStatus } from '../../../../hooks/useReviewStatus';
 import { useReviewCache } from '../../../../hooks/useReviewCache';
@@ -51,6 +51,9 @@ const SubmissionDetail = memo(() => {
   const [fetchingPR, setFetchingPR] = useState(false);
   const [prFetchError, setPrFetchError] = useState(null);
   const [prFetchAttempted, setPrFetchAttempted] = useState(false);
+  const [editingRepoUrl, setEditingRepoUrl] = useState(false);
+  const [newRepoUrl, setNewRepoUrl] = useState('');
+  const [savingRepoUrl, setSavingRepoUrl] = useState(false);
 
   // AI Review hooks
   const { status: reviewStatus, progress: reviewProgress, review, loading: reviewLoading, error: reviewError } = useReviewStatus(id);
@@ -256,6 +259,26 @@ const SubmissionDetail = memo(() => {
       setFetchingPR(false);
     }
   }, [id, fetchSubmissionDetails, toast]);
+
+  const handleSaveRepoUrl = useCallback(async () => {
+    if (!newRepoUrl.trim().startsWith('https://github.com/')) {
+      toast.error('Must be a valid GitHub URL starting with https://github.com/');
+      return;
+    }
+    try {
+      setSavingRepoUrl(true);
+      await updateSubmissionRepoUrl(id, newRepoUrl.trim());
+      await fetchSubmissionDetails();
+      setEditingRepoUrl(false);
+      setPrFetchError(null);
+      setPrFetchAttempted(false);
+      toast.success('Repository URL updated. You can now retry fetching the PR.');
+    } catch (err) {
+      toast.error(err.message || 'Failed to update repository URL');
+    } finally {
+      setSavingRepoUrl(false);
+    }
+  }, [id, newRepoUrl, fetchSubmissionDetails, toast]);
 
   const getStatusConfig = () => {
     if (!submission) return null;
@@ -534,37 +557,72 @@ const SubmissionDetail = memo(() => {
                               </span>
                             </div>
                           )}
-                          
+
                           {prFetchAttempted && (
                             <>
-                              <p className={styles.prMissingText}>
-                                <AlertCircle size={16} style={{ display: 'inline', marginRight: '8px' }} />
-                                PR not automatically detected. Please verify your PR exists on GitHub.
-                              </p>
+                              {/* Current repo URL + edit */}
+                              <div className={styles.repoUrlRow}>
+                                <span className={styles.repoUrlLabel}>Repo:</span>
+                                {editingRepoUrl ? (
+                                  <div className={styles.repoUrlEditGroup}>
+                                    <input
+                                      className={styles.repoUrlEditInput}
+                                      value={newRepoUrl}
+                                      onChange={e => setNewRepoUrl(e.target.value)}
+                                      placeholder="https://github.com/username/repo"
+                                      disabled={savingRepoUrl}
+                                    />
+                                    <button className={styles.repoUrlSaveBtn} onClick={handleSaveRepoUrl} disabled={savingRepoUrl}>
+                                      {savingRepoUrl ? <Loader2 size={14} className={styles.buttonLoader} /> : 'Save'}
+                                    </button>
+                                    <button className={styles.repoUrlCancelBtn} onClick={() => setEditingRepoUrl(false)} disabled={savingRepoUrl}>Cancel</button>
+                                  </div>
+                                ) : (
+                                  <div className={styles.repoUrlDisplay}>
+                                    <code className={styles.repoUrlCode}>{submission.repoUrl || 'No repo URL'}</code>
+                                    <button
+                                      className={styles.repoUrlEditBtn}
+                                      onClick={() => { setEditingRepoUrl(true); setNewRepoUrl(submission.repoUrl || ''); }}
+                                    >
+                                      Edit
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Error + guide */}
+                              {prFetchError && (
+                                <div className={styles.prGuide}>
+                                  <p className={styles.prGuideTitle}><AlertCircle size={15} /> No open PRs found in this repo. Follow these steps:</p>
+                                  <ol className={styles.prGuideSteps}>
+                                    <li>Push your code to the repo above</li>
+                                    <li>On GitHub, go to your repo → click <strong>Pull requests</strong> → <strong>New pull request</strong></li>
+                                    <li>Select your branch → click <strong>Create pull request</strong></li>
+                                    <li>Leave the PR <strong>open</strong> (do not merge)</li>
+                                    <li>Click <strong>Retry: Fetch PR</strong> below</li>
+                                  </ol>
+                                  <a
+                                    href={submission.repoUrl ? `${submission.repoUrl}/pulls` : 'https://github.com'}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className={styles.prGuideLink}
+                                  >
+                                    <ExternalLink size={13} /> Open PRs on GitHub
+                                  </a>
+                                </div>
+                              )}
+
                               <button
                                 onClick={handleFetchPR}
                                 disabled={fetchingPR}
                                 className={styles.fetchPRButton}
-                                title="Manually fetch PR information from GitHub"
                               >
                                 {fetchingPR ? (
-                                  <>
-                                    <Loader2 size={18} className={styles.buttonLoader} />
-                                    Retrying...
-                                  </>
+                                  <><Loader2 size={18} className={styles.buttonLoader} />Retrying...</>
                                 ) : (
-                                  <>
-                                    <GitPullRequest size={18} />
-                                    Retry: Fetch PR Manually
-                                  </>
+                                  <><GitPullRequest size={18} />Retry: Fetch PR</>
                                 )}
                               </button>
-                              {prFetchError && (
-                                <p className={styles.prErrorText}>
-                                  <AlertCircle size={14} style={{ display: 'inline', marginRight: '6px' }} />
-                                  {prFetchError}
-                                </p>
-                              )}
                             </>
                           )}
                         </div>

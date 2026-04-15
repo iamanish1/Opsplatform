@@ -33,11 +33,16 @@ const DashboardHeader = memo(({ onMenuClick }) => {
   const navigate = useNavigate();
   const pollRef = useRef(null);
 
+  const failCount = useRef(0);
+
   const fetchUnread = useCallback(async () => {
     try {
       const data = await getUnreadCount();
       setUnreadCount(data.count ?? data.unreadCount ?? 0);
-    } catch { /* silent */ }
+      failCount.current = 0; // reset on success
+    } catch {
+      failCount.current += 1;
+    }
   }, []);
 
   const fetchNotifications = useCallback(async () => {
@@ -51,11 +56,24 @@ const DashboardHeader = memo(({ onMenuClick }) => {
     finally { setLoadingNotifs(false); }
   }, []);
 
-  // Poll unread count every 30s
+  // Poll unread count with exponential backoff on failures
+  // 30s → 60s → 120s → stop after 3 consecutive failures
   useEffect(() => {
-    fetchUnread();
-    pollRef.current = setInterval(fetchUnread, 30000);
-    return () => clearInterval(pollRef.current);
+    let timeout;
+
+    const schedule = () => {
+      if (failCount.current >= 3) return; // DB appears down — stop polling
+      const delay = failCount.current === 0 ? 30000
+        : failCount.current === 1 ? 60000
+        : 120000;
+      timeout = setTimeout(async () => {
+        await fetchUnread();
+        schedule();
+      }, delay);
+    };
+
+    fetchUnread().then(schedule);
+    return () => clearTimeout(timeout);
   }, [fetchUnread]);
 
   // Fetch list when panel opens
