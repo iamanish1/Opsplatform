@@ -59,17 +59,24 @@ function sanitizeContent(content) {
     return content;
   }
 
-  let sanitized = content;
+  const maxChars = parseInt(process.env.SANITIZE_MAX_CHARS || '20000', 10);
+  let sanitized = content.length > maxChars
+    ? `${content.slice(0, maxChars)}\n... [truncated before sanitization]`
+    : content;
 
   // Remove entire lines that contain sensitive patterns
   const lines = sanitized.split('\n');
   const filteredLines = lines.filter((line) => {
-    return !REMOVE_LINE_PATTERNS.some((pattern) => pattern.test(line));
+    return !REMOVE_LINE_PATTERNS.some((pattern) => {
+      pattern.lastIndex = 0;
+      return pattern.test(line);
+    });
   });
   sanitized = filteredLines.join('\n');
 
   // Replace secret patterns with redacted placeholders
   SECRET_PATTERNS.forEach((pattern) => {
+    pattern.lastIndex = 0;
     sanitized = sanitized.replace(pattern, (match, captured) => {
       if (captured) {
         return match.replace(captured, '[REDACTED]');

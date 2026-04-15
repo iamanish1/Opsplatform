@@ -3,7 +3,48 @@
  * Builds LLM prompts from PR data, static analysis, and CI results
  */
 
-const { sanitizeFiles, sanitizeDiff } = require('../../utils/sanitize');
+const { sanitizeDiff } = require('../../utils/sanitize');
+
+const DEFAULT_MAX_PROMPT_FILES = 2;
+const DEFAULT_MAX_PROMPT_LINES = 16;
+const DEFAULT_MAX_LINE_CHARS = 220;
+const DEFAULT_MAX_PATCH_CHARS = 5000;
+
+function readLimit(envName, fallback) {
+  const value = parseInt(process.env[envName] || `${fallback}`, 10);
+  return Number.isFinite(value) && value > 0 ? value : fallback;
+}
+
+function compactLine(line) {
+  if (!line) {
+    return line;
+  }
+
+  return line.length > DEFAULT_MAX_LINE_CHARS
+    ? `${line.slice(0, DEFAULT_MAX_LINE_CHARS)} ...`
+    : line;
+}
+
+function compactPatch(patch) {
+  if (!patch || typeof patch !== 'string') {
+    return 'No diff available';
+  }
+
+  const maxLines = readLimit('REVIEW_PROMPT_MAX_LINES', DEFAULT_MAX_PROMPT_LINES);
+  const maxChars = readLimit('REVIEW_PROMPT_MAX_PATCH_CHARS', DEFAULT_MAX_PATCH_CHARS);
+  const bounded = patch.slice(0, maxChars);
+  const compact = bounded
+    .split('\n')
+    .slice(0, maxLines)
+    .map(compactLine)
+    .join('\n');
+
+  try {
+    return sanitizeDiff(compact);
+  } catch (error) {
+    return compact.replace(/(token|password|secret|api[_-]?key)\s*[:=]\s*[^"'\s]+/gi, '$1=[REDACTED]');
+  }
+}
 
 /**
  * Summarize diff for prompt
@@ -15,18 +56,13 @@ function summarizeDiff(files) {
     return 'No files changed.';
   }
 
-  // Sanitize files before processing
-  const sanitizedFiles = sanitizeFiles(files);
+  const maxPromptFiles = readLimit('REVIEW_PROMPT_MAX_FILES', DEFAULT_MAX_PROMPT_FILES);
 
-  const maxPromptFiles = parseInt(process.env.REVIEW_PROMPT_MAX_FILES || '3', 10);
-  const maxPromptLines = parseInt(process.env.REVIEW_PROMPT_MAX_LINES || '30', 10);
-
-  const summary = sanitizedFiles
+  const summary = files
     .slice(0, maxPromptFiles)
     .map((file) => {
-      const patch = file.patch ? sanitizeDiff(file.patch) : 'No diff available';
-      const lines = patch.split('\n').slice(0, maxPromptLines).join('\n');
-      return `File: ${file.filename}\nStatus: ${file.status}\nChanges: +${file.additions} -${file.deletions}\n\n${lines}`;
+      const lines = compactPatch(file.patch);
+      return `File: ${file.filename}\nStatus: ${file.status}\nChanges: +${file.additions} -${file.deletions}\n${lines}`;
     })
     .join('\n\n---\n\n');
 
@@ -171,10 +207,27 @@ Remember: bugRisk should be scored inversely (10 = no risk, 0 = high risk). All 
   return prompt;
 }
 
+function buildCompactPrompt(prMetadata, diffData, staticReport, ciReport) {
+  const files = (diffData.files || [])
+    .slice(0, readLimit('REVIEW_PROMPT_MAX_FILES', DEFAULT_MAX_PROMPT_FILES))
+    .map((file) => `${file.filename} ${file.status} +${file.additions} -${file.deletions}`)
+    .join('; ');
+
+  return `Score this DevOps PR as compact JSON only.
+Title: ${prMetadata.title}
+Description: ${prMetadata.description || 'No description'}
+Changed files: ${files || 'none'}
+Totals: ${diffData.totalFiles || 0} files, +${diffData.totalAdditions || 0}, -${diffData.totalDeletions || 0}
+Static: eslint=${staticReport?.eslintErrors || 0} errors/${staticReport?.eslintWarnings || 0} warnings, docker=${staticReport?.dockerIssueCount || 0}, yaml=${staticReport?.yamlIssueCount || 0}, security=${staticReport?.securityAlertCount || 0}, git=${staticReport?.gitScore || 0}/10
+CI: ${ciReport?.ciStatus || 'unknown'}
+Return keys: codeQuality, problemSolving, bugRisk, devopsExecution, optimization, documentation, gitMaturity, collaboration, deliverySpeed, security, summary, suggestions. Scores 0-10.`;
+}
+
 module.exports = {
   summarizeDiff,
   formatStaticReport,
   formatCIReport,
   buildPrompt,
+  buildCompactPrompt,
 };
 

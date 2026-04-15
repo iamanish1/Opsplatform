@@ -78,7 +78,12 @@ async function processPRReview(jobData) {
     
     // Sanitize diff data before sending to LLM
     const { sanitizeFiles } = require('../utils/sanitize');
-    diffData.files = sanitizeFiles(diffData.files);
+    diffData.files = sanitizeFiles(diffData.files).map((file) => ({
+      ...file,
+      patch: typeof file.patch === 'string'
+        ? file.patch.slice(0, parseInt(process.env.REVIEW_MAX_PATCH_CHARS || '8000', 10))
+        : file.patch,
+    }));
 
     // STEP 5: Run Static Analysis
     reviewProgress.update(submissionId, 45, 'static-analysis', 'Running static analysis');
@@ -110,8 +115,21 @@ async function processPRReview(jobData) {
     // STEP 7: Build LLM Prompt
     reviewProgress.update(submissionId, 68, 'building-prompt', 'Building AI review prompt');
     console.log(`[Review Service] Step 7: Building LLM prompt...`);
-    const prompt = promptService.buildPrompt(prMetadata, diffData, staticReport, ciReport);
-    console.log(`[Review Service] Prompt built (${prompt.length} characters)`);
+    const promptStart = Date.now();
+    let prompt;
+    try {
+      prompt = promptService.buildPrompt(prMetadata, diffData, staticReport, ciReport);
+    } catch (promptError) {
+      console.warn(`[Review Service] Full prompt build failed, using compact prompt: ${promptError.message}`);
+      prompt = promptService.buildCompactPrompt(prMetadata, diffData, staticReport, ciReport);
+    }
+    const promptBuildMs = Date.now() - promptStart;
+    const maxPromptChars = parseInt(process.env.REVIEW_MAX_PROMPT_CHARS || '7000', 10);
+    if (prompt.length > maxPromptChars) {
+      prompt = `${prompt.slice(0, maxPromptChars)}\n... [prompt truncated]\nReturn compact JSON only.`;
+    }
+    console.log(`[Review Service] Prompt built (${prompt.length} characters, ${promptBuildMs}ms)`);
+    reviewProgress.update(submissionId, 74, 'prompt-ready', 'Prompt ready');
 
     // STEP 8: Run LLM (Llama 3)
     reviewProgress.update(submissionId, 78, 'ai-review', 'Running AI code review');
