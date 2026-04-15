@@ -971,3 +971,56 @@
     font-size: 2.5rem;
   }
 }
+
+/* ── Inline confirm banner (replaces window.confirm) ───────────────────── */
+.confirmBanner {
+  margin-top: 0.75rem;
+  padding: 1rem 1.25rem;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.confirmText {
+  margin: 0;
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.5;
+}
+
+.confirmActions {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: flex-end;
+}
+
+.confirmCancelBtn {
+  padding: 0.45rem 1rem;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.confirmCancelBtn:hover { background: rgba(255, 255, 255, 0.12); }
+
+.confirmOkBtn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 1.1rem;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.confirmOkBtn:hover { opacity: 0.9; }

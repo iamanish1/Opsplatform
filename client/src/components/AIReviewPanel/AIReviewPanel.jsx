@@ -1,6 +1,6 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
-import ReviewStatusIndicator from '../ReviewStatusIndicator/ReviewStatusIndicator';
+import LiveReviewProgress from '../LiveReviewProgress/LiveReviewProgress';
 import TrustScoreCard from '../TrustScoreCard/TrustScoreCard';
 import CategoryBreakdown from '../CategoryBreakdown/CategoryBreakdown';
 import AISummaryCard from '../AISummaryCard/AISummaryCard';
@@ -31,23 +31,11 @@ const AIReviewPanel = ({ status = 'REVIEWING', progress = 0, review = null, erro
     visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
   };
 
-  // Handle loading state
-  if (loading && status === 'REVIEWING') {
+  // Show live progress tracker while reviewing
+  if (status !== 'REVIEWED' || loading) {
     return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        className="w-full space-y-4"
-      >
-        <ReviewStatusIndicator status={status} progress={progress} />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
-          {[1, 2, 3, 4].map((i) => (
-            <div
-              key={i}
-              className="h-32 rounded-xl bg-gradient-to-br from-gray-700/50 to-gray-800/50 backdrop-blur-md animate-pulse"
-            />
-          ))}
-        </div>
+      <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+        <LiveReviewProgress status={status} progress={progress} error={error} />
       </motion.div>
     );
   }
@@ -59,11 +47,6 @@ const AIReviewPanel = ({ status = 'REVIEWING', progress = 0, review = null, erro
       variants={containerVariants}
       className={styles.panel}
     >
-      {/* Status Indicator */}
-      <motion.div variants={itemVariants}>
-        <ReviewStatusIndicator status={status} progress={progress} error={error} />
-      </motion.div>
-
       {/* Review Results */}
       {review && status === 'REVIEWED' && (
         <>

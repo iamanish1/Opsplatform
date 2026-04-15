@@ -1,0 +1,194 @@
+.page {
+  min-height: 100vh;
+  background: #0a0a0f;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.ambient {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 0%, rgba(99,102,241,0.12) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.nav {
+  padding: 1rem 2rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  position: relative; z-index: 1;
+}
+
+.brand {
+  display: flex; align-items: center; gap: 0.5rem;
+  font-size: 1.1rem; font-weight: 800; letter-spacing: -0.02em;
+}
+.brand svg { color: #6366f1; }
+
+.container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 3rem 1.5rem;
+  position: relative; z-index: 1;
+}
+
+/* Progress */
+.progressBar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 0.5rem;
+}
+
+.progressStep {
+  display: flex;
+  align-items: center;
+}
+
+.dot {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  border: 2px solid rgba(255,255,255,0.1);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem; font-weight: 700;
+  color: rgba(255,255,255,0.35);
+  flex-shrink: 0;
+  transition: all 0.3s;
+}
+
+.dotActive {
+  background: rgba(99,102,241,0.2);
+  border-color: #6366f1;
+  color: #818cf8;
+  box-shadow: 0 0 0 4px rgba(99,102,241,0.15);
+}
+
+.dotDone {
+  background: rgba(16,185,129,0.2);
+  border-color: #10b981;
+  color: #34d399;
+}
+
+.progressLine {
+  width: 80px;
+  height: 2px;
+  background: rgba(255,255,255,0.08);
+  transition: background 0.3s;
+}
+.progressLineDone { background: #10b981; }
+
+.stepCounter {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.35);
+  margin: 0.5rem 0 2rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Card */
+.card {
+  width: 100%;
+  max-width: 520px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 24px;
+  padding: 2.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 1.25rem;
+}
+
+.stepIcon {
+  width: 80px; height: 80px;
+  border-radius: 22px;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.stepTitle {
+  font-size: 1.5rem;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  margin: 0;
+}
+
+.stepDesc {
+  font-size: 0.92rem;
+  color: rgba(255,255,255,0.55);
+  line-height: 1.6;
+  margin: 0;
+  max-width: 380px;
+}
+
+/* Info list */
+.infoList { display: flex; flex-direction: column; gap: 0.5rem; width: 100%; text-align: left; }
+.infoItem { display: flex; align-items: center; gap: 0.6rem; font-size: 0.85rem; color: rgba(255,255,255,0.65); padding: 0.5rem 0.75rem; background: rgba(255,255,255,0.03); border-radius: 8px; }
+
+/* Flow steps */
+.flowSteps { display: flex; flex-direction: column; gap: 0.75rem; width: 100%; text-align: left; }
+.flowStep { display: flex; align-items: center; gap: 0.85rem; padding: 0.6rem 0.75rem; background: rgba(255,255,255,0.03); border-radius: 10px; font-size: 0.85rem; color: rgba(255,255,255,0.7); }
+.flowNum { width: 26px; height: 26px; border-radius: 50%; background: rgba(139,92,246,0.2); border: 1px solid rgba(139,92,246,0.3); display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; color: #c084fc; flex-shrink: 0; }
+
+/* Ready card */
+.readyCard { display: flex; align-items: flex-start; gap: 0.85rem; padding: 1rem 1.25rem; background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.2); border-radius: 14px; width: 100%; text-align: left; }
+.readyTitle { font-size: 0.85rem; font-weight: 700; color: white; margin: 0 0 0.2rem; }
+.readyDesc { font-size: 0.8rem; color: rgba(255,255,255,0.5); margin: 0; line-height: 1.5; }
+
+/* Actions */
+.actions { display: flex; gap: 0.75rem; width: 100%; justify-content: center; flex-wrap: wrap; margin-top: 0.25rem; }
+
+.primaryBtn {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border: none; border-radius: 12px;
+  color: white; font-size: 0.9rem; font-weight: 600;
+  cursor: pointer; text-decoration: none;
+  transition: opacity 0.2s, transform 0.2s;
+}
+.primaryBtn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+.secondaryBtn {
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.75rem 1.3rem;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  color: rgba(255,255,255,0.8); font-size: 0.9rem;
+  cursor: pointer; transition: background 0.2s;
+}
+.secondaryBtn:hover:not(:disabled) { background: rgba(255,255,255,0.12); }
+.secondaryBtn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.ghostBtn {
+  padding: 0.75rem 1.25rem;
+  background: none;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 12px;
+  color: rgba(255,255,255,0.5); font-size: 0.9rem;
+  cursor: pointer; transition: all 0.2s;
+}
+.ghostBtn:hover { border-color: rgba(255,255,255,0.2); color: rgba(255,255,255,0.75); }
+
+.skipLink {
+  background: none; border: none; cursor: pointer;
+  color: rgba(255,255,255,0.3); font-size: 0.78rem;
+  text-decoration: underline; padding: 0;
+  transition: color 0.2s;
+}
+.skipLink:hover { color: rgba(255,255,255,0.5); }
+
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { from{transform:rotate(0)} to{transform:rotate(360deg)} }
+
+@media (max-width: 600px) {
+  .card { padding: 2rem 1.25rem; }
+  .progressLine { width: 48px; }
+  .stepTitle { font-size: 1.25rem; }
+}

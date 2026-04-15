@@ -6,14 +6,12 @@ import styles from './ProtectedRoute.module.css';
 
 /**
  * ProtectedRoute Component
- * Wraps routes that require authentication
- * Redirects to login if user is not authenticated
+ * Wraps routes that require authentication.
+ * allowedRoles: optional array e.g. ['STUDENT', 'ADMIN'] — if omitted any authenticated user passes
  */
-const ProtectedRoute = ({ children }) => {
-  // Use useContext directly to avoid hook error if context not available
+const ProtectedRoute = ({ children, allowedRoles }) => {
   const authContext = useContext(AuthContext);
-  
-  // If context is not available, show loading (shouldn't happen if properly wrapped)
+
   if (authContext === undefined) {
     return (
       <div className={styles.loadingContainer}>
@@ -23,7 +21,7 @@ const ProtectedRoute = ({ children }) => {
     );
   }
 
-  const { isAuthenticated, loading } = authContext;
+  const { isAuthenticated, loading, user } = authContext;
 
   if (loading) {
     return (
@@ -38,8 +36,15 @@ const ProtectedRoute = ({ children }) => {
     return <Navigate to="/auth/student" replace />;
   }
 
+  // Role-based guard
+  if (allowedRoles && user?.role && !allowedRoles.includes(user.role)) {
+    // Redirect company users who land on student routes and vice-versa
+    if (user.role === 'COMPANY') return <Navigate to="/company/dashboard" replace />;
+    if (user.role === 'STUDENT') return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/" replace />;
+  }
+
   return children;
 };
 
 export default ProtectedRoute;
-

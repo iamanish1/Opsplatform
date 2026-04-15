@@ -62,6 +62,7 @@ const companyRoutes = require('./company.routes');
 const talentRoutes = require('./talent.routes');
 const interviewRequestRoutes = require('./interviewRequest.routes');
 const notificationRoutes = require('./notification.routes');
+const leaderboardRoutes = require('./leaderboard.routes');
 // Note: webhook routes are mounted in app.js with raw body parser
 
 // Mount routes
@@ -76,6 +77,7 @@ router.use('/company', companyRoutes);
 router.use('/company/talent-feed', talentRoutes);
 router.use('/interview-requests', interviewRequestRoutes);
 router.use('/notifications', notificationRoutes);
+router.use('/leaderboard', leaderboardRoutes);
 
 module.exports = router;
 

@@ -1,0 +1,194 @@
+.container {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 1.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ── Done state ─────────────────────────────────────────────────────────── */
+.done {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.25);
+}
+
+.doneHeader {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.doneIcon {
+  width: 52px; height: 52px;
+  background: rgba(16, 185, 129, 0.18);
+  border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  color: #10b981;
+  flex-shrink: 0;
+}
+
+.doneTitle { font-size: 1.05rem; font-weight: 700; color: white; margin: 0 0 0.2rem; }
+.doneSubtitle { font-size: 0.82rem; color: rgba(255,255,255,0.5); margin: 0; }
+
+/* ── Error state ─────────────────────────────────────────────────────────── */
+.error {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.25);
+}
+
+.errorHeader {
+  display: flex; align-items: flex-start; gap: 0.85rem;
+  color: #f87171;
+}
+
+.errorTitle { font-size: 0.95rem; font-weight: 700; margin: 0 0 0.25rem; }
+.errorMsg { font-size: 0.82rem; color: rgba(255,255,255,0.55); margin: 0; line-height: 1.5; }
+
+/* ── Header row ─────────────────────────────────────────────────────────── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.headerLeft { display: flex; align-items: center; gap: 0.6rem; }
+
+.pulsingDot {
+  width: 8px; height: 8px;
+  background: #6366f1;
+  border-radius: 50%;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+.headerLabel {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.headerRight { display: flex; align-items: center; gap: 0.3rem; }
+.zapIcon { color: #f59e0b; }
+.progressPct {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #818cf8;
+  letter-spacing: -0.01em;
+}
+
+/* ── Main progress bar ───────────────────────────────────────────────────── */
+.mainBarWrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.mainBar {
+  height: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.mainFill {
+  height: 100%;
+  background: linear-gradient(90deg, #6366f1, #8b5cf6, #a855f7);
+  border-radius: 4px;
+  position: relative;
+}
+
+.shimmer {
+  position: absolute;
+  top: 0; bottom: 0;
+  left: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+.etaLabel {
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.3);
+  text-align: right;
+}
+
+/* ── Steps ───────────────────────────────────────────────────────────────── */
+.steps {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.step {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.55rem 0.75rem;
+  border-radius: 10px;
+  transition: background 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.stepDone {
+  background: rgba(16, 185, 129, 0.07);
+}
+
+.stepActive {
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.stepPending {
+  background: transparent;
+}
+
+.stepIconWrap {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+}
+
+.stepDone .stepIconWrap { color: #10b981; }
+.stepActive .stepIconWrap { color: #818cf8; }
+.stepPending .stepIconWrap { color: rgba(255, 255, 255, 0.2); }
+
+.doneCheck { color: #10b981; }
+
+.stepText {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.stepLabel {
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: color 0.3s;
+}
+
+.stepDone .stepLabel { color: rgba(255, 255, 255, 0.6); }
+.stepActive .stepLabel { color: rgba(255, 255, 255, 0.95); }
+.stepPending .stepLabel { color: rgba(255, 255, 255, 0.25); }
+
+.stepDesc {
+  font-size: 0.73rem;
+  color: rgba(255, 255, 255, 0.45);
+  line-height: 1.4;
+}
+
+.activeBar {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #6366f1, #8b5cf6);
+  transform-origin: left;
+  border-radius: 1px;
+}

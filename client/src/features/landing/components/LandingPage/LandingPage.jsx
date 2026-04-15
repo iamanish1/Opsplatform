@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback, memo, lazy, Suspense } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { Zap, ArrowDown, Users, Building2, AlertCircle } from 'lucide-react';
+import { Zap, ArrowDown, Users, Building2, AlertCircle, Trophy } from 'lucide-react';
 import CTAButton from '../CTAButton/CTAButton';
 import HeroWorkflow from '../HeroWorkflow/HeroWorkflow';
 import HeroBenefits from '../HeroBenefits/HeroBenefits';
@@ -147,8 +147,9 @@ const LandingPage = () => {
             <span className={styles.logoText}>DevHubs</span>
           </div>
           <div className={styles.headerActions}>
-            <Link to="/auth/company/login" className={styles.headerLink}>For Companies</Link>
-            <CTAButton text="Get Started" variant="secondary" to="/auth/student" />
+            <Link to="/leaderboard" className={styles.headerLink}><Trophy size={14} />Leaderboard</Link>
+            <Link to="/auth/student" className={styles.headerLink}>For Developers</Link>
+            <Link to="/auth/company/login" className={styles.headerLinkCta}>Hire Talent</Link>
           </div>
         </motion.header>
 
@@ -168,22 +169,22 @@ const LandingPage = () => {
                   variants={fadeInUp}
                 >
                   <AlertCircle size={16} />
-                  <span>Students learn theory, but companies need real DevOps skills</span>
+                  <span>AI-powered proof of real developer skill — no more resume guessing</span>
                 </motion.div>
 
                 <motion.h1
                   className={styles.heroTitle}
                   variants={fadeInUp}
                 >
-                  Turn Your Code Into{' '}
-                  <span className={styles.gradientText}>Your Resume</span>
+                  Hire with Confidence.{' '}
+                  <span className={styles.gradientText}>Learn with Purpose.</span>
                 </motion.h1>
 
                 <motion.p
                   className={styles.heroDescription}
                   variants={fadeInUp}
                 >
-                  Work on real DevOps projects, get AI-verified Trust Scores, and build a portfolio companies actually trust. No more resume guessing.
+                  Trust verified by AI. Students build real DevOps projects and earn an AI-reviewed Trust Score. Companies hire from a verified talent pool — no more resume guessing.
                 </motion.p>
 
                 <motion.div
@@ -197,8 +198,8 @@ const LandingPage = () => {
                   className={styles.heroCTAs}
                   variants={fadeInUp}
                 >
-                  <CTAButton text="Start Building" variant="primary" to="/auth/student" />
-                  <CTAButton text="See How It Works" variant="secondary" />
+                  <CTAButton text="I'm a Developer" variant="primary" to="/auth/student" />
+                  <CTAButton text="I'm a Recruiter" variant="secondary" to="/auth/company/login" />
                 </motion.div>
 
                 <motion.div
@@ -342,7 +343,8 @@ const LandingPage = () => {
               viewport={{ once: true, amount: 0.15 }}
               transition={{ duration: 0.5, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
             >
-              Your Code Speaks for You
+              Trust Verified by AI.{' '}
+              <span className={styles.gradientText}>Built for Both Sides.</span>
             </motion.h2>
             <motion.p
               className={styles.ctaDescription}
@@ -351,19 +353,32 @@ const LandingPage = () => {
               viewport={{ once: true, amount: 0.15 }}
               transition={{ duration: 0.5, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
             >
-              Build real pipelines, deploy real apps, earn your Trust Score.
-              <br />
-              Companies see proof, not promises.
+              Whether you're building your career or building your team —
+              DevHubs gives you verified proof, not promises.
             </motion.p>
             <motion.div
-              className={styles.ctaButtons}
+              className={styles.ctaDualPaths}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, amount: 0.15 }}
               transition={{ duration: 0.5, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
             >
-              <CTAButton text="Start Building" variant="primary" to="/auth/student" />
-              <CTAButton text="For Companies" variant="secondary" to="/auth/company/login" />
+              <Link to="/auth/student" className={styles.ctaPathCard}>
+                <div className={styles.ctaPathIcon}><Zap size={28} /></div>
+                <div className={styles.ctaPathContent}>
+                  <strong>I'm a Developer</strong>
+                  <span>Build real projects, earn AI-verified Trust Score, get hired faster</span>
+                </div>
+                <ArrowDown size={18} className={styles.ctaPathArrow} />
+              </Link>
+              <Link to="/auth/company/login" className={`${styles.ctaPathCard} ${styles.ctaPathCardCompany}`}>
+                <div className={styles.ctaPathIcon}><Building2 size={28} /></div>
+                <div className={styles.ctaPathContent}>
+                  <strong>I'm a Recruiter</strong>
+                  <span>Browse verified talent, skip the resume lottery, hire with confidence</span>
+                </div>
+                <ArrowDown size={18} className={styles.ctaPathArrow} />
+              </Link>
             </motion.div>
             <motion.p
               className={styles.ctaFooter}
@@ -372,7 +387,7 @@ const LandingPage = () => {
               viewport={{ once: true, amount: 0.15 }}
               transition={{ duration: 0.5, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
             >
-              No credit card required • Free to start
+              No credit card required • Free to start • <Link to="/leaderboard" className={styles.ctaFooterLink}>View Leaderboard</Link>
             </motion.p>
           </motion.section>
 

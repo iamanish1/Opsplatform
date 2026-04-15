@@ -738,3 +738,140 @@
   }
 }
 
+/* ── Nav Hire CTA ── */
+.headerLinkCta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.45rem 1rem;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border-radius: 8px;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+.headerLinkCta:hover { opacity: 0.88; }
+
+/* ── Dual path CTA cards ── */
+.ctaDualPaths {
+  display: flex;
+  gap: 1.25rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+  width: 100%;
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.ctaPathCard {
+  flex: 1;
+  min-width: 280px;
+  max-width: 360px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.5rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 18px;
+  text-decoration: none;
+  color: white;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.ctaPathCard::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(99,102,241,0.1) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.ctaPathCard:hover {
+  border-color: rgba(99,102,241,0.4);
+  background: rgba(99,102,241,0.08);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(99,102,241,0.15);
+}
+.ctaPathCard:hover::before { opacity: 1; }
+
+.ctaPathCardCompany::before {
+  background: linear-gradient(135deg, rgba(16,185,129,0.1) 0%, transparent 60%);
+}
+.ctaPathCardCompany:hover {
+  border-color: rgba(16,185,129,0.4);
+  background: rgba(16,185,129,0.06);
+  box-shadow: 0 8px 32px rgba(16,185,129,0.12);
+}
+
+.ctaPathIcon {
+  flex-shrink: 0;
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  background: rgba(99,102,241,0.15);
+  border: 1px solid rgba(99,102,241,0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #818cf8;
+}
+
+.ctaPathCardCompany .ctaPathIcon {
+  background: rgba(16,185,129,0.12);
+  border-color: rgba(16,185,129,0.25);
+  color: #34d399;
+}
+
+.ctaPathContent {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  text-align: left;
+}
+
+.ctaPathContent strong {
+  font-size: 1rem;
+  font-weight: 700;
+  color: white;
+}
+
+.ctaPathContent span {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.45);
+  line-height: 1.4;
+}
+
+.ctaPathArrow {
+  flex-shrink: 0;
+  color: rgba(255,255,255,0.25);
+  transform: rotate(-90deg);
+  transition: transform 0.2s, color 0.2s;
+}
+
+.ctaPathCard:hover .ctaPathArrow {
+  color: rgba(255,255,255,0.7);
+  transform: rotate(-90deg) translateX(-3px);
+}
+
+.ctaFooterLink {
+  color: #818cf8;
+  text-decoration: none;
+  font-weight: 500;
+}
+.ctaFooterLink:hover { text-decoration: underline; }
+
+@media (max-width: 600px) {
+  .ctaDualPaths { flex-direction: column; }
+  .ctaPathCard { max-width: 100%; }
+  .headerLinkCta { padding: 0.4rem 0.75rem; font-size: 0.78rem; }
+}
+

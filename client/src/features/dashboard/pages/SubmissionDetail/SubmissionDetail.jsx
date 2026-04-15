@@ -14,16 +14,18 @@ import {
   FileText,
   AlertCircle,
   ListChecks,
-  Check,
 } from 'lucide-react';
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import GlassCard from '../../../../components/ui/GlassCard/GlassCard';
 import AIReviewPanel from '../../../../components/AIReviewPanel/AIReviewPanel';
+import ProofCard from '../../../../components/ProofCard/ProofCard';
 import { fadeInUp, staggerContainer } from '../../../../utils/animations';
 import { getSubmissionDetails, submitForReview, fetchAndAttachPR } from '../../../../services/submissionsApi';
 import { getSubmissionTasks, updateTaskStatus } from '../../../../services/taskProgressApi';
 import { useReviewStatus } from '../../../../hooks/useReviewStatus';
 import { useReviewCache } from '../../../../hooks/useReviewCache';
+import { useToast } from '../../../../contexts/ToastContext';
+import { useAuth } from '../../../../contexts/AuthContext';
 import styles from './SubmissionDetail.module.css';
 
 /**
@@ -52,7 +54,10 @@ const SubmissionDetail = memo(() => {
 
   // AI Review hooks
   const { status: reviewStatus, progress: reviewProgress, review, loading: reviewLoading, error: reviewError } = useReviewStatus(id);
-  const { cache: cachedReview, cacheReview, clearCache } = useReviewCache(id);
+  const { cache: cachedReview, clearCache } = useReviewCache(id);
+  const toast = useToast();
+  const { user: authUser } = useAuth();
+  const [confirmSubmit, setConfirmSubmit] = useState(false);
 
   const fetchSubmissionDetails = useCallback(async () => {
     if (!id) {
@@ -183,105 +188,74 @@ const SubmissionDetail = memo(() => {
           percentage: total > 0 ? Math.round((revertedCompleted / total) * 100) : 0,
         };
       });
-      // Show error message
-      alert('Failed to update task status. Please try again.');
+      toast.error('Failed to update task. Please try again.');
     } finally {
       setUpdatingTask(null);
     }
   }, [id]);
 
   const handleSubmitForReview = useCallback(async () => {
-    // Check if all tasks are complete
     const completedCount = progress.completed || 0;
     const totalCount = progress.total || 0;
-    
+
     if (completedCount !== totalCount || totalCount === 0) {
-      alert('Please complete all tasks before submitting for review.');
+      toast.warning('Please complete all tasks before submitting for review.');
       return;
     }
 
-    // Confirm submission
-    const confirmed = window.confirm(
-      'Are you sure you want to submit this project for review? Make sure all tasks are completed and your code is pushed to the repository.'
-    );
+    // Show inline confirm instead of window.confirm
+    setConfirmSubmit(true);
+  }, [progress.completed, progress.total, toast]);
 
-    if (!confirmed) {
-      return;
-    }
-
+  const handleConfirmedSubmit = useCallback(async () => {
+    setConfirmSubmit(false);
     try {
       setSubmitting(true);
       setPrFetchError(null);
       const result = await submitForReview(id);
-      
-      // Update submission state with response data
-      // This ensures we have latest PR information right after submission
+
       if (result.submission) {
         setSubmission(prev => ({
           ...prev,
           status: result.submission.status,
           prNumber: result.submission.prNumber,
         }));
-        // Mark that automatic PR fetch was attempted
         setPrFetchAttempted(true);
       }
-      
-      // Refresh submission data to get updated status and all details
+
       await fetchSubmissionDetails();
-      
-      // Clear any cached review and start polling for new review
       clearCache();
-      
-      // Show success message
-      const successMessage = result.submission?.prAttached 
-        ? `Project submitted successfully! PR #${result.submission.prNumber} detected and attached.`
+
+      const msg = result.submission?.prAttached
+        ? `Submitted! PR #${result.submission.prNumber} detected and attached.`
         : result.message || 'Project submitted for review successfully!';
-      
-      alert(successMessage);
+      toast.success(msg);
     } catch (err) {
-      console.error('Error submitting for review:', err);
-      const errorMessage = err.message || 'Failed to submit project for review';
-      
-      if (errorMessage.includes('tasks')) {
-        alert(errorMessage);
-      } else {
-        alert(errorMessage);
-      }
+      toast.error(err.message || 'Failed to submit project for review');
     } finally {
       setSubmitting(false);
     }
-  }, [id, progress.completed, progress.total, fetchSubmissionDetails, clearCache]);
+  }, [id, fetchSubmissionDetails, clearCache, toast]);
 
   const handleFetchPR = useCallback(async () => {
     try {
       setFetchingPR(true);
       setPrFetchError(null);
       const result = await fetchAndAttachPR(id);
-      
-      // Update submission state with PR information
-      setSubmission(prev => ({
-        ...prev,
-        prNumber: result.submission.prNumber,
-      }));
-      
-      // Refresh submission data to get updated prNumber
+
+      setSubmission(prev => ({ ...prev, prNumber: result.submission.prNumber }));
       await fetchSubmissionDetails();
-      
-      // Mark PR fetch as completed
       setPrFetchAttempted(true);
-      
-      // Show success message
-      alert(result.message || `PR #${result.submission.prNumber} successfully attached!`);
+      toast.success(result.message || `PR #${result.submission.prNumber} successfully attached!`);
     } catch (err) {
-      console.error('Error fetching PR:', err);
       const errorMessage = err.message || 'Failed to fetch PR information';
       setPrFetchError(errorMessage);
       setPrFetchAttempted(true);
-      alert(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setFetchingPR(false);
     }
-  }, [id, fetchSubmissionDetails]);
+  }, [id, fetchSubmissionDetails, toast]);
 
   const getStatusConfig = () => {
     if (!submission) return null;
@@ -500,23 +474,33 @@ const SubmissionDetail = memo(() => {
                           : `Complete ${progress.total - progress.completed} more task${progress.total - progress.completed === 1 ? '' : 's'} to submit for review.`}
                       </p>
                     </div>
-                    <button
-                      onClick={handleSubmitForReview}
-                      disabled={submitting || progress.completed !== progress.total || progress.total === 0}
-                      className={styles.submitButton}
-                    >
-                      {submitting ? (
-                        <>
-                          <Loader2 size={20} className={styles.buttonLoader} />
-                          Submitting...
-                        </>
-                      ) : (
-                        <>
-                          <CheckCircle2 size={20} />
-                          Submit for Review
-                        </>
-                      )}
-                    </button>
+
+                    {/* Inline confirm banner */}
+                    {confirmSubmit && (
+                      <div className={styles.confirmBanner}>
+                        <p className={styles.confirmText}>Make sure your code is pushed to GitHub before submitting.</p>
+                        <div className={styles.confirmActions}>
+                          <button className={styles.confirmCancelBtn} onClick={() => setConfirmSubmit(false)}>Cancel</button>
+                          <button className={styles.confirmOkBtn} onClick={handleConfirmedSubmit}>
+                            <CheckCircle2 size={16} /> Yes, Submit Now
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {!confirmSubmit && (
+                      <button
+                        onClick={handleSubmitForReview}
+                        disabled={submitting || progress.completed !== progress.total || progress.total === 0}
+                        className={styles.submitButton}
+                      >
+                        {submitting ? (
+                          <><Loader2 size={20} className={styles.buttonLoader} />Submitting...</>
+                        ) : (
+                          <><CheckCircle2 size={20} />Submit for Review</>
+                        )}
+                      </button>
+                    )}
                   </div>
                 )}
 
@@ -682,6 +666,24 @@ const SubmissionDetail = memo(() => {
                     </div>
                   )}
                 </div>
+              </GlassCard>
+            </motion.div>
+          )}
+
+          {/* Proof Card — share your achievement */}
+          {submission.status === 'REVIEWED' && submission.score && submission.portfolio?.slug && (
+            <motion.div variants={fadeInUp}>
+              <GlassCard className={styles.reviewCard}>
+                <h2 className={styles.sectionTitle}>Share Your Achievement</h2>
+                <p style={{ fontSize: '0.82rem', color: 'rgba(255,255,255,0.45)', marginBottom: '1.25rem' }}>
+                  Share your AI-verified Trust Score with recruiters and on social media.
+                </p>
+                <ProofCard
+                  user={{ name: authUser?.name, githubUsername: authUser?.githubUsername, avatar: authUser?.avatar }}
+                  score={submission.score}
+                  portfolioSlug={submission.portfolio.slug}
+                  compact
+                />
               </GlassCard>
             </motion.div>
           )}

@@ -1,49 +1,35 @@
 import { memo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { Mail, ArrowLeft, Github, UserPlus, Users, Clock, DollarSign, TrendingDown } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Mail, ArrowLeft, GitBranch, UserPlus, Users, Clock, DollarSign } from 'lucide-react';
 import AuthLayout from '../../components/AuthLayout/AuthLayout';
 import AuthForm from '../../components/AuthForm/AuthForm';
 import { fadeInUp, staggerContainer } from '../../../../utils/animations';
+import { companyLogin } from '../../../../services/companyApi';
+import { useAuth } from '../../../../contexts/AuthContext';
+import { useToast } from '../../../../contexts/ToastContext';
 import styles from './CompanyLogin.module.css';
 
 const CompanyLogin = memo(() => {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
+  const { login } = useAuth();
+  const { success, error: toastError } = useToast();
+  const navigate = useNavigate();
 
   const fields = [
-    {
-      name: 'email',
-      type: 'email',
-      label: 'Email Address',
-      placeholder: 'company@example.com',
-      required: true,
-    },
-    {
-      name: 'password',
-      type: 'password',
-      label: 'Password',
-      placeholder: 'Enter your password',
-      required: true,
-    },
+    { name: 'email', type: 'email', label: 'Email Address', placeholder: 'company@example.com', required: true },
+    { name: 'password', type: 'password', label: 'Password', placeholder: 'Enter your password', required: true },
   ];
 
   const handleSubmit = async (formData) => {
     setLoading(true);
     setErrors({});
 
-    // Client-side validation
     const validationErrors = {};
-    
-    if (!formData.email) {
-      validationErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      validationErrors.email = 'Please enter a valid email address';
-    }
-
-    if (!formData.password) {
-      validationErrors.password = 'Password is required';
-    }
+    if (!formData.email) validationErrors.email = 'Email is required';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) validationErrors.email = 'Please enter a valid email';
+    if (!formData.password) validationErrors.password = 'Password is required';
 
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
@@ -51,31 +37,24 @@ const CompanyLogin = memo(() => {
       return;
     }
 
-    // Placeholder for API call
-    // In production: await fetch('/api/company/login', { ... })
-    console.log('Login attempt:', formData);
-    
-    setTimeout(() => {
+    try {
+      const data = await companyLogin(formData.email, formData.password);
+      login(data.token, data.user);
+      success('Welcome back!', 'Login successful');
+      navigate('/company/dashboard');
+    } catch (err) {
+      toastError(err.message || 'Login failed. Please try again.');
+      setErrors({ email: ' ', password: 'Invalid email or password' });
+    } finally {
       setLoading(false);
-      // Simulate error for demo
-      // setErrors({ email: 'Invalid email or password' });
-    }, 1500);
+    }
   };
 
   return (
     <AuthLayout>
-      <motion.div
-        className={styles.companyLoginCard}
-        variants={staggerContainer}
-        initial="hidden"
-        animate="visible"
-      >
+      <motion.div className={styles.companyLoginCard} variants={staggerContainer} initial="hidden" animate="visible">
         <motion.div className={styles.cardHeader} variants={fadeInUp}>
-          <motion.div 
-            className={styles.iconWrapper}
-            whileHover={{ scale: 1.1 }}
-            transition={{ duration: 0.3 }}
-          >
+          <motion.div className={styles.iconWrapper} whileHover={{ scale: 1.1 }} transition={{ duration: 0.3 }}>
             <Mail size={28} />
           </motion.div>
           <h1 className={styles.cardTitle}>
@@ -87,23 +66,10 @@ const CompanyLogin = memo(() => {
         </motion.div>
 
         <motion.div className={styles.cardContent} variants={fadeInUp}>
-          <AuthForm
-            fields={fields}
-            onSubmit={handleSubmit}
-            submitText="Sign In"
-            loading={loading}
-            errors={errors}
-          />
+          <AuthForm fields={fields} onSubmit={handleSubmit} submitText="Sign In" loading={loading} errors={errors} />
         </motion.div>
 
-        {/* Quick Value Props */}
-        <motion.div 
-          className={styles.valueProps}
-          variants={fadeInUp}
-          initial="hidden"
-          animate="visible"
-          transition={{ delay: 0.3 }}
-        >
+        <motion.div className={styles.valueProps} variants={fadeInUp} initial="hidden" animate="visible" transition={{ delay: 0.3 }}>
           <div className={styles.valuePropItem}>
             <Users size={18} className={styles.valuePropIcon} />
             <div className={styles.valuePropContent}>
@@ -132,18 +98,14 @@ const CompanyLogin = memo(() => {
         <motion.div className={styles.cardFooter} variants={fadeInUp}>
           <div className={styles.footerLinks}>
             <Link to="/auth/company/signup" className={styles.link}>
-              <UserPlus size={16} />
-              <span>Create an account</span>
+              <UserPlus size={16} /><span>Create an account</span>
             </Link>
             <Link to="/auth/student" className={styles.link}>
-              <Github size={16} />
-              <span>Student Login</span>
+              <GitBranch size={16} /><span>Student Login</span>
             </Link>
           </div>
-
           <Link to="/" className={styles.backLink}>
-            <ArrowLeft size={16} />
-            <span>Back to Home</span>
+            <ArrowLeft size={16} /><span>Back to Home</span>
           </Link>
         </motion.div>
       </motion.div>
@@ -152,5 +114,4 @@ const CompanyLogin = memo(() => {
 });
 
 CompanyLogin.displayName = 'CompanyLogin';
-
 export default CompanyLogin;
