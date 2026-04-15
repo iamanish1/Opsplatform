@@ -87,6 +87,26 @@ async function findById(submissionId) {
 }
 
 /**
+ * Find only the fields needed by the lightweight status polling endpoint.
+ * @param {string} submissionId - Submission ID
+ * @returns {Promise<Object|null>} Minimal submission status data
+ */
+async function findStatusById(submissionId) {
+  return prisma.submission.findUnique({
+    where: {
+      id: submissionId,
+    },
+    select: {
+      id: true,
+      userId: true,
+      status: true,
+      prNumber: true,
+      updatedAt: true,
+    },
+  });
+}
+
+/**
  * Find submission by repository URL (exact match)
  * Used by webhook to map PR events to submissions
  * @param {string} repoUrl - Repository URL
@@ -241,6 +261,7 @@ module.exports = {
   create,
   update,
   findById,
+  findStatusById,
   findByRepoUrl,
   findByRepoUrlAndUser,
   findByPRNumber,

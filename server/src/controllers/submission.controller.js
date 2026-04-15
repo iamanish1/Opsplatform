@@ -217,8 +217,9 @@ async function getSubmissionStatus(req, res, next) {
   try {
     const { submissionId } = req.params;
     const userId = req.user.id;
+    const liveProgress = reviewProgress.get(submissionId);
 
-    const submission = await submissionRepo.findById(submissionId);
+    const submission = await submissionRepo.findStatusById(submissionId);
     if (!submission) {
       return res.status(404).json({ success: false, error: { code: 'SUBMISSION_NOT_FOUND', message: 'Submission not found' } });
     }
@@ -226,13 +227,12 @@ async function getSubmissionStatus(req, res, next) {
       return res.status(403).json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized access to submission' } });
     }
 
-    const review = await prReviewRepo.findBySubmissionId(submissionId);
-    const liveProgress = reviewProgress.get(submissionId);
     const status = liveProgress?.status || (submission.status === 'REVIEWED'
       ? 'REVIEWED'
       : submission.status === 'SUBMITTED'
         ? 'REVIEWING'
         : 'PENDING');
+    const hasReview = submission.status === 'REVIEWED';
 
     res.json({
       submissionId: submission.id,
@@ -242,7 +242,7 @@ async function getSubmissionStatus(req, res, next) {
       message: liveProgress?.message || null,
       error: liveProgress?.error || null,
       prNumber: submission.prNumber,
-      hasReview: !!review,
+      hasReview,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
