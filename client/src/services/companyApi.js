@@ -1,4 +1,4 @@
-import { get, post, put } from './api';
+import { get, post, patch } from './api';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 
@@ -58,7 +58,7 @@ export const completeInterviewRequest = (id) => post(`/interview-requests/${id}/
 
 export const getCompanyProfile = () => get('/company/profile');
 
-export const updateCompanyProfile = (data) => put('/company/profile', data);
+export const updateCompanyProfile = (data) => patch('/company/profile', data);
 
 // ─── Public leaderboard (no auth) ────────────────────────────────────────────
 

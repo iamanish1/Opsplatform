@@ -1,12 +1,16 @@
 import { memo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
-import { Building2, ArrowLeft, Github, LogIn, CheckCircle2, XCircle, Eye, EyeOff, AlertCircle, Users, Clock, DollarSign, Target } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Building2, ArrowLeft, GitBranch, LogIn, CheckCircle2, XCircle, Eye, EyeOff, AlertCircle, Users, Clock, DollarSign, Target } from 'lucide-react';
 import AuthLayout from '../../components/AuthLayout/AuthLayout';
 import { fadeInUp, staggerContainer } from '../../../../utils/animations';
+import { companySignup } from '../../../../services/companyApi';
+import { useAuth } from '../../../../contexts/AuthContext';
 import styles from './CompanySignup.module.css';
 
 const CompanySignup = memo(() => {
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [passwordStrength, setPasswordStrength] = useState({
@@ -86,14 +90,18 @@ const CompanySignup = memo(() => {
       return;
     }
 
-    // Placeholder for API call
-    // In production: await fetch('/api/company/signup', { ... })
-    console.log('Signup attempt:', formData);
-    
-    setTimeout(() => {
+    try {
+      const data = await companySignup({
+        companyName: formData.companyName,
+        email: formData.email,
+        password: formData.password,
+      });
+      login(data.token, data.user);
+      navigate('/company/dashboard', { replace: true });
+    } catch (err) {
+      setErrors({ submit: err.message || 'Signup failed. Please try again.' });
       setLoading(false);
-      // Simulate success - in production, redirect to dashboard
-    }, 1500);
+    }
   };
 
   const painPoints = [
@@ -294,6 +302,18 @@ const CompanySignup = memo(() => {
               </div>
             </div>
             
+            {errors.submit && (
+              <motion.div
+                className={styles.errorMessage}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+              >
+                <AlertCircle size={16} />
+                <span>{errors.submit}</span>
+              </motion.div>
+            )}
+
             <motion.button
               type="submit"
               className={styles.submitButton}
@@ -324,7 +344,7 @@ const CompanySignup = memo(() => {
               <span>Already have an account?</span>
             </Link>
             <Link to="/auth/student" className={styles.link}>
-              <Github size={16} />
+              <GitBranch size={16} />
               <span>Student Sign Up</span>
             </Link>
           </div>
