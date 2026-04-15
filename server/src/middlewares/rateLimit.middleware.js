@@ -56,11 +56,11 @@ const interviewRequestLimiter = rateLimit({
 
 /**
  * Rate limiter for notification endpoints
- * 100 requests per 15 minutes per IP
+ * 500 requests per 15 minutes per IP (polling endpoint — needs headroom)
  */
 const notificationLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100,
+  max: 500,
   message: {
     success: false,
     error: {

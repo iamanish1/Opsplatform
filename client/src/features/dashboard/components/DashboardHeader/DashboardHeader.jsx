@@ -31,7 +31,6 @@ const DashboardHeader = memo(({ onMenuClick }) => {
   const prefersReducedMotion = useReducedMotion();
   const { logout, user } = useAuth();
   const navigate = useNavigate();
-  const pollRef = useRef(null);
 
   const failCount = useRef(0);
 
@@ -40,8 +39,9 @@ const DashboardHeader = memo(({ onMenuClick }) => {
       const data = await getUnreadCount();
       setUnreadCount(data.count ?? data.unreadCount ?? 0);
       failCount.current = 0; // reset on success
-    } catch {
-      failCount.current += 1;
+    } catch (err) {
+      // 429 rate-limited or DB down — both count as failures for backoff
+      failCount.current += (err?.status === 429) ? 3 : 1; // 429 jumps straight to stop
     }
   }, []);
 
