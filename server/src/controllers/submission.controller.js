@@ -3,9 +3,15 @@ const githubService = require('../services/github.service');
 const submissionRepo = require('../repositories/submission.repo');
 const prReviewRepo = require('../repositories/prReview.repo');
 const userRepo = require('../repositories/user.repo');
+const reviewProgress = require('../services/reviewProgress.service');
 const logger = require('../utils/logger');
 
 function calculateReviewProgress(submission) {
+  const liveProgress = reviewProgress.get(submission.id);
+  if (liveProgress) {
+    return liveProgress.progress;
+  }
+
   if (submission.status === 'REVIEWED') {
     return 100;
   }
@@ -53,12 +59,16 @@ function formatReviewResponse(submission, review) {
   const score = submission.score;
   const details = score?.detailsJson || {};
   const reviewJson = review?.reviewJson || {};
+  const liveProgress = reviewProgress.get(submission.id);
 
   return {
     id: review?.id || null,
     submissionId: submission.id,
-    status: submission.status,
+    status: liveProgress?.status || submission.status,
     progress: calculateReviewProgress(submission),
+    step: liveProgress?.step || null,
+    message: liveProgress?.message || null,
+    error: liveProgress?.error || null,
     trustScore: score?.totalScore ?? null,
     badge: score?.badge ?? null,
     categories: buildCategories(score),
@@ -217,16 +227,20 @@ async function getSubmissionStatus(req, res, next) {
     }
 
     const review = await prReviewRepo.findBySubmissionId(submissionId);
-    const status = submission.status === 'REVIEWED'
+    const liveProgress = reviewProgress.get(submissionId);
+    const status = liveProgress?.status || (submission.status === 'REVIEWED'
       ? 'REVIEWED'
       : submission.status === 'SUBMITTED'
         ? 'REVIEWING'
-        : 'PENDING';
+        : 'PENDING');
 
     res.json({
       submissionId: submission.id,
       status,
       progress: calculateReviewProgress(submission),
+      step: liveProgress?.step || null,
+      message: liveProgress?.message || null,
+      error: liveProgress?.error || null,
       prNumber: submission.prNumber,
       hasReview: !!review,
       timestamp: new Date().toISOString(),

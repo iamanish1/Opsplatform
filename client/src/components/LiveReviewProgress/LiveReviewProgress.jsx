@@ -7,12 +7,12 @@ import {
 import styles from './LiveReviewProgress.module.css';
 
 const REVIEW_STEPS = [
-  { id: 1, icon: GitPullRequest, label: 'Fetching PR',          desc: 'Reading your pull request from GitHub',       threshold: 14  },
-  { id: 2, icon: Shield,         label: 'Static Analysis',      desc: 'ESLint, secrets scan, Dockerfile checks',      threshold: 28  },
-  { id: 3, icon: Activity,       label: 'CI/CD Logs',           desc: 'Checking pipeline status and test results',    threshold: 42  },
-  { id: 4, icon: Cpu,            label: 'Building Prompt',      desc: 'Assembling optimised AI review context',       threshold: 55  },
-  { id: 5, icon: Brain,          label: 'AI Code Review',       desc: 'Groq LLM analysing code quality & patterns',   threshold: 75  },
-  { id: 6, icon: BarChart3,      label: 'Computing Scores',     desc: 'Fusion scoring across 10 categories',          threshold: 88  },
+  { id: 1, icon: GitPullRequest, label: 'Fetching PR',          desc: 'Reading your pull request from GitHub',       threshold: 24  },
+  { id: 2, icon: Shield,         label: 'Static Analysis',      desc: 'ESLint, secrets scan, Dockerfile checks',      threshold: 50  },
+  { id: 3, icon: Activity,       label: 'CI/CD Logs',           desc: 'Checking pipeline status and test results',    threshold: 62  },
+  { id: 4, icon: Cpu,            label: 'Building Prompt',      desc: 'Assembling optimised AI review context',       threshold: 74  },
+  { id: 5, icon: Brain,          label: 'AI Code Review',       desc: 'Groq LLM analysing code quality & patterns',   threshold: 88  },
+  { id: 6, icon: BarChart3,      label: 'Computing Scores',     desc: 'Fusion scoring across 10 categories',          threshold: 96  },
   { id: 7, icon: Award,          label: 'Generating Portfolio', desc: 'Creating your shareable trust certificate',    threshold: 100 },
 ];
 

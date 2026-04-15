@@ -5,6 +5,7 @@ const userRepo = require('../repositories/user.repo');
 const taskProgressService = require('./taskProgress.service');
 const githubService = require('./github.service');
 const reviewService = require('./review.service');
+const reviewProgress = require('./reviewProgress.service');
 const logger = require('../utils/logger');
 
 /**
@@ -89,6 +90,11 @@ function buildRepoFullName(repoUrl) {
 }
 
 function triggerReviewAsync({ submissionId, repoUrl, prNumber, userGithubInstallId, userGithubToken }) {
+  if (reviewProgress.isRunning(submissionId)) {
+    logger.info({ submissionId }, 'Review already running; skipping duplicate trigger');
+    return;
+  }
+
   const repoFullName = buildRepoFullName(repoUrl);
 
   if (!repoFullName || !prNumber || (!userGithubInstallId && !userGithubToken)) {

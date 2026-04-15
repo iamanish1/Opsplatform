@@ -12,6 +12,7 @@ const scoringService = require('./review/scoring.service');
 const prReviewRepo = require('../repositories/prReview.repo');
 const scoreRepo = require('../repositories/score.repo');
 const submissionRepo = require('../repositories/submission.repo');
+const reviewProgress = require('./reviewProgress.service');
 
 function toScoreInt(value) {
   return Math.max(0, Math.min(10, Math.round(Number(value) || 0)));
@@ -46,7 +47,10 @@ async function processPRReview(jobData) {
   let finalScores;
 
   try {
+    reviewProgress.start(submissionId, 'Preparing review');
+
     // STEP 2: Generate GitHub client
+    reviewProgress.update(submissionId, 12, 'github-auth', 'Connecting to GitHub');
     console.log(`[Review Service] Step 2: Creating GitHub client...`);
     if (installationId) {
       const githubApp = require('../utils/github-app');
@@ -59,13 +63,17 @@ async function processPRReview(jobData) {
     }
 
     // STEP 3: Fetch PR Metadata
+    reviewProgress.update(submissionId, 20, 'fetching-pr', 'Fetching PR metadata');
     console.log(`[Review Service] Step 3: Fetching PR metadata...`);
     prMetadata = await githubService.fetchPRMetadata(octokit, repoFullName, prNumber);
     console.log(`[Review Service] PR metadata fetched: ${prMetadata.title}`);
 
     // STEP 4: Fetch Diff + Changed Files
+    reviewProgress.update(submissionId, 32, 'fetching-diff', 'Fetching changed files');
     console.log(`[Review Service] Step 4: Fetching PR diff and files...`);
-    diffData = await githubService.fetchPRDiff(octokit, repoFullName, prNumber, 5, 1000);
+    const maxFiles = parseInt(process.env.REVIEW_MAX_FILES || '3', 10);
+    const maxLines = parseInt(process.env.REVIEW_MAX_LINES_PER_FILE || '250', 10);
+    diffData = await githubService.fetchPRDiff(octokit, repoFullName, prNumber, maxFiles, maxLines);
     console.log(`[Review Service] Diff fetched: ${diffData.totalFiles} files, ${diffData.totalAdditions} additions, ${diffData.totalDeletions} deletions`);
     
     // Sanitize diff data before sending to LLM
@@ -73,6 +81,7 @@ async function processPRReview(jobData) {
     diffData.files = sanitizeFiles(diffData.files);
 
     // STEP 5: Run Static Analysis
+    reviewProgress.update(submissionId, 45, 'static-analysis', 'Running static analysis');
     console.log(`[Review Service] Step 5: Running static analysis...`);
     const prFiles = diffData.files.map((file) => ({
       filename: file.filename,
@@ -93,26 +102,31 @@ async function processPRReview(jobData) {
     console.log(`[Review Service] Static analysis complete: ${staticReport.eslintErrors} ESLint errors, ${staticReport.securityAlertCount} security alerts`);
 
     // STEP 6: Fetch CI/CD Logs
+    reviewProgress.update(submissionId, 56, 'ci-logs', 'Checking CI/CD status');
     console.log(`[Review Service] Step 6: Fetching CI/CD logs...`);
     ciReport = await ciLogsService.fetchCILogs(octokit, repoFullName, prNumber);
     console.log(`[Review Service] CI logs fetched: status = ${ciReport.ciStatus}`);
 
     // STEP 7: Build LLM Prompt
+    reviewProgress.update(submissionId, 68, 'building-prompt', 'Building AI review prompt');
     console.log(`[Review Service] Step 7: Building LLM prompt...`);
     const prompt = promptService.buildPrompt(prMetadata, diffData, staticReport, ciReport);
     console.log(`[Review Service] Prompt built (${prompt.length} characters)`);
 
     // STEP 8: Run LLM (Llama 3)
+    reviewProgress.update(submissionId, 78, 'ai-review', 'Running AI code review');
     console.log(`[Review Service] Step 8: Calling Llama 3...`);
     llmScores = await llamaService.generateReview(prompt);
     console.log(`[Review Service] LLM review complete`);
 
     // STEP 9: Apply Fusion Scoring
+    reviewProgress.update(submissionId, 88, 'scoring', 'Computing review scores');
     console.log(`[Review Service] Step 9: Applying fusion scoring rules...`);
     finalScores = scoringService.generateScore(llmScores, staticReport, ciReport, prMetadata);
     console.log(`[Review Service] Final scores: total = ${finalScores.totalScore}/100, badge = ${finalScores.badge}`);
 
     // STEP 10: Save PRReview & Score
+    reviewProgress.update(submissionId, 94, 'saving', 'Saving review results');
     console.log(`[Review Service] Step 10: Saving review and score to database...`);
 
     // Create PRReview record
@@ -147,6 +161,7 @@ async function processPRReview(jobData) {
 
     // Update Submission status
     await submissionRepo.updateStatus(submissionId, 'REVIEWED');
+    reviewProgress.complete(submissionId);
     console.log(`[Review Service] Submission status updated to REVIEWED`);
 
     // Emit ScoreReady event
@@ -166,13 +181,17 @@ async function processPRReview(jobData) {
     // Enqueue portfolio generation
     console.log(`[Review Service] Enqueueing portfolio generation...`);
     try {
-      const portfolioQueue = require('../queues/portfolio.queue');
-      await portfolioQueue.add('generate', {
-        userId: submission.userId,
-        submissionId: submission.id,
-        scoreId: score.id,
-      });
-      console.log(`[Review Service] Portfolio generation job enqueued`);
+      if (process.env.REDIS_DISABLED === 'true') {
+        console.log(`[Review Service] Portfolio queue skipped because Redis is disabled`);
+      } else {
+        const portfolioQueue = require('../queues/portfolio.queue');
+        await portfolioQueue.add('generate', {
+          userId: submission.userId,
+          submissionId: submission.id,
+          scoreId: score.id,
+        });
+        console.log(`[Review Service] Portfolio generation job enqueued`);
+      }
     } catch (portfolioError) {
       console.warn(`[Review Service] Failed to enqueue portfolio generation: ${portfolioError.message}`);
       // Don't fail the whole review if portfolio queue fails
@@ -199,6 +218,7 @@ async function processPRReview(jobData) {
       llmFallback: llmScores.fallback || false,
     };
   } catch (error) {
+    reviewProgress.fail(submissionId, error);
     console.error(`[Review Service] Error in PR review pipeline:`, {
       error: error.message,
       stack: error.stack,

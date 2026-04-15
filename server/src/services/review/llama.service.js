@@ -11,10 +11,10 @@ const logger = require('../../utils/logger');
 
 // Configuration
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
-const GROQ_MODEL = process.env.GROQ_MODEL || 'mixtral-8x7b-32768';
+const GROQ_MODEL = process.env.GROQ_MODEL || 'llama-3.1-8b-instant';
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
-const LLM_TIMEOUT = parseInt(process.env.LLM_TIMEOUT || '30000', 10);
-const MAX_RETRIES = parseInt(process.env.LLM_MAX_RETRIES || '3', 10);
+const LLM_TIMEOUT = parseInt(process.env.LLM_TIMEOUT || '12000', 10);
+const MAX_RETRIES = parseInt(process.env.LLM_MAX_RETRIES || '1', 10);
 const USE_CACHE = process.env.USE_REVIEW_CACHE !== 'false'; // Default: enabled
 
 // Initialize cache service
@@ -57,9 +57,10 @@ async function callLlama(prompt) {
             content: prompt,
           },
         ],
-        temperature: 0.7,
+        temperature: 0.2,
         top_p: 0.9,
-        max_tokens: 2000,
+        max_tokens: 900,
+        response_format: { type: 'json_object' },
       },
       {
         timeout: LLM_TIMEOUT,
@@ -137,6 +138,39 @@ async function callLlama(prompt) {
 
     if (error.response?.status === 400) {
       const detail = error.response.data?.error?.message || 'Bad request';
+      if (detail.includes('response_format')) {
+        logger.warn('Groq model does not support JSON response_format; retrying without it');
+        const response = await axios.post(
+          GROQ_API_URL,
+          {
+            model: GROQ_MODEL,
+            messages: [
+              {
+                role: 'user',
+                content: prompt,
+              },
+            ],
+            temperature: 0.2,
+            top_p: 0.9,
+            max_tokens: 900,
+          },
+          {
+            timeout: LLM_TIMEOUT,
+            headers: {
+              'Authorization': `Bearer ${GROQ_API_KEY}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+
+        return {
+          content: response.data.choices?.[0]?.message?.content,
+          usage: response.data.usage || {},
+          model: GROQ_MODEL,
+          cost: 0,
+        };
+      }
+
       throw new Error(`Groq API error: ${detail}`);
     }
 

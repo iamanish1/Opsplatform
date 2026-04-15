@@ -18,11 +18,14 @@ function summarizeDiff(files) {
   // Sanitize files before processing
   const sanitizedFiles = sanitizeFiles(files);
 
+  const maxPromptFiles = parseInt(process.env.REVIEW_PROMPT_MAX_FILES || '3', 10);
+  const maxPromptLines = parseInt(process.env.REVIEW_PROMPT_MAX_LINES || '30', 10);
+
   const summary = sanitizedFiles
-    .slice(0, 5) // Top 5 files
+    .slice(0, maxPromptFiles)
     .map((file) => {
       const patch = file.patch ? sanitizeDiff(file.patch) : 'No diff available';
-      const lines = patch.split('\n').slice(0, 50).join('\n');
+      const lines = patch.split('\n').slice(0, maxPromptLines).join('\n');
       return `File: ${file.filename}\nStatus: ${file.status}\nChanges: +${file.additions} -${file.deletions}\n\n${lines}`;
     })
     .join('\n\n---\n\n');
@@ -122,7 +125,7 @@ Files changed: ${prMetadata.changedFiles}
 Additions: +${prMetadata.additions}
 Deletions: -${prMetadata.deletions}
 
-Diff Summary (top 5 files):
+Diff Summary:
 ${diffSummary}
 
 Static Analysis Results:
@@ -147,7 +150,7 @@ Evaluate this PR and score it on 10 parameters (0-10 each, where 10 is excellent
 
 IMPORTANT: If you are unsure about any score or aspect of the code, use "unknown" in your response. Do not guess or make assumptions.
 
-OUTPUT JSON ONLY (no markdown, no explanations, just valid JSON):
+OUTPUT JSON ONLY (no markdown, no explanations, just valid compact JSON):
 {
   "codeQuality": <0-10>,
   "problemSolving": <0-10>,
