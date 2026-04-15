@@ -1,8 +1,76 @@
 const submissionService = require('../services/submission.service');
 const githubService = require('../services/github.service');
 const submissionRepo = require('../repositories/submission.repo');
+const prReviewRepo = require('../repositories/prReview.repo');
 const userRepo = require('../repositories/user.repo');
 const logger = require('../utils/logger');
+
+function calculateReviewProgress(submission) {
+  if (submission.status === 'REVIEWED') {
+    return 100;
+  }
+
+  if (submission.status === 'SUBMITTED' && submission.prNumber) {
+    return 65;
+  }
+
+  if (submission.status === 'SUBMITTED') {
+    return 25;
+  }
+
+  return 0;
+}
+
+function buildCategories(score) {
+  if (!score) {
+    return [];
+  }
+
+  const labels = {
+    codeQuality: 'Code Quality',
+    problemSolving: 'Problem Solving',
+    bugRisk: 'Bug Risk',
+    devopsExecution: 'DevOps Execution',
+    optimization: 'Optimization',
+    documentation: 'Documentation',
+    gitMaturity: 'Git Maturity',
+    collaboration: 'Collaboration',
+    deliverySpeed: 'Delivery Speed',
+    security: 'Security',
+  };
+
+  const breakdown = score.detailsJson?.breakdown || {};
+
+  return Object.entries(labels).map(([key, label]) => ({
+    id: key,
+    name: label,
+    score: breakdown[key] ?? score[key] ?? 0,
+    maxScore: 10,
+  }));
+}
+
+function formatReviewResponse(submission, review) {
+  const score = submission.score;
+  const details = score?.detailsJson || {};
+  const reviewJson = review?.reviewJson || {};
+
+  return {
+    id: review?.id || null,
+    submissionId: submission.id,
+    status: submission.status,
+    progress: calculateReviewProgress(submission),
+    trustScore: score?.totalScore ?? null,
+    badge: score?.badge ?? null,
+    categories: buildCategories(score),
+    summary: details.summary || reviewJson.summary || null,
+    suggestions: details.suggestions || review?.suggestions || reviewJson.suggestions || [],
+    staticAnalysis: review?.staticReport || details.raw?.staticReport || null,
+    evidence: details.evidence || [],
+    prNumber: submission.prNumber,
+    createdAt: review?.createdAt || null,
+    updatedAt: submission.updatedAt,
+  };
+}
 
 /**
  * GET /api/submissions
@@ -131,6 +199,97 @@ async function submitForReview(req, res, next) {
 }
 
 /**
+ * GET /api/submissions/:submissionId/status
+ * Get AI review status and progress
+ * Auth: Required
+ */
+async function getSubmissionStatus(req, res, next) {
+  try {
+    const { submissionId } = req.params;
+    const userId = req.user.id;
+
+    const submission = await submissionRepo.findById(submissionId);
+    if (!submission) {
+      return res.status(404).json({ success: false, error: { code: 'SUBMISSION_NOT_FOUND', message: 'Submission not found' } });
+    }
+    if (submission.userId !== userId) {
+      return res.status(403).json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized access to submission' } });
+    }
+
+    const review = await prReviewRepo.findBySubmissionId(submissionId);
+    const status = submission.status === 'REVIEWED'
+      ? 'REVIEWED'
+      : submission.status === 'SUBMITTED'
+        ? 'REVIEWING'
+        : 'PENDING';
+
+    res.json({
+      submissionId: submission.id,
+      status,
+      progress: calculateReviewProgress(submission),
+      prNumber: submission.prNumber,
+      hasReview: !!review,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * GET /api/submissions/:submissionId/review
+ * Get full AI review details
+ * Auth: Required
+ */
+async function getReviewDetails(req, res, next) {
+  try {
+    const { submissionId } = req.params;
+    const userId = req.user.id;
+
+    const submission = await submissionRepo.findById(submissionId);
+    if (!submission) {
+      return res.status(404).json({ success: false, error: { code: 'SUBMISSION_NOT_FOUND', message: 'Submission not found' } });
+    }
+    if (submission.userId !== userId) {
+      return res.status(403).json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized access to submission' } });
+    }
+
+    const review = await prReviewRepo.findBySubmissionId(submissionId);
+    if (submission.status !== 'REVIEWED' || !review || !submission.score) {
+      return res.status(202).json(formatReviewResponse(submission, review));
+    }
+
+    res.json(formatReviewResponse(submission, review));
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * GET /api/submissions/:submissionId/review/categories
+ * Get category breakdown for a reviewed submission
+ * Auth: Required
+ */
+async function getReviewCategories(req, res, next) {
+  try {
+    const { submissionId } = req.params;
+    const userId = req.user.id;
+
+    const submission = await submissionRepo.findById(submissionId);
+    if (!submission) {
+      return res.status(404).json({ success: false, error: { code: 'SUBMISSION_NOT_FOUND', message: 'Submission not found' } });
+    }
+    if (submission.userId !== userId) {
+      return res.status(403).json({ success: false, error: { code: 'UNAUTHORIZED', message: 'Unauthorized access to submission' } });
+    }
+
+    res.json(buildCategories(submission.score));
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
  * POST /api/submissions/:submissionId/fetch-pr
  * Manually fetch and attach PR information from GitHub
  * Uses cascading fallback mechanism: primary + diagnostic
@@ -177,6 +336,15 @@ async function fetchAndAttachPR(req, res, next) {
 
     // If PR already attached, return success
     if (submission.prNumber) {
+      const user = await userRepo.findById(userId);
+      submissionService.triggerReviewAsync({
+        submissionId,
+        repoUrl: submission.repoUrl,
+        prNumber: submission.prNumber,
+        userGithubInstallId: user?.githubInstallId,
+        userGithubToken: user?.githubToken,
+      });
+
       return res.json({
         success: true,
         message: 'PR already attached to submission',
@@ -242,6 +410,14 @@ async function fetchAndAttachPR(req, res, next) {
     // Attach PR to submission
     await submissionRepo.attachPR(submissionId, prNumber);
     logger.info({ submissionId, prNumber }, 'Successfully attached PR via manual diagnostic endpoint');
+
+    submissionService.triggerReviewAsync({
+      submissionId,
+      repoUrl: submission.repoUrl,
+      prNumber,
+      userGithubInstallId: user?.githubInstallId,
+      userGithubToken,
+    });
 
     res.json({
       success: true,
@@ -326,6 +502,9 @@ module.exports = {
   getSubmissions,
   getSubmission,
   submitForReview,
+  getSubmissionStatus,
+  getReviewDetails,
+  getReviewCategories,
   fetchAndAttachPR,
   updateRepoUrl,
 };

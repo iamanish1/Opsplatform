@@ -1,13 +1,21 @@
 const crypto = require('crypto');
 const Redis = require('ioredis');
-const logger = require('../../config/logger');
+const logger = require('../../utils/logger');
+const sharedRedis = require('../../config/redis');
 
 class CacheService {
   constructor(redis = null) {
-    this.redis = redis || new Redis(process.env.REDIS_URL);
+    this.enabled = process.env.REDIS_DISABLED !== 'true';
+    this.redis = redis || (this.enabled ? new Redis(process.env.REDIS_URL) : sharedRedis);
     this.ttl = parseInt(process.env.CACHE_TTL_SECONDS || '3600'); // 1 hour default
     this.metricsPrefix = 'cache:metrics:';
     this.cachePrefix = 'review:cache:';
+
+    if (this.enabled && this.redis.on) {
+      this.redis.on('error', (error) => {
+        logger.warn({ error: error.message }, 'Review cache Redis error');
+      });
+    }
   }
 
   /**
@@ -26,6 +34,10 @@ class CacheService {
    * @returns {Promise<object|null>} Cached response or null
    */
   async getReview(prompt) {
+    if (!this.enabled || !this.redis.get) {
+      return null;
+    }
+
     try {
       const key = this.generateCacheKey(prompt);
       const cached = await this.redis.get(key);
@@ -52,6 +64,10 @@ class CacheService {
    * @returns {Promise<boolean>}
    */
   async setReview(prompt, response) {
+    if (!this.enabled || !this.redis.setex) {
+      return false;
+    }
+
     try {
       const key = this.generateCacheKey(prompt);
       await this.redis.setex(key, this.ttl, JSON.stringify(response));
@@ -69,10 +85,14 @@ class CacheService {
    * @param {number} value - Value to add
    */
   trackMetric(metric, value = 1) {
+    if (!this.enabled || !this.redis.incrby || !this.redis.expire) {
+      return;
+    }
+
     const today = new Date().toISOString().split('T')[0];
     const key = `${this.metricsPrefix}${metric}:${today}`;
-    this.redis.incrby(key, value);
-    this.redis.expire(key, 86400 * 30); // 30 days
+    this.redis.incrby(key, value).catch(() => {});
+    this.redis.expire(key, 86400 * 30).catch(() => {}); // 30 days
   }
 
   /**
@@ -80,6 +100,10 @@ class CacheService {
    * @returns {Promise<object>} Cache stats
    */
   async getStats() {
+    if (!this.enabled || !this.redis.get) {
+      return { hits: 0, misses: 0, total: 0, hitRate: 0 };
+    }
+
     try {
       const today = new Date().toISOString().split('T')[0];
       const hits = await this.redis.get(`${this.metricsPrefix}hit:${today}`);
@@ -108,6 +132,10 @@ class CacheService {
    * @returns {Promise<number>} Number of keys deleted
    */
   async clearAllCache() {
+    if (!this.enabled || !this.redis.keys || !this.redis.del) {
+      return 0;
+    }
+
     try {
       const pattern = `${this.cachePrefix}*`;
       const keys = await this.redis.keys(pattern);
@@ -129,6 +157,10 @@ class CacheService {
    * @returns {Promise<object>} Hit rate data
    */
   async getHitRate(days = 7) {
+    if (!this.enabled || !this.redis.get) {
+      return { period: `${days} days`, data: [], averageHitRate: 0 };
+    }
+
     try {
       const hitRates = [];
       const today = new Date();

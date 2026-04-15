@@ -4,6 +4,7 @@ const projectService = require('./project.service');
 const userRepo = require('../repositories/user.repo');
 const taskProgressService = require('./taskProgress.service');
 const githubService = require('./github.service');
+const reviewService = require('./review.service');
 const logger = require('../utils/logger');
 
 /**
@@ -76,6 +77,46 @@ function validateRepoUrl(repoUrl) {
   }
   
   return true;
+}
+
+function buildRepoFullName(repoUrl) {
+  const parsed = githubService.parseGitHubUrl(repoUrl);
+  if (!parsed) {
+    return null;
+  }
+
+  return `${parsed.owner}/${parsed.repo}`;
+}
+
+function triggerReviewAsync({ submissionId, repoUrl, prNumber, userGithubInstallId, userGithubToken }) {
+  const repoFullName = buildRepoFullName(repoUrl);
+
+  if (!repoFullName || !prNumber || (!userGithubInstallId && !userGithubToken)) {
+    logger.warn(
+      { submissionId, repoUrl, prNumber, hasAppInstall: !!userGithubInstallId, hasOAuthToken: !!userGithubToken },
+      'Skipping AI review trigger because required GitHub context is missing'
+    );
+    return;
+  }
+
+  setImmediate(async () => {
+    try {
+      await reviewService.processPRReview({
+        submissionId,
+        repoFullName,
+        prNumber,
+        installationId: userGithubInstallId || null,
+        userToken: userGithubToken || null,
+        event: 'manual-submit',
+        action: 'submitted',
+      });
+    } catch (error) {
+      logger.error(
+        { error: error.message, stack: error.stack, submissionId, repoFullName, prNumber },
+        'AI review processing failed after submission'
+      );
+    }
+  });
 }
 
 /**
@@ -249,6 +290,17 @@ async function submitForReview(submissionId, userId) {
 
   // Check if already submitted or reviewed
   if (submission.status === 'SUBMITTED' || submission.status === 'REVIEWED') {
+    if (submission.status === 'SUBMITTED' && submission.prNumber && submission.repoUrl) {
+      const user = await userRepo.findById(userId);
+      triggerReviewAsync({
+        submissionId,
+        repoUrl: submission.repoUrl,
+        prNumber: submission.prNumber,
+        userGithubInstallId: user?.githubInstallId,
+        userGithubToken: user?.githubToken,
+      });
+    }
+
     return {
       submissionId: submission.id,
       status: submission.status,
@@ -362,6 +414,14 @@ async function submitForReview(submissionId, userId) {
           { submissionId, prNumber, repoUrl: submission.repoUrl },
           'Successfully attached PR number to submission'
         );
+
+        triggerReviewAsync({
+          submissionId,
+          repoUrl: submission.repoUrl,
+          prNumber,
+          userGithubInstallId,
+          userGithubToken,
+        });
       } else {
         logger.warn(
           { submissionId, repoUrl: submission.repoUrl },
@@ -375,6 +435,15 @@ async function submitForReview(submissionId, userId) {
         'Error in PR fetching mechanism'
       );
     }
+  } else if (submission.prNumber && submission.repoUrl) {
+    const user = await userRepo.findById(userId);
+    triggerReviewAsync({
+      submissionId,
+      repoUrl: submission.repoUrl,
+      prNumber: submission.prNumber,
+      userGithubInstallId: user?.githubInstallId,
+      userGithubToken: user?.githubToken,
+    });
   }
 
   // TODO: Trigger AI review process here
@@ -422,5 +491,6 @@ module.exports = {
   startSubmission,
   getSubmission,
   submitForReview,
+  triggerReviewAsync,
 };
 

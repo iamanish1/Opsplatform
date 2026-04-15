@@ -3,7 +3,6 @@
  * Implements 10-step review process
  */
 
-const githubApp = require('../utils/github-app');
 const githubService = require('./review/github.service');
 const staticService = require('./review/static.service');
 const ciLogsService = require('./review/ciLogs.service');
@@ -14,19 +13,28 @@ const prReviewRepo = require('../repositories/prReview.repo');
 const scoreRepo = require('../repositories/score.repo');
 const submissionRepo = require('../repositories/submission.repo');
 
+function toScoreInt(value) {
+  return Math.max(0, Math.min(10, Math.round(Number(value) || 0)));
+}
+
 /**
  * Process PR review - 10-step pipeline
  * @param {Object} jobData - Job data from queue
  * @returns {Promise<Object>} Review result
  */
 async function processPRReview(jobData) {
-  const { submissionId, repoFullName, prNumber, installationId } = jobData;
+  const { submissionId, repoFullName, prNumber, installationId, userToken } = jobData;
 
   console.log(`[Review Service] Starting PR review for submission ${submissionId}, PR #${prNumber}`);
 
   // STEP 1: Validate job payload
-  if (!submissionId || !repoFullName || !prNumber || !installationId) {
-    throw new Error('Missing required fields: submissionId, repoFullName, prNumber, or installationId');
+  if (!submissionId || !repoFullName || !prNumber || (!installationId && !userToken)) {
+    throw new Error('Missing required fields: submissionId, repoFullName, prNumber, and either installationId or userToken');
+  }
+
+  const submission = await submissionRepo.findById(submissionId);
+  if (!submission) {
+    throw new Error(`Submission not found: ${submissionId}`);
   }
 
   let octokit;
@@ -38,10 +46,17 @@ async function processPRReview(jobData) {
   let finalScores;
 
   try {
-    // STEP 2: Generate GitHub Installation Token
-    console.log(`[Review Service] Step 2: Generating GitHub installation token...`);
-    octokit = await githubApp.getOctokit(installationId);
-    console.log(`[Review Service] GitHub token obtained`);
+    // STEP 2: Generate GitHub client
+    console.log(`[Review Service] Step 2: Creating GitHub client...`);
+    if (installationId) {
+      const githubApp = require('../utils/github-app');
+      octokit = await githubApp.getOctokit(installationId);
+      console.log(`[Review Service] GitHub App token obtained`);
+    } else {
+      const { Octokit } = require('@octokit/rest');
+      octokit = new Octokit({ auth: userToken });
+      console.log(`[Review Service] GitHub OAuth token obtained`);
+    }
 
     // STEP 3: Fetch PR Metadata
     console.log(`[Review Service] Step 3: Fetching PR metadata...`);
@@ -113,18 +128,18 @@ async function processPRReview(jobData) {
     // Create/Update Score record with all 10 categories
     const score = await scoreRepo.createOrUpdate({
       submissionId,
-      codeQuality: finalScores.codeQuality,
-      problemSolving: finalScores.problemSolving,
-      bugRisk: finalScores.bugRisk,
-      devopsExecution: finalScores.devopsExecution,
-      optimization: finalScores.optimization,
-      documentation: finalScores.documentation,
-      gitMaturity: finalScores.gitMaturity,
-      collaboration: finalScores.collaboration,
-      deliverySpeed: finalScores.deliverySpeed,
-      security: finalScores.security,
-      reliability: finalScores.reliability, // Legacy field
-      totalScore: finalScores.totalScore,
+      codeQuality: toScoreInt(finalScores.codeQuality),
+      problemSolving: toScoreInt(finalScores.problemSolving),
+      bugRisk: toScoreInt(finalScores.bugRisk),
+      devopsExecution: toScoreInt(finalScores.devopsExecution),
+      optimization: toScoreInt(finalScores.optimization),
+      documentation: toScoreInt(finalScores.documentation),
+      gitMaturity: toScoreInt(finalScores.gitMaturity),
+      collaboration: toScoreInt(finalScores.collaboration),
+      deliverySpeed: toScoreInt(finalScores.deliverySpeed),
+      security: toScoreInt(finalScores.security),
+      reliability: toScoreInt(finalScores.reliability), // Legacy field
+      totalScore: Math.round(Number(finalScores.totalScore) || 0),
       badge: finalScores.badge,
       detailsJson: finalScores.detailsJson,
     });

@@ -77,6 +77,45 @@ router.get(
 );
 
 /**
+ * GET /api/submissions/:submissionId/status
+ * Get AI review status and progress
+ * Auth: Required
+ */
+router.get(
+  '/:submissionId/status',
+  authenticate,
+  submissionIdValidation,
+  validate,
+  submissionController.getSubmissionStatus
+);
+
+/**
+ * GET /api/submissions/:submissionId/review
+ * Get full AI review details
+ * Auth: Required
+ */
+router.get(
+  '/:submissionId/review',
+  authenticate,
+  submissionIdValidation,
+  validate,
+  submissionController.getReviewDetails
+);
+
+/**
+ * GET /api/submissions/:submissionId/review/categories
+ * Get review category breakdown
+ * Auth: Required
+ */
+router.get(
+  '/:submissionId/review/categories',
+  authenticate,
+  submissionIdValidation,
+  validate,
+  submissionController.getReviewCategories
+);
+
+/**
  * GET /api/submissions/:submissionId
  * Get submission details
  * Auth: Required
