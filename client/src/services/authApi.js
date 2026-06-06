@@ -4,6 +4,7 @@
  */
 
 const AUTH_STORAGE_KEY = 'devhubs_auth_token';
+const REFRESH_TOKEN_KEY = 'devhubs_refresh_token';
 const USER_STORAGE_KEY = 'devhubs_user';
 
 /**
@@ -66,11 +67,36 @@ export const storeUser = (user) => {
 };
 
 /**
+ * Get stored refresh token
+ * @returns {string|null}
+ */
+export const getStoredRefreshToken = () => {
+  try {
+    return localStorage.getItem(REFRESH_TOKEN_KEY);
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Store refresh token
+ * @param {string} token
+ */
+export const storeRefreshToken = (token) => {
+  try {
+    if (token) localStorage.setItem(REFRESH_TOKEN_KEY, token);
+  } catch (error) {
+    console.error('Error storing refresh token:', error);
+  }
+};
+
+/**
  * Clear all authentication data
  */
 export const clearAuth = () => {
   try {
     localStorage.removeItem(AUTH_STORAGE_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
     localStorage.removeItem(USER_STORAGE_KEY);
   } catch (error) {
     console.error('Error clearing auth data:', error);
@@ -188,6 +214,7 @@ export const handleAuthCallback = async (code, state) => {
 export const handleAuthCallbackFromUrl = (searchParams) => {
   try {
     const token = searchParams.get('token');
+    const refreshToken = searchParams.get('refreshToken');
     const userStr = searchParams.get('user');
     const error = searchParams.get('error');
 
@@ -200,15 +227,12 @@ export const handleAuthCallbackFromUrl = (searchParams) => {
     }
 
     const user = JSON.parse(decodeURIComponent(userStr));
-    
+
     storeToken(token);
     storeUser(user);
-    
-    return {
-      success: true,
-      token,
-      user,
-    };
+    if (refreshToken) storeRefreshToken(decodeURIComponent(refreshToken));
+
+    return { success: true, token, user };
   } catch (error) {
     console.error('Error handling callback from URL:', error);
     throw error;
@@ -218,6 +242,8 @@ export const handleAuthCallbackFromUrl = (searchParams) => {
 export default {
   getStoredToken,
   storeToken,
+  getStoredRefreshToken,
+  storeRefreshToken,
   getStoredUser,
   storeUser,
   clearAuth,

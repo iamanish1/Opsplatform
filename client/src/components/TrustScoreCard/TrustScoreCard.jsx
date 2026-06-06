@@ -18,9 +18,9 @@ const TrustScoreCard = ({ score = 0 }) => {
   const scoreColor = getScoreColor(score);
 
   const getScoreBadge = (s) => {
-    if (s >= 80) return { label: 'Excellent', color: 'text-green-300' };
-    if (s >= 60) return { label: 'Good', color: 'text-amber-300' };
-    return { label: 'Needs Improvement', color: 'text-red-300' };
+    if (s >= 80) return { label: 'Verified', color: 'text-green-300' };
+    if (s >= 60) return { label: 'Partially Verified', color: 'text-amber-300' };
+    return { label: 'Not Yet Verified', color: 'text-red-300' };
   };
 
   const badge = getScoreBadge(score);
@@ -94,13 +94,14 @@ const TrustScoreCard = ({ score = 0 }) => {
           {badge.label}
         </motion.div>
 
-        {/* Score interpretation */}
-        <p className="text-gray-300 text-sm mt-4">
+        {/* Verification label */}
+        <p className="text-gray-400 text-xs uppercase tracking-widest mt-2 mb-1">Verification Score</p>
+        <p className="text-gray-300 text-sm mt-2">
           {score >= 80
-            ? 'Your code meets high quality standards'
+            ? 'Competency verified — ready for recruiter review'
             : score >= 60
-            ? 'Your code has good quality with some improvements needed'
-            : 'Your code needs significant improvements'}
+            ? 'Partially verified — a few areas need strengthening'
+            : 'Verification incomplete — review the evidence below'}
         </p>
       </div>
     </motion.div>

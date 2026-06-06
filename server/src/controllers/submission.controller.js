@@ -512,6 +512,70 @@ async function updateRepoUrl(req, res, next) {
   }
 }
 
+/**
+ * GET /api/submissions/:submissionId/review-stream
+ * Server-Sent Events stream for real-time review progress.
+ * Streams status updates every 2 seconds until REVIEWED or ERROR, then closes.
+ * Auth: Required (validated before this handler via middleware)
+ */
+async function streamReviewStatus(req, res, next) {
+  const { submissionId } = req.params;
+  const userId = req.user.id;
+
+  // Validate ownership before opening the stream
+  try {
+    const submission = await submissionRepo.findById(submissionId);
+    if (!submission || submission.userId !== userId) {
+      return res.status(404).json({
+        success: false,
+        error: { code: 'SUBMISSION_NOT_FOUND', message: 'Submission not found' },
+      });
+    }
+  } catch (err) {
+    return next(err);
+  }
+
+  // SSE headers
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no'); // Disable Nginx buffering
+  res.flushHeaders();
+
+  const sendEvent = (data) => {
+    res.write(`data: ${JSON.stringify(data)}\n\n`);
+  };
+
+  // Send initial state immediately
+  const liveProgress = reviewProgress.get(submissionId);
+  sendEvent(liveProgress || { status: 'PENDING', progress: 0 });
+
+  // Terminal states — close after one send
+  const isTerminal = (status) => status === 'REVIEWED' || status === 'ERROR';
+
+  if (liveProgress && isTerminal(liveProgress.status)) {
+    res.end();
+    return;
+  }
+
+  // Poll in-process reviewProgress every 1.5 seconds
+  const interval = setInterval(() => {
+    const progress = reviewProgress.get(submissionId);
+    const payload = progress || { status: 'PENDING', progress: 0 };
+    sendEvent(payload);
+
+    if (isTerminal(payload.status)) {
+      clearInterval(interval);
+      res.end();
+    }
+  }, 1500);
+
+  // Clean up if client disconnects early
+  req.on('close', () => {
+    clearInterval(interval);
+  });
+}
+
 module.exports = {
   getSubmissions,
   getSubmission,
@@ -521,5 +585,6 @@ module.exports = {
   getReviewCategories,
   fetchAndAttachPR,
   updateRepoUrl,
+  streamReviewStatus,
 };
 

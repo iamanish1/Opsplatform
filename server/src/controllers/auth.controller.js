@@ -1,6 +1,7 @@
 const authService = require('../services/auth.service');
 const githubOAuth = require('../utils/github-oauth');
 const config = require('../config');
+const refreshTokenRepo = require('../repositories/refreshToken.repo');
 
 /**
  * GET /api/auth/github
@@ -34,22 +35,58 @@ async function handleGitHubCallback(req, res, next) {
       return res.redirect(`${frontendUrl}/auth/callback?error=${errorMsg}`);
     }
 
-    // Handle OAuth callback
+    // Handle OAuth callback — now returns both accessToken and refreshToken
     const result = await authService.handleOAuthCallback(code, state);
 
-    // Redirect to frontend with token and user data in URL parameters
-    // Note: In production, consider using httpOnly cookies for better security
     const token = encodeURIComponent(result.token);
+    const refreshToken = encodeURIComponent(result.refreshToken);
     const userData = encodeURIComponent(JSON.stringify(result.user));
-    
-    res.redirect(`${frontendUrl}/auth/callback?token=${token}&user=${userData}`);
+
+    res.redirect(
+      `${frontendUrl}/auth/callback?token=${token}&refreshToken=${refreshToken}&user=${userData}`
+    );
   } catch (error) {
-    // Redirect to frontend with error message
     const frontendUrl = config.frontendUrl;
     const errorMsg = encodeURIComponent(
       error.message || 'Authentication failed. Please try again.'
     );
     res.redirect(`${frontendUrl}/auth/callback?error=${errorMsg}`);
+  }
+}
+
+/**
+ * POST /api/auth/refresh
+ * Exchange a valid refresh token for a new access + refresh token pair
+ */
+async function refreshTokens(req, res, next) {
+  try {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+      return res.status(400).json({
+        success: false,
+        error: { code: 'MISSING_REFRESH_TOKEN', message: 'Refresh token is required' },
+      });
+    }
+
+    const result = await authService.rotateRefreshToken(refreshToken);
+
+    res.json({
+      success: true,
+      data: {
+        token: result.accessToken,
+        refreshToken: result.refreshToken,
+        user: result.user,
+      },
+    });
+  } catch (error) {
+    if (error.code === 'INVALID_REFRESH_TOKEN') {
+      return res.status(401).json({
+        success: false,
+        error: { code: 'INVALID_REFRESH_TOKEN', message: 'Session expired. Please log in again.' },
+      });
+    }
+    next(error);
   }
 }
 
@@ -70,17 +107,19 @@ async function getAuthStatus(req, res, next) {
 
 /**
  * POST /api/auth/logout
- * Logout (optional - clears session)
+ * Revoke the provided refresh token and clear session
  * Auth: Required
  */
 async function logout(req, res, next) {
   try {
-    // For JWT-based auth, logout is handled client-side by removing token
-    // This endpoint can be used for logging or future session management
-    res.json({
-      success: true,
-      message: 'Logged out successfully',
-    });
+    const { refreshToken } = req.body;
+
+    // Revoke the specific refresh token if provided
+    if (refreshToken) {
+      await refreshTokenRepo.revoke(refreshToken);
+    }
+
+    res.json({ success: true, message: 'Logged out successfully' });
   } catch (error) {
     next(error);
   }
@@ -89,6 +128,7 @@ async function logout(req, res, next) {
 module.exports = {
   initiateGitHubOAuth,
   handleGitHubCallback,
+  refreshTokens,
   getAuthStatus,
   logout,
 };

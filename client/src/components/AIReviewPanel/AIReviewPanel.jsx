@@ -50,7 +50,7 @@ const AIReviewPanel = ({ status = 'REVIEWING', progress = 0, review = null, erro
       {/* Review Results */}
       {review && status === 'REVIEWED' && (
         <>
-          {/* Trust Score */}
+          {/* Verification Score */}
           <motion.div variants={itemVariants}>
             <TrustScoreCard score={review.trustScore} />
           </motion.div>

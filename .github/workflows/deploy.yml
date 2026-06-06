@@ -1,0 +1,129 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:  # Allow manual trigger
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false  # Never cancel an in-flight deploy
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment: production
+    # Only deploy when CI passes — this job depends on CI workflow passing
+    # In your repo settings: set this environment to require review or add
+    # a required status check from the CI workflow.
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build frontend
+        working-directory: client
+        run: |
+          npm ci
+          npm run build
+        env:
+          VITE_API_URL: ${{ secrets.VITE_API_URL }}
+
+      - name: Deploy to VPS via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            set -e
+            cd /opt/devhubs
+
+            echo "==> Pulling latest code"
+            git pull origin main
+
+            echo "==> Installing backend dependencies"
+            cd server
+            npm ci --production
+            npx prisma migrate deploy
+            npx prisma generate
+
+            echo "==> Restarting backend"
+            pm2 restart devhubs-api || pm2 start src/server.js --name devhubs-api
+
+            echo "==> Deploy complete"
+
+      - name: Copy frontend build to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          source: "client/dist/*"
+          target: "/var/www/devhubs"
+          strip_components: 2
+
+      - name: Reload Nginx
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: sudo nginx -t && sudo systemctl reload nginx
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "Deploy failed. Check GitHub Actions logs."
+          # Add Slack/email notification here if SLACK_WEBHOOK_URL is set
+
+  # ─────────────────────────────────────────────────────────────
+  # Deploy eval worker to VPS3 (runs AFTER VPS1 deploy succeeds)
+  # VPS3 runs student code in Docker — isolated from VPS1 and VPS2
+  # ─────────────────────────────────────────────────────────────
+  deploy-eval:
+    name: Deploy Eval Worker (VPS3)
+    runs-on: ubuntu-latest
+    environment: production
+    needs: [deploy]  # Only deploy eval worker after main app is deployed
+    # Only run if VPS3 secrets are configured
+    if: ${{ secrets.VPS3_HOST != '' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy eval worker to VPS3
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS3_HOST }}
+          username: ${{ secrets.VPS3_USER }}
+          key: ${{ secrets.VPS3_SSH_KEY }}
+          port: ${{ secrets.VPS3_PORT || 22 }}
+          script: |
+            set -e
+            cd /opt/devhubs/eval-worker
+
+            echo "==> Pulling latest code"
+            git pull origin main
+
+            echo "==> Installing eval worker dependencies (production only)"
+            cd server
+            npm ci --production
+
+            echo "==> Restarting eval worker"
+            pm2 restart devhubs-eval-worker || \
+              pm2 start src/workers/eval.worker.js \
+                --name devhubs-eval-worker \
+                -i 2 \
+                --env production
+
+            echo "==> Eval worker deployed successfully"
+
+      - name: Notify eval deploy failure
+        if: failure()
+        run: |
+          echo "Eval worker deploy failed. VPS3 may be offline or misconfigured."
+          echo "Review engine will continue without execution evidence until VPS3 is restored."

@@ -3,23 +3,55 @@
  * Handles authentication, error handling, and request configuration
  */
 
-import { getStoredToken, clearAuth } from './authApi';
+import {
+  getStoredToken,
+  getStoredRefreshToken,
+  storeToken,
+  storeRefreshToken,
+  storeUser,
+  clearAuth,
+} from './authApi';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api';
 
-/**
- * Callback function for handling authentication errors
- * Set by AuthProvider to handle logout on 401
- */
+/** Callback for hard logout when refresh also fails */
 let onAuthError = null;
+export const setAuthErrorHandler = (callback) => { onAuthError = callback; };
+
+/** Prevent concurrent refresh races */
+let refreshPromise = null;
 
 /**
- * Set callback for authentication errors
- * @param {Function} callback - Function to call on 401 errors
+ * Attempt to get a new access token using the stored refresh token.
+ * Returns the new access token on success, null on failure.
  */
-export const setAuthErrorHandler = (callback) => {
-  onAuthError = callback;
-};
+async function attemptTokenRefresh() {
+  if (refreshPromise) return refreshPromise;
+
+  const refreshToken = getStoredRefreshToken();
+  if (!refreshToken) return null;
+
+  refreshPromise = fetch(`${API_BASE_URL}/auth/refresh`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refreshToken }),
+  })
+    .then(async (res) => {
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (data?.data?.token) {
+        storeToken(data.data.token);
+        storeRefreshToken(data.data.refreshToken);
+        if (data.data.user) storeUser(data.data.user);
+        return data.data.token;
+      }
+      return null;
+    })
+    .catch(() => null)
+    .finally(() => { refreshPromise = null; });
+
+  return refreshPromise;
+}
 
 /**
  * Make an authenticated API request
@@ -49,18 +81,20 @@ const apiRequest = async (endpoint, options = {}) => {
   try {
     const response = await fetch(url, config);
     
-    // Handle 401 Unauthorized - token expired or invalid
-    if (response.status === 401) {
-      // Clear authentication data
-      clearAuth();
-      
-      // Call auth error handler if set (e.g., logout from context)
-      if (onAuthError) {
-        onAuthError();
+    // Handle 401 — try to refresh, then retry once
+    if (response.status === 401 && !options._isRetry) {
+      const newToken = await attemptTokenRefresh();
+
+      if (newToken) {
+        // Retry the original request with the new token
+        return apiRequest(endpoint, { ...options, _isRetry: true });
       }
-      
-      // Throw error with specific message
-      const error = new Error('Authentication required. Please log in again.');
+
+      // Refresh failed — hard logout
+      clearAuth();
+      if (onAuthError) onAuthError();
+
+      const error = new Error('Session expired. Please log in again.');
       error.status = 401;
       error.code = 'UNAUTHORIZED';
       throw error;

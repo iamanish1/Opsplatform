@@ -13,9 +13,9 @@ import ProofCard from '../../../../components/ProofCard/ProofCard';
 import styles from './PublicPortfolio.module.css';
 
 const BADGE_CONFIG = {
-  GREEN:  { label: 'Top Talent',    color: '#10b981', bg: 'rgba(16,185,129,0.15)', border: 'rgba(16,185,129,0.3)' },
-  YELLOW: { label: 'Rising Star',   color: '#f59e0b', bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.3)' },
-  RED:    { label: 'In Progress',   color: '#ef4444', bg: 'rgba(239,68,68,0.15)',  border: 'rgba(239,68,68,0.3)'  },
+  GREEN:  { label: 'Verified',         color: '#10b981', bg: 'rgba(16,185,129,0.15)', border: 'rgba(16,185,129,0.3)' },
+  YELLOW: { label: 'Partially Verified', color: '#f59e0b', bg: 'rgba(245,158,11,0.15)', border: 'rgba(245,158,11,0.3)' },
+  RED:    { label: 'Not Yet Verified', color: '#ef4444', bg: 'rgba(239,68,68,0.15)',  border: 'rgba(239,68,68,0.3)'  },
 };
 
 const CATEGORIES = [
@@ -195,8 +195,8 @@ export default function PublicPortfolio() {
 
           <div className={styles.heroRight}>
             <ScoreRing score={totalScore} />
-            <p className={styles.scoreLabel}>Trust Score</p>
-            <p className={styles.verifiedText}>AI Verified · DevHubs</p>
+            <p className={styles.scoreLabel}>Verification Score</p>
+            <p className={styles.verifiedText}>Evidence-Verified · DevHubs</p>
           </div>
         </motion.section>
 
@@ -225,8 +225,8 @@ export default function PublicPortfolio() {
         {/* Score breakdown */}
         {score.totalScore !== undefined && (
           <motion.section className={styles.card} variants={fadeInUp}>
-            <h2 className={styles.cardTitle}><TrendingUp size={18} />AI Score Breakdown</h2>
-            <p className={styles.cardSubtitle}>10-category evaluation powered by DevHubs AI engine</p>
+            <h2 className={styles.cardTitle}><TrendingUp size={18} />Verification Evidence</h2>
+            <p className={styles.cardSubtitle}>10-category competency assessment — each score backed by code evidence</p>
             <div className={styles.categories}>
               {CATEGORIES.map(({ key, label, icon }) => (
                 <CategoryBar key={key} label={label} icon={icon} value={score[key] ?? 0} />
@@ -245,8 +245,8 @@ export default function PublicPortfolio() {
 
         {/* Shareable Proof Card */}
         <motion.section className={styles.card} variants={fadeInUp} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-          <h2 className={styles.cardTitle}><Shield size={18} />Shareable Proof Card</h2>
-          <p className={styles.cardSubtitle}>Share this verified trust score anywhere — LinkedIn, Twitter, or direct link.</p>
+          <h2 className={styles.cardTitle}><Shield size={18} />Shareable Verification Card</h2>
+          <p className={styles.cardSubtitle}>Share this verification anywhere — LinkedIn, Twitter, or direct link.</p>
           <ProofCard
             user={user}
             score={score}

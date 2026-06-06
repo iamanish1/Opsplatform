@@ -8,28 +8,25 @@ const config = require('../config');
  */
 const authenticate = (req, res, next) => {
   try {
-    // Extract token from Authorization header
+    // Extract token from Authorization header OR ?token= query param.
+    // The query param path is used only for SSE connections (EventSource
+    // cannot send custom headers), and is explicitly scoped to that use case.
     const authHeader = req.headers.authorization;
+    let token = null;
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({
-        success: false,
-        error: {
-          code: 'UNAUTHORIZED',
-          message: 'Missing or invalid authorization header',
-        },
-      });
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+    } else if (req.query.token && req.path.includes('/review-stream')) {
+      // Only allow query-param auth for the SSE stream endpoint
+      token = req.query.token;
     }
-
-    // Extract token
-    const token = authHeader.substring(7); // Remove 'Bearer ' prefix
 
     if (!token) {
       return res.status(401).json({
         success: false,
         error: {
           code: 'UNAUTHORIZED',
-          message: 'Token is required',
+          message: 'Missing or invalid authorization header',
         },
       });
     }

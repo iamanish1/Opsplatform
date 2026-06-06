@@ -21,9 +21,9 @@ const TrustScoreWidget = memo(({ score = 88 }) => {
   }, [spring]);
 
   const getBadge = (score) => {
-    if (score < 50) return { name: 'RED', color: '#ef4444' };
-    if (score < 75) return { name: 'YELLOW', color: '#f59e0b' };
-    return { name: 'GREEN', color: '#10b981' };
+    if (score < 50) return { name: 'NOT VERIFIED', color: '#ef4444' };
+    if (score < 75) return { name: 'PARTIAL', color: '#f59e0b' };
+    return { name: 'VERIFIED', color: '#10b981' };
   };
 
   const badge = getBadge(displayScore);
@@ -44,8 +44,8 @@ const TrustScoreWidget = memo(({ score = 88 }) => {
             <Shield size={24} />
           </div>
           <div className={styles.headerText}>
-            <h3 className={styles.title}>Trust Score</h3>
-            <p className={styles.subtitle}>Your verified DevOps skills</p>
+            <h3 className={styles.title}>Verification Status</h3>
+            <p className={styles.subtitle}>Evidence-based skill verification</p>
           </div>
         </div>
 

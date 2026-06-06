@@ -65,6 +65,7 @@ model User {
   interviewRequests InterviewRequest[]
   notifications     Notification[]
   notificationPreferences UserNotificationPreferences?
+  refreshTokens     RefreshToken[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -104,6 +105,12 @@ model Project {
   starterRepo String?
   tasksJson   Json?
   tags        Json? // Array of skill tags (e.g., ["DevOps", "Docker", "CI/CD"]) for talent feed filtering
+  slug        String? @unique // Used as hidden test suite identifier on VPS3
+
+  // Hidden test configuration (Phase 2)
+  hasHiddenTests Boolean @default(false)
+  hiddenTestSuite String? // Slug of test suite dir in /opt/devhubs/hidden-tests/
+  domain          String? // "backend"|"frontend"|"fullstack"|"devops" — for competency mapping
 
   submissions Submission[]
   createdAt   DateTime     @default(now())
@@ -119,6 +126,11 @@ model Submission {
   repoUrl   String?
   prNumber  Int?
   status    SubmissionStatus @default(IN_PROGRESS)
+
+  // Reflection system (Phase 3)
+  reflectionQuestions Json?     // [{ id, text, targetArea }] — generated at review start
+  reflectionAnswers   Json?     // [{ id, answer, submittedAt }] — submitted by student
+  reflectionDueAt     DateTime? // 48h after review starts
 
   user              User               @relation(fields: [userId], references: [id])
   project           Project            @relation(fields: [projectId], references: [id])
@@ -187,15 +199,41 @@ model Score {
   deliverySpeed   Int @default(0)
   security        Int @default(0)
 
-  // Legacy fields (kept for backward compatibility, mapped from above)
-  reliability Int @default(0) // Inverse of bugRisk
+  // Legacy
+  reliability Int @default(0)
 
   // Final Score & Badge
-  totalScore Int   @default(0) // Sum of all 10 categories (0-100)
+  totalScore Int   @default(0)
   badge      Badge @default(RED)
 
-  // Detailed breakdown and evidence
-  detailsJson Json? // Stores breakdown, evidence, raw data, applied rules
+  // Verification tier (Phase 1 — evidence gate result)
+  verificationTier String? // "VERIFIED"|"PARTIAL"|"NOT_VERIFIED"
+
+  // Execution evidence (Phase 1 — from Docker eval on VPS3)
+  dockerBuildSuccess    Boolean?
+  dockerBuildDurationMs Int?
+  hiddenTestPassRate    Float?
+  hiddenTestTotal       Int?
+  hiddenTestPassed      Int?
+
+  // Extended static analysis results (Phase 1)
+  coveragePercent Float?
+  criticalVulns   Int?
+  highVulns       Int?
+
+  // Competency mapping (Phase 4)
+  competencyLevel     Int?    // 1-5
+  competencyDomain    String? // "backend"|"frontend"|"fullstack"|"devops"
+  competencyBreakdown Json?   // { problemSolving: 3, security: 4, ... }
+
+  // Reflection cross-check score (Phase 3)
+  reflectionScore Float? // 0-10 avg
+
+  // Evidence items for structured report
+  evidenceItems Json?
+
+  // Detailed breakdown and raw data
+  detailsJson Json?
 
   submission Submission @relation(fields: [submissionId], references: [id])
   portfolio  Portfolio?
@@ -296,4 +334,38 @@ model UserNotificationPreferences {
   updatedAt             DateTime @updatedAt
 
   user                  User     @relation(fields: [userId], references: [id])
+}
+
+//// ======================
+// REFRESH TOKENS
+//// ======================
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique @db.VarChar(512)
+  userId    String
+  expiresAt DateTime
+  revokedAt DateTime? // Null means still valid
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+}
+
+//// ======================
+// AUDIT LOG
+//// ======================
+model AuditLog {
+  id         String   @id @default(cuid())
+  userId     String?  // Null for anonymous/system actions
+  action     String   // e.g., "user.login", "submission.submit", "admin.delete_user"
+  resource   String   // e.g., "User", "Submission", "Project"
+  resourceId String?  // ID of the affected resource
+  metadata   Json?    // Additional context (IP, user agent, old/new values)
+  createdAt  DateTime @default(now())
+
+  @@index([userId])
+  @@index([resource, resourceId])
+  @@index([createdAt])
 }

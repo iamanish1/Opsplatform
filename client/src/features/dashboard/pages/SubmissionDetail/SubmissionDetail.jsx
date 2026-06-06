@@ -653,8 +653,8 @@ const SubmissionDetail = memo(() => {
                 <div className={styles.scoreHeader}>
                   <Award size={32} className={styles.scoreIcon} />
                   <div>
-                    <h2 className={styles.scoreTitle}>Total Score</h2>
-                    <p className={styles.scoreSubtitle}>Overall performance assessment</p>
+                    <h2 className={styles.scoreTitle}>Verification Score</h2>
+                    <p className={styles.scoreSubtitle}>Evidence-based competency assessment</p>
                   </div>
                 </div>
                 <div className={styles.scoreDisplay}>
@@ -662,7 +662,7 @@ const SubmissionDetail = memo(() => {
                     {totalScore}/100
                   </div>
                   <div className={`${styles.badge} ${styles[badge.toLowerCase()]}`}>
-                    {badge} Badge
+                    {badge === 'GREEN' ? 'Verified' : badge === 'YELLOW' ? 'Partial' : 'Not Verified'}
                   </div>
                 </div>
               </GlassCard>
@@ -673,7 +673,7 @@ const SubmissionDetail = memo(() => {
           {submission.status === 'REVIEWED' && submission.score && (
             <motion.div variants={fadeInUp}>
               <GlassCard className={styles.breakdownCard}>
-                <h2 className={styles.sectionTitle}>Score Breakdown</h2>
+                <h2 className={styles.sectionTitle}>Verification Evidence</h2>
                 <div className={styles.categoriesGrid}>
                   {scoreCategories.map((category) => {
                     const score = submission.score[category.key] || 0;

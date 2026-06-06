@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 const config = require('../config');
 const userRepo = require('../repositories/user.repo');
+const refreshTokenRepo = require('../repositories/refreshToken.repo');
 const githubOAuth = require('../utils/github-oauth');
 const githubApp = require('../utils/github-app');
 const redis = require('../config/redis');
@@ -136,11 +137,13 @@ async function handleOAuthCallback(code, state) {
     // Upsert user in database with access token
     const user = await upsertUserFromGitHub(githubUser, accessToken);
 
-    // Generate JWT token
-    const token = generateJWT(user.id, user.role);
+    // Generate short-lived access token + long-lived refresh token
+    const accessToken = generateJWT(user.id, user.role);
+    const { token: refreshToken } = await refreshTokenRepo.create(user.id, 30);
 
     return {
-      token,
+      token: accessToken,
+      refreshToken,
       user: {
         id: user.id,
         name: user.name,
@@ -236,10 +239,10 @@ async function upsertUserFromGitHub(githubData, accessToken) {
 }
 
 /**
- * Generate JWT token
+ * Generate short-lived JWT access token
  * @param {string} userId - User ID
  * @param {string} role - User role
- * @returns {string} JWT token
+ * @returns {string} JWT access token (15 min by default)
  */
 function generateJWT(userId, role = 'STUDENT') {
   const payload = {
@@ -248,9 +251,56 @@ function generateJWT(userId, role = 'STUDENT') {
     iat: Math.floor(Date.now() / 1000),
   };
 
-  return jwt.sign(payload, config.jwtSecret, {
-    expiresIn: config.jwtExpiresIn,
-  });
+  // Use ACCESS_TOKEN_EXPIRY for new short-lived tokens.
+  // Falls back to JWT_EXPIRES_IN for backward compatibility during rollout.
+  const expiresIn = config.accessTokenExpiry || config.jwtExpiresIn;
+
+  return jwt.sign(payload, config.jwtSecret, { expiresIn });
+}
+
+/**
+ * Rotate a refresh token — revoke old, issue new access + refresh pair
+ * @param {string} oldRefreshToken
+ * @returns {Promise<{accessToken: string, refreshToken: string, user: Object}>}
+ */
+async function rotateRefreshToken(oldRefreshToken) {
+  const record = await refreshTokenRepo.findValid(oldRefreshToken);
+
+  if (!record) {
+    const error = new Error('Invalid or expired refresh token');
+    error.statusCode = 401;
+    error.code = 'INVALID_REFRESH_TOKEN';
+    throw error;
+  }
+
+  // Revoke the old token (rotation — one-time use)
+  await refreshTokenRepo.revoke(oldRefreshToken);
+
+  // Issue new pair
+  const accessToken = generateJWT(record.userId, record.user.role);
+  const { token: refreshToken } = await refreshTokenRepo.create(record.userId, 30);
+
+  return {
+    accessToken,
+    refreshToken,
+    user: {
+      id: record.user.id,
+      name: record.user.name,
+      email: record.user.email,
+      avatar: record.user.avatar,
+      githubUsername: record.user.githubUsername,
+      role: record.user.role,
+      onboardingStep: record.user.onboardingStep,
+    },
+  };
+}
+
+/**
+ * Revoke all refresh tokens for a user (force logout everywhere)
+ * @param {string} userId
+ */
+async function revokeAllTokens(userId) {
+  await refreshTokenRepo.revokeAll(userId);
 }
 
 /**
@@ -345,6 +395,8 @@ module.exports = {
   handleOAuthCallback,
   upsertUserFromGitHub,
   generateJWT,
+  rotateRefreshToken,
+  revokeAllTokens,
   getAuthStatus,
   handleInstallationCreated,
   handleInstallationDeleted,

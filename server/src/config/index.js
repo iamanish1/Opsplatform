@@ -67,6 +67,9 @@ module.exports = {
   databaseUrl: process.env.DATABASE_URL,
   jwtSecret: process.env.JWT_SECRET || 'your-secret-key-change-in-production',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
+  // Short-lived access token expiry (set to '15m' in production)
+  // Falls back to jwtExpiresIn for a zero-downtime rollout
+  accessTokenExpiry: process.env.ACCESS_TOKEN_EXPIRY || process.env.JWT_EXPIRES_IN || '15m',
   
   // GitHub OAuth Configuration
   github: {

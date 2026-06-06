@@ -10,6 +10,8 @@ const {
   taskIdValidation,
   updateTaskStatusValidation,
 } = require('../dto/taskProgress.dto');
+const { submissionLimiter } = require('../middlewares/rateLimit.middleware');
+const { auditAction } = require('../middlewares/audit.middleware');
 
 /**
  * GET /api/submissions
@@ -25,11 +27,13 @@ router.get(
 /**
  * POST /api/submissions/:submissionId/submit
  * Submit project for review (all tasks must be complete)
- * Auth: Required
+ * Auth: Required | Rate limited: 5 per 10 min per user
  */
 router.post(
   '/:submissionId/submit',
   authenticate,
+  submissionLimiter,
+  auditAction('submission.submit', 'Submission', (req) => req.params.submissionId),
   submissionIdValidation,
   validate,
   submissionController.submitForReview
@@ -78,7 +82,7 @@ router.get(
 
 /**
  * GET /api/submissions/:submissionId/status
- * Get AI review status and progress
+ * Get AI review status and progress (polling fallback)
  * Auth: Required
  */
 router.get(
@@ -87,6 +91,20 @@ router.get(
   submissionIdValidation,
   validate,
   submissionController.getSubmissionStatus
+);
+
+/**
+ * GET /api/submissions/:submissionId/review-stream
+ * Server-Sent Events stream for real-time review progress
+ * Prefer this over polling /status
+ * Auth: Required
+ */
+router.get(
+  '/:submissionId/review-stream',
+  authenticate,
+  submissionIdValidation,
+  validate,
+  submissionController.streamReviewStatus
 );
 
 /**
@@ -153,6 +171,19 @@ router.patch(
   validate,
   submissionController.updateRepoUrl
 );
+
+/**
+ * Reflection routes (Phase 3)
+ * GET  /api/submissions/:submissionId/reflection         — fetch questions
+ * POST /api/submissions/:submissionId/reflection         — submit answers
+ * GET  /api/submissions/:submissionId/reflection/result  — cross-check result
+ */
+const reflectionRouter = require('./reflection.routes');
+router.use('/:id/reflection', (req, res, next) => {
+  // Copy submissionId param to :id for mergeParams compatibility
+  req.params.id = req.params.submissionId || req.params.id;
+  next();
+}, reflectionRouter);
 
 module.exports = router;
 

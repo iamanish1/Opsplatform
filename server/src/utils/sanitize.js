@@ -121,9 +121,24 @@ function sanitizeDiff(diff) {
   return sanitizeContent(diff);
 }
 
+/**
+ * Wrap user-controlled content in explicit boundary markers so the LLM
+ * treats everything inside as data, not instructions.
+ * Apply this to any user-submitted field before it enters a prompt.
+ *
+ * @param {string} content - Raw user-controlled string
+ * @param {string} label   - Descriptor for the boundary (e.g. "PR_TITLE")
+ * @returns {string}
+ */
+function wrapUserContent(content, label = 'USER_CONTENT') {
+  const sanitized = sanitizeContent(content || '');
+  return `=== ${label}_BEGIN ===\n${sanitized}\n=== ${label}_END ===`;
+}
+
 module.exports = {
   sanitizeContent,
   sanitizeFiles,
   sanitizeDiff,
+  wrapUserContent,
 };
 

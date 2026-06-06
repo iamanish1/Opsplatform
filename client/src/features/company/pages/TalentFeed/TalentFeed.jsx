@@ -109,7 +109,7 @@ const InterviewModal = memo(({ dev, onClose, onSubmit }) => {
             : <div className={styles.modalAvatarFallback}>{(dev.name || 'D')[0]}</div>}
           <div>
             <div className={styles.modalDevName}>{dev.name || dev.githubUsername}</div>
-            <div className={styles.modalDevScore}>Trust Score: {dev.score?.totalScore ?? 0}/100</div>
+            <div className={styles.modalDevScore}>Verification Score: {dev.score?.totalScore ?? 0}/100</div>
           </div>
         </div>
         <form onSubmit={handleSubmit} className={styles.modalForm}>

@@ -1,4 +1,23 @@
 const prisma = require('../prisma/client');
+const { encrypt, decrypt } = require('../utils/crypto');
+
+/**
+ * Encrypt githubToken in data before writing to DB.
+ * Non-destructive — only touches githubToken if present.
+ */
+function encryptUserData(data) {
+  if (!data || data.githubToken === undefined) return data;
+  return { ...data, githubToken: data.githubToken ? encrypt(data.githubToken) : null };
+}
+
+/**
+ * Decrypt githubToken on a user record returned from DB.
+ * Handles legacy unencrypted values transparently.
+ */
+function decryptUser(user) {
+  if (!user || !user.githubToken) return user;
+  return { ...user, githubToken: decrypt(user.githubToken) };
+}
 
 /**
  * Find user by ID
@@ -6,9 +25,7 @@ const prisma = require('../prisma/client');
  * @returns {Promise<Object|null>} User object or null
  */
 async function findById(id) {
-  return prisma.user.findUnique({
-    where: { id },
-  });
+  return decryptUser(await prisma.user.findUnique({ where: { id } }));
 }
 
 /**
@@ -17,9 +34,7 @@ async function findById(id) {
  * @returns {Promise<Object|null>} User object or null
  */
 async function findByEmail(email) {
-  return prisma.user.findUnique({
-    where: { email },
-  });
+  return decryptUser(await prisma.user.findUnique({ where: { email } }));
 }
 
 /**
@@ -28,9 +43,7 @@ async function findByEmail(email) {
  * @returns {Promise<Object|null>} User object or null
  */
 async function findByGithubId(githubId) {
-  return prisma.user.findUnique({
-    where: { githubId },
-  });
+  return decryptUser(await prisma.user.findUnique({ where: { githubId } }));
 }
 
 /**
@@ -39,9 +52,7 @@ async function findByGithubId(githubId) {
  * @returns {Promise<Object>} Created user
  */
 async function create(data) {
-  return prisma.user.create({
-    data,
-  });
+  return decryptUser(await prisma.user.create({ data: encryptUserData(data) }));
 }
 
 /**
@@ -51,10 +62,9 @@ async function create(data) {
  * @returns {Promise<Object>} Updated user
  */
 async function update(id, data) {
-  return prisma.user.update({
-    where: { id },
-    data,
-  });
+  return decryptUser(
+    await prisma.user.update({ where: { id }, data: encryptUserData(data) })
+  );
 }
 
 /**
@@ -148,9 +158,9 @@ async function clearGithubInstall(id) {
  * @returns {Promise<Object|null>} User object or null
  */
 async function findByGithubInstallId(installationId) {
-  return prisma.user.findFirst({
-    where: { githubInstallId: installationId },
-  });
+  return decryptUser(
+    await prisma.user.findFirst({ where: { githubInstallId: installationId } })
+  );
 }
 
 /**
@@ -170,10 +180,7 @@ async function createWithPassword(userData) {
  * @returns {Promise<Object|null>} User object with password or null
  */
 async function findByEmailWithPassword(email) {
-  return prisma.user.findUnique({
-    where: { email },
-    // Password field is included by default in Prisma queries
-  });
+  return decryptUser(await prisma.user.findUnique({ where: { email } }));
 }
 
 /**

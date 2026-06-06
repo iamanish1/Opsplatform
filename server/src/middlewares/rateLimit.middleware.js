@@ -72,10 +72,50 @@ const notificationLimiter = rateLimit({
   legacyHeaders: false,
 });
 
+/**
+ * Rate limiter for submission endpoints
+ * Max 5 active submission attempts per user per 10 minutes.
+ * Prevents queue flooding from a single user.
+ */
+const submissionLimiter = rateLimit({
+  windowMs: 10 * 60 * 1000, // 10 minutes
+  max: 5,
+  keyGenerator: (req) => req.user?.id || req.ip,
+  message: {
+    success: false,
+    error: {
+      code: 'TOO_MANY_REQUESTS',
+      message: 'Too many submissions. Please wait before submitting again.',
+    },
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+/**
+ * General API rate limiter for unauthenticated / anonymous requests
+ * 100 requests per 15 minutes per IP
+ */
+const generalLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  message: {
+    success: false,
+    error: {
+      code: 'TOO_MANY_REQUESTS',
+      message: 'Too many requests, please try again later',
+    },
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 module.exports = {
   authLimiter,
   companyLimiter,
   interviewRequestLimiter,
   notificationLimiter,
+  submissionLimiter,
+  generalLimiter,
 };
 

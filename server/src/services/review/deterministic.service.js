@@ -1,310 +1,297 @@
 /**
  * Deterministic Scoring Service
- * Computes objective 0-10 scores from static analysis signals
- * These scores are rule-based and don't depend on LLM
+ * Computes objective 0-10 scores from static analysis signals.
+ * Now accepts optional executionResult from Docker eval (Phase 1+).
+ * These scores are rule-based and don't depend on LLM.
  */
 
 /**
- * Compute code quality score from ESLint errors/warnings
+ * Compute code quality score from ESLint errors/warnings and complexity.
  * @param {Object} staticReport - Static analysis report
  * @returns {number} Score 0-10
  */
 function computeCodeQualityDet(staticReport) {
-  if (!staticReport) return 5; // Default if no data
+  if (!staticReport) return 5;
 
   const errors = staticReport.eslintErrors || 0;
   const warnings = staticReport.eslintWarnings || 0;
-  const totalIssues = errors + warnings;
 
-  // Formula: 10 - (errors * 0.5) - (warnings * 0.1), clamped to 0-10
   let score = 10 - errors * 0.5 - warnings * 0.1;
 
-  // Penalize heavily for many errors
   if (errors > 50) {
     score = Math.max(0, score - 3);
   } else if (errors > 20) {
     score = Math.max(0, score - 2);
   }
 
+  // Penalize high cyclomatic complexity (new)
+  const avgComplexity = staticReport.averageComplexity;
+  if (avgComplexity !== null && avgComplexity !== undefined) {
+    if (avgComplexity > 15) score -= 2;
+    else if (avgComplexity > 10) score -= 1;
+  }
+
   return Math.max(0, Math.min(10, Math.round(score * 10) / 10));
 }
 
 /**
- * Compute bug risk score from CI failures and test results
+ * Compute bug risk score from CI, hidden test pass rate, coverage, and ESLint.
  * @param {Object} ciReport - CI/CD report
  * @param {Object} staticReport - Static analysis report
- * @returns {number} Score 0-10 (higher = more risk, so we invert)
+ * @param {Object} [executionResult] - Docker eval result { hiddenTestPassRate, coveragePercent }
+ * @returns {number} Score 0-10 (10 = no risk)
  */
-function computeBugRiskDet(ciReport, staticReport) {
-  let riskScore = 0; // Start with no risk
+function computeBugRiskDet(ciReport, staticReport, executionResult) {
+  let riskScore = 0;
 
-  // CI failures indicate high bug risk
+  // CI failures
   if (ciReport && ciReport.ciStatus === 'failure') {
-    riskScore += 7; // High risk
+    riskScore += 5;
   } else if (ciReport && ciReport.ciStatus === 'cancelled') {
-    riskScore += 4; // Medium risk
+    riskScore += 3;
   }
 
-  // Test failures increase risk
-  if (ciReport && ciReport.testResults) {
-    const totalTests = ciReport.testResults.total || 0;
-    const failedTests = ciReport.testResults.failed || 0;
-    if (totalTests > 0) {
-      const failureRate = failedTests / totalTests;
-      riskScore += failureRate * 5; // Up to 5 points for test failures
-    }
+  // Hidden test pass rate is the strongest bug-risk signal (up to 4 pts)
+  const passRate = executionResult?.hiddenTestPassRate;
+  if (passRate !== null && passRate !== undefined) {
+    riskScore += (1 - passRate) * 4;
+  } else if (ciReport && ciReport.testResults) {
+    const total = ciReport.testResults.total || 0;
+    const failed = ciReport.testResults.failed || 0;
+    if (total > 0) riskScore += (failed / total) * 4;
   }
 
-  // ESLint errors indicate potential bugs
+  // Coverage: low coverage = higher bug risk (up to 2 pts)
+  const coverage = executionResult?.coveragePercent ?? staticReport?.coveragePercent;
+  if (coverage !== null && coverage !== undefined) {
+    if (coverage < 30) riskScore += 2;
+    else if (coverage < 60) riskScore += 1;
+  }
+
+  // ESLint errors (up to 2 pts)
   const eslintErrors = staticReport?.eslintErrors || 0;
-  if (eslintErrors > 0) {
-    riskScore += Math.min(3, eslintErrors * 0.1); // Up to 3 points
-  }
+  riskScore += Math.min(2, eslintErrors * 0.05);
 
-  // Return inverted score (10 = no risk, 0 = high risk)
   return Math.max(0, Math.min(10, Math.round((10 - riskScore) * 10) / 10));
 }
 
 /**
- * Compute DevOps execution score from Docker, YAML, and CI setup
+ * Compute DevOps execution score from Docker build, YAML, and CI setup.
  * @param {Object} staticReport - Static analysis report
  * @param {Object} ciReport - CI/CD report
+ * @param {Object} [executionResult] - Docker eval result { dockerBuildSuccess }
  * @returns {number} Score 0-10
  */
-function computeDevopsExecutionDet(staticReport, ciReport) {
-  let score = 10; // Start perfect
+function computeDevopsExecutionDet(staticReport, ciReport, executionResult) {
+  let score = 10;
 
-  // Docker issues
-  const dockerIssues = staticReport?.dockerIssueCount || 0;
-  if (dockerIssues >= 3) {
-    score -= 4;
-  } else if (dockerIssues > 0) {
-    score -= dockerIssues * 1.5;
+  // Docker build result from eval (strongest signal)
+  if (executionResult && executionResult.dockerBuildSuccess !== null) {
+    if (executionResult.dockerBuildSuccess === false && !executionResult.noDockerfile) {
+      score -= 5; // Docker build failure is a hard penalty
+    } else if (executionResult.noDockerfile) {
+      score -= 3; // No Dockerfile
+    }
+  } else {
+    // Fall back to static Dockerfile analysis
+    const dockerIssues = staticReport?.dockerIssueCount || 0;
+    if (dockerIssues >= 3) score -= 4;
+    else if (dockerIssues > 0) score -= dockerIssues * 1.5;
   }
 
   // YAML validation errors
   const yamlIssues = staticReport?.yamlIssueCount || 0;
-  if (yamlIssues > 0) {
-    score -= yamlIssues * 2; // YAML errors are critical
-  }
+  if (yamlIssues > 0) score -= yamlIssues * 2;
 
-  // CI/CD setup (bonus if CI exists and passes)
+  // CI/CD status
   if (ciReport) {
-    if (ciReport.ciStatus === 'success') {
-      score += 1; // Bonus for passing CI
-    } else if (ciReport.ciStatus === 'no_workflows') {
-      score -= 3; // Penalty for no CI
-    }
+    if (ciReport.ciStatus === 'success') score += 1;
+    else if (ciReport.ciStatus === 'no_workflows') score -= 3;
   } else {
-    score -= 2; // No CI data
+    score -= 2;
   }
 
   return Math.max(0, Math.min(10, Math.round(score * 10) / 10));
 }
 
 /**
- * Compute security score from secret findings
+ * Compute security score from secret findings and dependency vulnerabilities.
  * @param {Object} staticReport - Static analysis report
  * @returns {number} Score 0-10
  */
 function computeSecurityDet(staticReport) {
   if (!staticReport) return 5;
 
-  const securityAlerts = staticReport.securityAlertCount || 0;
-
-  // Any secret found = 0
-  if (securityAlerts > 0) {
+  // Any secret found → 0 (hard floor)
+  if ((staticReport.securityAlertCount || 0) > 0) {
     return 0;
   }
 
-  // No secrets found = good security
-  return 10;
-}
+  let score = 10;
 
-/**
- * Compute delivery speed score from PR size and time metrics
- * @param {Object} prMetadata - PR metadata
- * @param {Object} staticReport - Static analysis report
- * @returns {number} Score 0-10
- */
-function computeDeliverySpeedDet(prMetadata, staticReport) {
-  let score = 10; // Start perfect
+  // Critical vulns → 0
+  if ((staticReport.criticalVulns || 0) > 0) return 0;
 
-  // Large PRs indicate slower delivery
-  const prSize = staticReport?.prSize || prMetadata?.additions + prMetadata?.deletions || 0;
-  if (prSize > 2000) {
-    score -= 4; // Very large PR
-  } else if (prSize > 1000) {
-    score -= 2; // Large PR
-  } else if (prSize > 500) {
-    score -= 1; // Medium PR
-  }
+  // High vulns → significant penalty
+  const highVulns = staticReport.highVulns || 0;
+  if (highVulns > 0) score -= Math.min(4, highVulns * 2);
 
-  // Too many files changed
-  const fileCount = staticReport?.fileCount || prMetadata?.changedFiles || 0;
-  if (fileCount > 20) {
-    score -= 2;
-  } else if (fileCount > 10) {
-    score -= 1;
-  }
+  // Medium vulns → minor penalty
+  const mediumVulns = staticReport.mediumVulns || 0;
+  if (mediumVulns > 0) score -= Math.min(2, mediumVulns);
 
   return Math.max(0, Math.min(10, Math.round(score * 10) / 10));
 }
 
 /**
- * Compute documentation score from PR description and comments
+ * Compute delivery speed score from PR size and time metrics.
+ * @param {Object} prMetadata - PR metadata
+ * @param {Object} staticReport - Static analysis report
+ * @returns {number} Score 0-10
+ */
+function computeDeliverySpeedDet(prMetadata, staticReport) {
+  let score = 10;
+
+  const prSize = staticReport?.prSize || (prMetadata?.additions + prMetadata?.deletions) || 0;
+  if (prSize > 2000) score -= 4;
+  else if (prSize > 1000) score -= 2;
+  else if (prSize > 500) score -= 1;
+
+  const fileCount = staticReport?.fileCount || prMetadata?.changedFiles || 0;
+  if (fileCount > 20) score -= 2;
+  else if (fileCount > 10) score -= 1;
+
+  return Math.max(0, Math.min(10, Math.round(score * 10) / 10));
+}
+
+/**
+ * Compute documentation score from PR description.
  * @param {Object} prMetadata - PR metadata
  * @returns {number} Score 0-10
  */
 function computeDocumentationDet(prMetadata) {
   if (!prMetadata) return 5;
 
-  let score = 5; // Start neutral
-
-  // PR description quality
   const description = prMetadata.description || '';
-  if (!description || description.trim().length === 0) {
-    score = 2; // No description = poor documentation
-  } else if (description.length < 50) {
-    score = 4; // Very short description
-  } else if (description.length >= 200) {
-    score = 8; // Good description
-  } else {
-    score = 6; // Decent description
-  }
-
-  return Math.max(0, Math.min(10, Math.round(score * 10) / 10));
+  if (!description || description.trim().length === 0) return 2;
+  if (description.length < 50) return 4;
+  if (description.length >= 200) return 8;
+  return 6;
 }
 
 /**
- * Compute git maturity score from PR size and file count
+ * Compute git maturity score from PR size and file count.
  * @param {Object} staticReport - Static analysis report
  * @returns {number} Score 0-10
  */
 function computeGitMaturityDet(staticReport) {
   if (!staticReport) return 5;
 
-  let score = 10; // Start perfect
-
+  let score = 10;
   const prSize = staticReport.prSize || 0;
   const fileCount = staticReport.fileCount || 0;
 
-  // Large PRs indicate poor git practices
-  if (prSize > 2000) {
-    score -= 5;
-  } else if (prSize > 1000) {
-    score -= 3;
-  } else if (prSize > 500) {
-    score -= 1;
-  }
+  if (prSize > 2000) score -= 5;
+  else if (prSize > 1000) score -= 3;
+  else if (prSize > 500) score -= 1;
 
-  // Too many files changed
-  if (fileCount > 20) {
-    score -= 2;
-  } else if (fileCount > 10) {
-    score -= 1;
-  }
+  if (fileCount > 20) score -= 2;
+  else if (fileCount > 10) score -= 1;
 
   return Math.max(0, Math.min(10, Math.round(score * 10) / 10));
 }
 
 /**
- * Compute optimization score from code patterns and resource usage
+ * Compute optimization score from code complexity and Docker optimization.
  * @param {Object} staticReport - Static analysis report
  * @returns {number} Score 0-10
  */
 function computeOptimizationDet(staticReport) {
   if (!staticReport) return 5;
 
-  let score = 7; // Start decent (hard to measure from static analysis alone)
+  let score = 7;
 
-  // Docker optimization (image size, layers)
+  // Docker optimization issues
   const dockerIssues = staticReport.dockerIssues || [];
   const optimizationIssues = dockerIssues.filter(
-    (issue) => issue.message && issue.message.toLowerCase().includes('optimize')
+    (i) => i.message && i.message.toLowerCase().includes('optimize')
   ).length;
+  if (optimizationIssues > 0) score -= optimizationIssues * 1.5;
 
-  if (optimizationIssues > 0) {
-    score -= optimizationIssues * 1.5;
+  // High complexity = worse optimization
+  const avgComplexity = staticReport.averageComplexity;
+  if (avgComplexity !== null && avgComplexity !== undefined) {
+    if (avgComplexity > 15) score -= 2;
+    else if (avgComplexity > 10) score -= 1;
   }
 
-  // Large PRs might indicate lack of optimization
-  const prSize = staticReport.prSize || 0;
-  if (prSize > 1500) {
-    score -= 1;
-  }
+  if ((staticReport.prSize || 0) > 1500) score -= 1;
 
   return Math.max(0, Math.min(10, Math.round(score * 10) / 10));
 }
 
 /**
- * Compute problem solving score from solution completeness
+ * Compute problem solving score from hidden test results, CI, and ESLint.
  * @param {Object} staticReport - Static analysis report
  * @param {Object} ciReport - CI/CD report
+ * @param {Object} [executionResult] - Docker eval result { hiddenTestPassRate }
  * @returns {number} Score 0-10
  */
-function computeProblemSolvingDet(staticReport, ciReport) {
-  let score = 7; // Start decent
+function computeProblemSolvingDet(staticReport, ciReport, executionResult) {
+  let score = 7;
 
-  // CI passing indicates good problem solving
-  if (ciReport && ciReport.ciStatus === 'success') {
-    score += 2;
-  } else if (ciReport && ciReport.ciStatus === 'failure') {
-    score -= 2; // Failed CI suggests incomplete solution
-  }
+  // Hidden test pass rate is the best problem-solving signal
+  const passRate = executionResult?.hiddenTestPassRate;
+  if (passRate !== null && passRate !== undefined) {
+    // 0% pass rate = -4, 100% pass rate = +3
+    score = 5 + passRate * 5;
+  } else {
+    // Fallback: CI status
+    if (ciReport && ciReport.ciStatus === 'success') score += 2;
+    else if (ciReport && ciReport.ciStatus === 'failure') score -= 2;
 
-  // Fewer errors = better problem solving
-  const eslintErrors = staticReport?.eslintErrors || 0;
-  if (eslintErrors === 0) {
-    score += 1;
-  } else if (eslintErrors > 20) {
-    score -= 1;
+    const eslintErrors = staticReport?.eslintErrors || 0;
+    if (eslintErrors === 0) score += 1;
+    else if (eslintErrors > 20) score -= 1;
   }
 
   return Math.max(0, Math.min(10, Math.round(score * 10) / 10));
 }
 
 /**
- * Compute collaboration score from PR description quality and communication
+ * Compute collaboration score from PR description quality and PR size.
  * @param {Object} prMetadata - PR metadata
  * @param {Object} staticReport - Static analysis report
  * @returns {number} Score 0-10
  */
 function computeCollaborationDet(prMetadata, staticReport) {
-  let score = 5; // Start neutral
+  let score = 5;
 
-  // PR description quality
   const description = prMetadata?.description || '';
-  if (description && description.length >= 100) {
-    score += 2; // Good description shows communication
-  } else if (!description || description.length === 0) {
-    score -= 2; // No description = poor collaboration
-  }
+  if (description && description.length >= 100) score += 2;
+  else if (!description || description.length === 0) score -= 2;
 
-  // Large PRs indicate poor collaboration (should be broken down)
   const prSize = staticReport?.prSize || 0;
-  if (prSize > 2000) {
-    score -= 3; // Very large PR
-  } else if (prSize > 1000) {
-    score -= 1; // Large PR
-  }
+  if (prSize > 2000) score -= 3;
+  else if (prSize > 1000) score -= 1;
 
   return Math.max(0, Math.min(10, Math.round(score * 10) / 10));
 }
 
 /**
- * Compute all deterministic scores
+ * Compute all deterministic scores.
  * @param {Object} staticReport - Static analysis report
  * @param {Object} ciReport - CI/CD report
  * @param {Object} prMetadata - PR metadata
+ * @param {Object} [executionResult] - Docker eval result (optional)
  * @returns {Object} All 10 deterministic scores
  */
-function computeAllDeterministicScores(staticReport, ciReport, prMetadata) {
+function computeAllDeterministicScores(staticReport, ciReport, prMetadata, executionResult) {
   return {
     codeQuality: computeCodeQualityDet(staticReport),
-    problemSolving: computeProblemSolvingDet(staticReport, ciReport),
-    bugRisk: computeBugRiskDet(ciReport, staticReport),
-    devopsExecution: computeDevopsExecutionDet(staticReport, ciReport),
+    problemSolving: computeProblemSolvingDet(staticReport, ciReport, executionResult),
+    bugRisk: computeBugRiskDet(ciReport, staticReport, executionResult),
+    devopsExecution: computeDevopsExecutionDet(staticReport, ciReport, executionResult),
     optimization: computeOptimizationDet(staticReport),
     documentation: computeDocumentationDet(prMetadata),
     gitMaturity: computeGitMaturityDet(staticReport),
@@ -327,4 +314,3 @@ module.exports = {
   computeCollaborationDet,
   computeAllDeterministicScores,
 };
-

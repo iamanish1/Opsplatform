@@ -21,8 +21,28 @@ app.use(Sentry.Handlers.tracingHandler());
 // Security middleware
 app.use(helmet());
 
-// CORS middleware
-app.use(cors());
+// CORS middleware — strict allowlist, not wildcard
+const allowedOrigins = [
+  process.env.FRONTEND_URL || 'http://localhost:5173',
+  // Add additional origins here if needed (e.g. preview deployments)
+  ...(process.env.EXTRA_ALLOWED_ORIGINS
+    ? process.env.EXTRA_ALLOWED_ORIGINS.split(',').map((o) => o.trim())
+    : []),
+];
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (e.g. mobile apps, curl, server-to-server)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      callback(new Error(`CORS: origin ${origin} not allowed`));
+    },
+    credentials: true, // Allow cookies / Authorization headers
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
 
 // Body parsing middleware
 // Webhook routes need raw body for signature verification
