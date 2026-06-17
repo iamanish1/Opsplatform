@@ -1,4 +1,4 @@
-.authForm {
+﻿.authForm {
   width: 100%;
 }
 
@@ -52,9 +52,9 @@
 }
 
 .formInput:focus {
-  border-color: rgba(139, 92, 246, 0.5);
+  border-color: rgba(16, 185, 129, 0.5);
   background: rgba(255, 255, 255, 0.08);
-  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
 .formInputError {
@@ -107,7 +107,7 @@
   font-size: 16px;
   font-weight: 600;
   font-family: inherit;
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  background: linear-gradient(135deg, #10b981, #059669);
   color: #ffffff;
   border: none;
   border-radius: 12px;
@@ -122,8 +122,8 @@
 }
 
 .submitButton:hover:not(:disabled) {
-  background: linear-gradient(135deg, #7c3aed, #6d28d9);
-  box-shadow: 0 10px 30px rgba(139, 92, 246, 0.3);
+  background: linear-gradient(135deg, #059669, #047857);
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
   transform: translateY(-2px);
 }
 

@@ -1,4 +1,4 @@
-import { memo } from 'react';
+﻿import { memo } from 'react';
 import { motion } from 'framer-motion';
 import useReducedMotion from '../../../../hooks/useReducedMotion';
 import styles from './MushroomMascot.module.css';
@@ -77,9 +77,9 @@ const MushroomMascot = memo(({
         {/* Gradient Definition */}
         <defs>
           <linearGradient id="mushroomGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.6" />
-            <stop offset="50%" stopColor="#7c3aed" stopOpacity="0.5" />
-            <stop offset="100%" stopColor="#ec4899" stopOpacity="0.4" />
+            <stop offset="0%" stopColor="#10b981" stopOpacity="0.6" />
+            <stop offset="50%" stopColor="#059669" stopOpacity="0.5" />
+            <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.4" />
           </linearGradient>
           <filter id="glow">
             <feGaussianBlur stdDeviation="3" result="coloredBlur"/>

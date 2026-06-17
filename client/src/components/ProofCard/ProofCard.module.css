@@ -1,4 +1,4 @@
-/* ProofCard — Shareable trust score card */
+﻿/* ProofCard — Shareable trust score card */
 
 .wrapper {
   display: flex;
@@ -23,7 +23,6 @@
   position: relative;
   overflow: hidden;
   box-shadow:
-    0 0 40px var(--badge-glow, rgba(99,102,241,0.15)),
     0 20px 60px rgba(0,0,0,0.5);
 }
 
@@ -32,16 +31,9 @@
   border-radius: 16px;
 }
 
-/* Background glow */
+/* Background glow removed */
 .cardGlow {
-  position: absolute;
-  top: -60px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 200px;
-  height: 200px;
-  background: radial-gradient(circle, var(--badge-glow, rgba(99,102,241,0.2)) 0%, transparent 70%);
-  pointer-events: none;
+  display: none;
 }
 
 /* Grid texture */
@@ -75,7 +67,7 @@
   letter-spacing: 0.02em;
 }
 
-.brandMark svg { color: #6366f1; }
+.brandMark svg { color: #10b981; }
 
 .verifiedMark {
   display: flex;
@@ -85,12 +77,12 @@
   font-weight: 600;
   color: rgba(255,255,255,0.5);
   padding: 0.2rem 0.55rem;
-  background: rgba(99,102,241,0.12);
-  border: 1px solid rgba(99,102,241,0.2);
+  background: rgba(139,92,246,0.12);
+  border: 1px solid rgba(139,92,246,0.2);
   border-radius: 999px;
 }
 
-.verifiedMark svg { color: #818cf8; }
+.verifiedMark svg { color: #34d399; }
 
 /* ── Developer section ── */
 .devSection {
@@ -109,21 +101,21 @@
   height: 48px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid var(--badge-color, #6366f1);
+  border: 2px solid var(--badge-color, #10b981);
 }
 
 .avatarFallback {
   width: 48px;
   height: 48px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: linear-gradient(135deg, #10b981, #06b6d4);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 1.2rem;
   font-weight: 700;
   color: white;
-  border: 2px solid var(--badge-color, #6366f1);
+  border: 2px solid var(--badge-color, #10b981);
 }
 
 .compact .avatarImg,
@@ -167,7 +159,6 @@
   align-items: center;
   justify-content: center;
   background: rgba(0,0,0,0.3);
-  box-shadow: 0 0 24px var(--badge-glow, rgba(99,102,241,0.2));
 }
 
 .compact .scoreRing {

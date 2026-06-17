@@ -1,13 +1,13 @@
-const Queue = require('bullmq');
-const Redis = require('ioredis');
-const logger = require('../../config/logger');
+const { Queue } = require('bullmq');
+const redis = require('../config/redis');
+const logger = require('../utils/logger');
 
 /**
  * Dead Letter Queue for failed review jobs
  * Never removes jobs - maintains full audit trail of failures
  */
 const deadLetterQueue = new Queue('dead-letter', {
-  connection: new Redis(process.env.REDIS_URL),
+  connection: redis,
   defaultJobOptions: {
     removeOnComplete: false, // Keep all completed jobs
     removeOnFail: false,      // Keep all failed jobs

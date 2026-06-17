@@ -64,8 +64,13 @@ const LessonsSection = memo(() => {
       ) : (
         <>
           <div className={styles.lessonsGrid}>
-            {lessons.map((lesson) => (
-              <motion.div key={lesson.id} variants={fadeInUp}>
+            {lessons.map((lesson, index) => (
+              <motion.div
+                key={lesson.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.06, ease: [0.22, 1, 0.36, 1] }}
+              >
                 <GlassCard
                   className={styles.lessonCard}
                   onClick={() => navigate('/dashboard/lessons')}

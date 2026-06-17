@@ -1,9 +1,19 @@
 import { memo, useState, useEffect, useCallback, useRef } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Bell, User, Settings, LogOut, Menu, X, ChevronDown, CheckCheck, Trash2 } from 'lucide-react';
 import useReducedMotion from '../../../../hooks/useReducedMotion';
 import { useAuth } from '../../../../contexts/AuthContext';
+
+const PAGE_TITLES = {
+  '/dashboard':              'Dashboard',
+  '/dashboard/lessons':      'Lessons',
+  '/dashboard/projects':     'Projects',
+  '/dashboard/submissions':  'Submissions',
+  '/dashboard/portfolios':   'Portfolio',
+  '/dashboard/interviews':   'Interviews',
+  '/dashboard/settings':     'Settings',
+};
 import { getNotifications, getUnreadCount, markAsRead, markAllAsRead, deleteNotification } from '../../../../services/notificationsApi';
 import styles from './DashboardHeader.module.css';
 
@@ -31,17 +41,24 @@ const DashboardHeader = memo(({ onMenuClick }) => {
   const prefersReducedMotion = useReducedMotion();
   const { logout, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const pageTitle = PAGE_TITLES[location.pathname] ||
+    Object.entries(PAGE_TITLES).find(([k]) => location.pathname.startsWith(k + '/') && k !== '/dashboard')?.[1] ||
+    'Dashboard';
 
   const failCount = useRef(0);
 
   const fetchUnread = useCallback(async () => {
     try {
       const data = await getUnreadCount();
-      setUnreadCount(data.count ?? data.unreadCount ?? 0);
-      failCount.current = 0; // reset on success
+      // data.count is the canonical field; guard against 304 empty-object slip-through
+      if (data && typeof data.count === 'number') {
+        setUnreadCount(data.count);
+        failCount.current = 0;
+      }
     } catch (err) {
-      // 429 rate-limited or DB down — both count as failures for backoff
-      failCount.current += (err?.status === 429) ? 3 : 1; // 429 jumps straight to stop
+      failCount.current += (err?.status === 429) ? 3 : 1;
     }
   }, []);
 
@@ -49,9 +66,9 @@ const DashboardHeader = memo(({ onMenuClick }) => {
     setLoadingNotifs(true);
     try {
       const data = await getNotifications({ limit: 10 });
-      setNotifications(data.notifications || data || []);
-      const cnt = (data.notifications || data || []).filter(n => !n.read).length;
-      setUnreadCount(cnt);
+      const list = Array.isArray(data?.notifications) ? data.notifications : [];
+      setNotifications(list);
+      setUnreadCount(list.filter(n => !n.read).length);
     } catch { /* silent */ }
     finally { setLoadingNotifs(false); }
   }, []);
@@ -117,7 +134,7 @@ const DashboardHeader = memo(({ onMenuClick }) => {
         <button className={styles.menuButton} onClick={onMenuClick} aria-label="Toggle menu">
           <Menu size={24} />
         </button>
-        <h1 className={styles.pageTitle}>Dashboard</h1>
+        <h1 className={styles.pageTitle}>{pageTitle}</h1>
       </div>
 
       <div className={styles.headerRight}>

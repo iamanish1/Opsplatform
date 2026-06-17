@@ -96,7 +96,7 @@ const DeveloperRow = ({ dev, rank }) => {
       {/* Action */}
       <div className={styles.actionCell}>
         {dev.portfolioSlug && (
-          <Link to={`/portfolio/${dev.portfolioSlug}`} className={styles.viewBtn}>
+          <Link to={`/portfolios/${dev.portfolioSlug}`} className={styles.viewBtn}>
             View <ExternalLink size={12} />
           </Link>
         )}

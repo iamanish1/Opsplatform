@@ -137,7 +137,7 @@ const Submissions = memo(() => {
     return (
       <DashboardLayout>
         <div className={styles.loadingContainer}>
-          <Loader2 size={48} className={styles.loader} />
+          <Loader2 size={32} className={styles.loader} />
           <p>Loading submissions...</p>
         </div>
       </DashboardLayout>
@@ -209,7 +209,7 @@ const Submissions = memo(() => {
           </div>
 
           <div className={styles.sortContainer}>
-            <SortAsc size={16} />
+            <SortAsc size={13} />
             <select
               className={styles.sortSelect}
               value={sortBy}
@@ -225,7 +225,7 @@ const Submissions = memo(() => {
         {filteredAndSorted.length === 0 ? (
           <motion.div className={styles.emptyState} variants={fadeInUp} initial="hidden" animate="visible">
             <GlassCard className={styles.emptyCard}>
-              <GitPullRequest size={48} className={styles.emptyIcon} />
+              <GitPullRequest size={36} className={styles.emptyIcon} />
               <h3>No submissions found</h3>
               <p>
                 {filter === 'all'

@@ -66,7 +66,7 @@ const DeveloperCard = memo(({ dev, onRequestInterview }) => {
 
       <div className={styles.cardActions}>
         {portfolio?.slug && (
-          <Link to={`/portfolio/${portfolio.slug}`} target="_blank" className={styles.portfolioBtn}>
+          <Link to={`/portfolios/${portfolio.slug}`} target="_blank" className={styles.portfolioBtn}>
             <ExternalLink size={14} />Portfolio
           </Link>
         )}

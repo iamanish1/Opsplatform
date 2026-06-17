@@ -64,6 +64,20 @@ async function updateOnboarding(req, res, next) {
 }
 
 /**
+ * POST /api/user/onboarding/complete
+ * Mark onboarding as complete for the authenticated student
+ */
+async function completeOnboarding(req, res, next) {
+  try {
+    const userId = req.user.id;
+    const updated = await userService.advanceOnboarding(userId, 4, false);
+    res.json({ success: true, onboardingStep: updated.onboardingStep });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
  * POST /api/user/link-github
  * Link GitHub account
  * Auth: Optional (for OAuth callback, userId can be in body)
@@ -102,5 +116,6 @@ module.exports = {
   updateUser,
   getOnboarding,
   updateOnboarding,
+  completeOnboarding,
   linkGitHub,
 };

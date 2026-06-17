@@ -1,4 +1,4 @@
-import { memo } from 'react';
+﻿import { memo } from 'react';
 import { motion } from 'framer-motion';
 import { FileCode, Award, Badge } from 'lucide-react';
 import GlassCard from '../../../../components/ui/GlassCard/GlassCard';
@@ -9,8 +9,8 @@ const QuickStatsWidget = memo(({ stats }) => {
   const { submissions = 0, portfolios = 0, certificates = 0 } = stats || {};
 
   const statItems = [
-    { icon: FileCode, label: 'Submissions', value: submissions, color: '#8b5cf6' },
-    { icon: Award, label: 'Portfolios', value: portfolios, color: '#ec4899' },
+    { icon: FileCode, label: 'Submissions', value: submissions, color: '#10b981' },
+    { icon: Award, label: 'Portfolios', value: portfolios, color: '#06b6d4' },
     { icon: Badge, label: 'Certificates', value: certificates, color: '#f59e0b' },
   ];
 

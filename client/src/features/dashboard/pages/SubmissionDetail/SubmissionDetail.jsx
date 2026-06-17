@@ -20,7 +20,7 @@ import GlassCard from '../../../../components/ui/GlassCard/GlassCard';
 import AIReviewPanel from '../../../../components/AIReviewPanel/AIReviewPanel';
 import ProofCard from '../../../../components/ProofCard/ProofCard';
 import { fadeInUp, staggerContainer } from '../../../../utils/animations';
-import { getSubmissionDetails, submitForReview, fetchAndAttachPR, updateSubmissionRepoUrl } from '../../../../services/submissionsApi';
+import { getSubmissionDetails, submitForReview, fetchAndAttachPR, updateSubmissionRepoUrl, getReviewDetails } from '../../../../services/submissionsApi';
 import { getSubmissionTasks, updateTaskStatus } from '../../../../services/taskProgressApi';
 import { useReviewStatus } from '../../../../hooks/useReviewStatus';
 import { useReviewCache } from '../../../../hooks/useReviewCache';
@@ -58,6 +58,8 @@ const SubmissionDetail = memo(() => {
   // AI Review hooks
   const { status: reviewStatus, progress: reviewProgress, review, loading: reviewLoading, error: reviewError } = useReviewStatus(id);
   const { cache: cachedReview, clearCache } = useReviewCache(id);
+  const [directReview, setDirectReview] = useState(null);
+  const [directReviewLoading, setDirectReviewLoading] = useState(false);
   const toast = useToast();
   const { user: authUser } = useAuth();
   const [confirmSubmit, setConfirmSubmit] = useState(false);
@@ -138,6 +140,18 @@ const SubmissionDetail = memo(() => {
     fetchSubmissionDetails();
     fetchTasks();
   }, [id, fetchSubmissionDetails, fetchTasks]);
+
+  // Self-healing: if the DB says REVIEWED but SSE is stuck (e.g. after a server restart
+  // cleared in-memory reviewProgress), fetch review details directly and force REVIEWED state.
+  useEffect(() => {
+    if (submission?.status === 'REVIEWED' && !review && !cachedReview && !directReview && !directReviewLoading) {
+      setDirectReviewLoading(true);
+      getReviewDetails(id)
+        .then(setDirectReview)
+        .catch(() => {})
+        .finally(() => setDirectReviewLoading(false));
+    }
+  }, [submission?.status, review, cachedReview, directReview, directReviewLoading, id]);
 
   const handleTaskToggle = useCallback(async (taskId, currentStatus) => {
     const newStatus = !currentStatus;
@@ -319,7 +333,7 @@ const SubmissionDetail = memo(() => {
     return (
       <DashboardLayout>
         <div className={styles.loadingContainer}>
-          <Loader2 size={48} className={styles.loader} />
+          <Loader2 size={32} className={styles.loader} />
           <p>Loading submission...</p>
         </div>
       </DashboardLayout>
@@ -351,20 +365,20 @@ const SubmissionDetail = memo(() => {
         {/* Header */}
         <motion.div className={styles.header} variants={fadeInUp} initial="hidden" animate="visible">
           <button onClick={() => navigate('/dashboard/submissions')} className={styles.backButton}>
-            <ArrowLeft size={20} />
+            <ArrowLeft size={16} />
             Back to Submissions
           </button>
 
           <div className={styles.headerContent}>
             <div className={styles.submissionMeta}>
               <div className={styles.submissionIcon}>
-                <GitPullRequest size={24} />
+                <GitPullRequest size={18} />
                 {submission.prNumber && (
                   <span className={styles.prNumber}>#{submission.prNumber}</span>
                 )}
               </div>
               <div className={`${styles.statusBadge} ${styles[status.variant]}`}>
-                <StatusIcon size={16} />
+                <StatusIcon size={13} />
                 <span>{status.label}</span>
               </div>
             </div>
@@ -378,7 +392,7 @@ const SubmissionDetail = memo(() => {
                 rel="noopener noreferrer"
                 className={styles.repoLink}
               >
-                <ExternalLink size={16} />
+                <ExternalLink size={13} />
                 View Repository
               </a>
             )}
@@ -397,11 +411,95 @@ const SubmissionDetail = memo(() => {
           initial="hidden"
           animate="visible"
         >
+          {/* Score Overview — shown FIRST when reviewed so users see results immediately */}
+          {submission.status === 'REVIEWED' && submission.score && (
+            <motion.div variants={fadeInUp}>
+              <GlassCard className={styles.scoreCard}>
+                <div className={styles.scoreHeader}>
+                  <Award size={22} className={styles.scoreIcon} />
+                  <div>
+                    <h2 className={styles.scoreTitle}>Verification Score</h2>
+                    <p className={styles.scoreSubtitle}>Evidence-based competency assessment</p>
+                  </div>
+                </div>
+                <div className={styles.scoreDisplay}>
+                  <div className={`${styles.totalScore} ${styles[badgeColor]}`}>
+                    {totalScore}/100
+                  </div>
+                  <div className={`${styles.badge} ${styles[badge.toLowerCase()]}`}>
+                    {badge === 'GREEN' ? 'Verified' : badge === 'YELLOW' ? 'Partial' : 'Not Verified'}
+                  </div>
+                </div>
+              </GlassCard>
+            </motion.div>
+          )}
+
+          {/* Score Breakdown — second when reviewed */}
+          {submission.status === 'REVIEWED' && submission.score && (
+            <motion.div variants={fadeInUp}>
+              <GlassCard className={styles.breakdownCard}>
+                <h2 className={styles.sectionTitle}>Verification Evidence</h2>
+                <div className={styles.categoriesGrid}>
+                  {scoreCategories.map((category) => {
+                    const score = submission.score[category.key] || 0;
+                    const color = getBadgeColor(score);
+                    const CategoryIcon = category.icon;
+                    return (
+                      <div key={category.key} className={styles.categoryItem}>
+                        <div className={styles.categoryHeader}>
+                          <CategoryIcon size={15} className={styles.categoryIcon} />
+                          <span className={styles.categoryLabel}>{category.label}</span>
+                        </div>
+                        <div className={styles.categoryScore}>
+                          <div className={styles.scoreBar}>
+                            <div
+                              className={`${styles.scoreFill} ${styles[color]}`}
+                              style={{ width: `${score * 10}%` }}
+                            />
+                          </div>
+                          <span className={`${styles.scoreValue} ${styles[color]}`}>
+                            {score}/10
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </GlassCard>
+            </motion.div>
+          )}
+
+          {/* Live review progress — only while actively submitting/reviewing */}
+          {submission.status === 'SUBMITTED' && (
+            <motion.div variants={fadeInUp}>
+              <AIReviewPanel
+                status={reviewStatus}
+                progress={reviewProgress}
+                review={null}
+                error={reviewError}
+                loading={reviewLoading}
+              />
+            </motion.div>
+          )}
+
+          {/* AI qualitative content (summary, suggestions, static analysis) — only when data ready */}
+          {submission.status === 'REVIEWED' && (review || directReview || cachedReview) && (
+            <motion.div variants={fadeInUp}>
+              <AIReviewPanel
+                status="REVIEWED"
+                progress={100}
+                review={review || directReview || cachedReview}
+                error={reviewError}
+                loading={false}
+              />
+            </motion.div>
+          )}
+
           {/* Task Progress Card */}
           <motion.div variants={fadeInUp}>
             <GlassCard className={styles.tasksCard}>
                 <div className={styles.tasksHeader}>
-                  <ListChecks size={24} className={styles.tasksIcon} />
+                  <ListChecks size={18} className={styles.tasksIcon} />
                   <div className={styles.tasksHeaderContent}>
                     <h2 className={styles.sectionTitle}>Project Tasks</h2>
                     <p className={styles.tasksSubtitle}>
@@ -414,12 +512,20 @@ const SubmissionDetail = memo(() => {
                   </div>
                 </div>
                 
+                {/* Reviewed: just show a compact completion badge — tasks are done */}
+                {submission.status === 'REVIEWED' && !loadingTasks && (
+                  <div className={styles.tasksCompletedBadge}>
+                    <CheckCircle2 size={15} className={styles.tasksCompletedIcon} />
+                    <span>All {progress.total} tasks completed</span>
+                  </div>
+                )}
+
                 {loadingTasks ? (
                   <div className={styles.loadingState}>
-                    <Loader2 size={32} className={styles.loader} />
+                    <Loader2 size={24} className={styles.loader} />
                     <p>Loading tasks...</p>
                   </div>
-                ) : tasks.length > 0 ? (
+                ) : submission.status !== 'REVIEWED' && tasks.length > 0 ? (
                   <>
                     {/* Progress Bar */}
                     <div className={styles.progressBarContainer}>
@@ -449,9 +555,9 @@ const SubmissionDetail = memo(() => {
                           aria-label={task.completed ? 'Mark task as incomplete' : 'Mark task as complete'}
                         >
                           {updatingTask === task.id ? (
-                            <Loader2 size={20} className={styles.checkboxLoader} />
+                            <Loader2 size={16} className={styles.checkboxLoader} />
                           ) : task.completed ? (
-                            <CheckCircle2 size={20} className={styles.checkboxIcon} />
+                            <CheckCircle2 size={16} className={styles.checkboxIcon} />
                           ) : (
                             <div className={styles.checkboxEmpty} />
                           )}
@@ -478,14 +584,14 @@ const SubmissionDetail = memo(() => {
                       ))}
                     </div>
                   </>
-                ) : (
+                ) : submission.status !== 'REVIEWED' ? (
                   <div className={styles.noTasksMessage}>
                     <p>No tasks have been defined for this project yet.</p>
                     <p className={styles.noTasksSubtext}>
                       Tasks will appear here once they are configured for this project.
                     </p>
                   </div>
-                )}
+                ) : null}
 
                 {/* Submit for Review Button */}
                 {submission.status === 'IN_PROGRESS' && (
@@ -505,7 +611,7 @@ const SubmissionDetail = memo(() => {
                         <div className={styles.confirmActions}>
                           <button className={styles.confirmCancelBtn} onClick={() => setConfirmSubmit(false)}>Cancel</button>
                           <button className={styles.confirmOkBtn} onClick={handleConfirmedSubmit}>
-                            <CheckCircle2 size={16} /> Yes, Submit Now
+                            <CheckCircle2 size={13} /> Yes, Submit Now
                           </button>
                         </div>
                       </div>
@@ -518,9 +624,9 @@ const SubmissionDetail = memo(() => {
                         className={styles.submitButton}
                       >
                         {submitting ? (
-                          <><Loader2 size={20} className={styles.buttonLoader} />Submitting...</>
+                          <><Loader2 size={16} className={styles.buttonLoader} />Submitting...</>
                         ) : (
-                          <><CheckCircle2 size={20} />Submit for Review</>
+                          <><CheckCircle2 size={16} />Submit for Review</>
                         )}
                       </button>
                     )}
@@ -530,7 +636,7 @@ const SubmissionDetail = memo(() => {
                 {/* Submitted Status Message */}
                 {submission.status === 'SUBMITTED' && (
                   <div className={styles.submittedMessage}>
-                    <Clock size={24} className={styles.submittedIcon} />
+                    <Clock size={18} className={styles.submittedIcon} />
                     <div style={{ width: '100%' }}>
                       <h3 className={styles.submittedTitle}>Project Submitted for Review</h3>
                       <p className={styles.submittedText}>
@@ -540,7 +646,7 @@ const SubmissionDetail = memo(() => {
                       {/* PR Status Section */}
                       {submission.prNumber && (
                         <div className={styles.prSuccessContainer}>
-                          <CheckCircle2 size={18} className={styles.prSuccessIcon} />
+                          <CheckCircle2 size={14} className={styles.prSuccessIcon} />
                           <span className={styles.prSuccessText}>
                             PR #{submission.prNumber} successfully attached
                           </span>
@@ -551,7 +657,7 @@ const SubmissionDetail = memo(() => {
                         <div className={styles.prActionContainer}>
                           {!prFetchAttempted && (
                             <div className={styles.prAutoFetchingContainer}>
-                              <Loader2 size={18} className={styles.prFetchingSpinner} />
+                              <Loader2 size={14} className={styles.prFetchingSpinner} />
                               <span className={styles.prAutoFetchingText}>
                                 Automatically detecting PR from your repository...
                               </span>
@@ -618,9 +724,9 @@ const SubmissionDetail = memo(() => {
                                 className={styles.fetchPRButton}
                               >
                                 {fetchingPR ? (
-                                  <><Loader2 size={18} className={styles.buttonLoader} />Retrying...</>
+                                  <><Loader2 size={14} className={styles.buttonLoader} />Retrying...</>
                                 ) : (
-                                  <><GitPullRequest size={18} />Retry: Fetch PR</>
+                                  <><GitPullRequest size={14} />Retry: Fetch PR</>
                                 )}
                               </button>
                             </>
@@ -632,78 +738,6 @@ const SubmissionDetail = memo(() => {
                 )}
               </GlassCard>
             </motion.div>
-
-          {/* AI Review Panel - Show when submission is submitted or reviewed */}
-          {(submission.status === 'SUBMITTED' || submission.status === 'REVIEWED') && (
-            <motion.div variants={fadeInUp}>
-              <AIReviewPanel
-                status={reviewStatus}
-                progress={reviewProgress}
-                review={review || cachedReview}
-                error={reviewError}
-                loading={reviewLoading}
-              />
-            </motion.div>
-          )}
-
-          {/* Score Overview Card - Only show when REVIEWED */}
-          {submission.status === 'REVIEWED' && submission.score && (
-            <motion.div variants={fadeInUp}>
-              <GlassCard className={styles.scoreCard}>
-                <div className={styles.scoreHeader}>
-                  <Award size={32} className={styles.scoreIcon} />
-                  <div>
-                    <h2 className={styles.scoreTitle}>Verification Score</h2>
-                    <p className={styles.scoreSubtitle}>Evidence-based competency assessment</p>
-                  </div>
-                </div>
-                <div className={styles.scoreDisplay}>
-                  <div className={`${styles.totalScore} ${styles[badgeColor]}`}>
-                    {totalScore}/100
-                  </div>
-                  <div className={`${styles.badge} ${styles[badge.toLowerCase()]}`}>
-                    {badge === 'GREEN' ? 'Verified' : badge === 'YELLOW' ? 'Partial' : 'Not Verified'}
-                  </div>
-                </div>
-              </GlassCard>
-            </motion.div>
-          )}
-
-          {/* Score Breakdown - Only show when REVIEWED */}
-          {submission.status === 'REVIEWED' && submission.score && (
-            <motion.div variants={fadeInUp}>
-              <GlassCard className={styles.breakdownCard}>
-                <h2 className={styles.sectionTitle}>Verification Evidence</h2>
-                <div className={styles.categoriesGrid}>
-                  {scoreCategories.map((category) => {
-                    const score = submission.score[category.key] || 0;
-                    const color = getBadgeColor(score);
-                    const CategoryIcon = category.icon;
-
-                    return (
-                      <div key={category.key} className={styles.categoryItem}>
-                        <div className={styles.categoryHeader}>
-                          <CategoryIcon size={20} className={styles.categoryIcon} />
-                          <span className={styles.categoryLabel}>{category.label}</span>
-                        </div>
-                        <div className={styles.categoryScore}>
-                          <div className={styles.scoreBar}>
-                            <div
-                              className={`${styles.scoreFill} ${styles[color]}`}
-                              style={{ width: `${score}%` }}
-                            />
-                          </div>
-                          <span className={`${styles.scoreValue} ${styles[color]}`}>
-                            {score}/10
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </GlassCard>
-            </motion.div>
-          )}
 
           {/* Latest Review - Only show when REVIEWED */}
           {submission.status === 'REVIEWED' && submission.latestReview && (
@@ -719,7 +753,7 @@ const SubmissionDetail = memo(() => {
                   </div>
                   {submission.latestReview.badge && (
                     <div className={styles.reviewBadge}>
-                      <Award size={20} />
+                      <Award size={15} />
                       <span>{submission.latestReview.badge} Badge</span>
                     </div>
                   )}

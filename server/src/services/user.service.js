@@ -61,7 +61,7 @@ async function updateProfile(userId, payload) {
   }
 
   // Extract only allowed fields
-  const allowedFields = ['name', 'avatar'];
+  const allowedFields = ['name', 'avatar', 'location'];
   const updateData = {};
 
   for (const field of allowedFields) {

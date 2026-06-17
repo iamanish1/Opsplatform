@@ -14,6 +14,8 @@ import Submissions from '../Submissions/Submissions';
 import SubmissionDetail from '../SubmissionDetail/SubmissionDetail';
 import Portfolios from '../Portfolios/Portfolios';
 import Settings from '../Settings/Settings';
+import StudentInterviews from '../StudentInterviews/StudentInterviews';
+import ErrorBoundary from '../../../../components/ErrorBoundary/ErrorBoundary';
 import styles from './Dashboard.module.css';
 
 const Dashboard = memo(() => {
@@ -25,20 +27,21 @@ const Dashboard = memo(() => {
         element={
           <DashboardLayout>
             <div className={styles.dashboardContent}>
-              {/* Overview Section - Top Stats Cards */}
-              <DashboardOverview />
-
-              {/* Lessons Module Section */}
-              <LessonsSection />
-
-              {/* Projects Section */}
-              <ProjectsSection />
-
-              {/* Submissions & PR Tracking */}
-              <SubmissionsSection />
-
-              {/* Portfolio & Certificates */}
-              <PortfolioSection />
+              <ErrorBoundary>
+                <DashboardOverview />
+              </ErrorBoundary>
+              <ErrorBoundary>
+                <LessonsSection />
+              </ErrorBoundary>
+              <ErrorBoundary>
+                <ProjectsSection />
+              </ErrorBoundary>
+              <ErrorBoundary>
+                <SubmissionsSection />
+              </ErrorBoundary>
+              <ErrorBoundary>
+                <PortfolioSection />
+              </ErrorBoundary>
             </div>
           </DashboardLayout>
         }
@@ -61,6 +64,9 @@ const Dashboard = memo(() => {
 
       {/* Settings Route */}
       <Route path="/settings" element={<Settings />} />
+
+      {/* Interview Requests (student view) */}
+      <Route path="/interviews" element={<StudentInterviews />} />
     </Routes>
   );
 });

@@ -31,6 +31,23 @@ export const getOnboardingStatus = async () => {
 };
 
 /**
+ * Get notification preferences
+ * @returns {Promise<Object>} Notification preferences
+ */
+export const getNotificationPreferences = async () => {
+  return get('/notifications/preferences');
+};
+
+/**
+ * Update notification preferences
+ * @param {Object} data - Preferences to update
+ * @returns {Promise<Object>} Updated preferences
+ */
+export const updateNotificationPreferences = async (data) => {
+  return patch('/notifications/preferences', data);
+};
+
+/**
  * Link GitHub account
  * @param {Object} githubData - GitHub account data
  * @returns {Promise<Object>} Updated user with GitHub info
@@ -42,6 +59,8 @@ export const linkGitHub = async (githubData) => {
 export default {
   getCurrentUser,
   updateUserProfile,
+  getNotificationPreferences,
+  updateNotificationPreferences,
   getOnboardingStatus,
   linkGitHub,
 };

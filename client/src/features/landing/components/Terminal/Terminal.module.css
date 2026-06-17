@@ -1,4 +1,4 @@
-/* Terminal Container */
+﻿/* Terminal Container */
 .terminalContainer {
   width: 100%;
   max-width: 900px;
@@ -13,11 +13,10 @@
   -webkit-backdrop-filter: blur(20px);
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 
+  box-shadow:
     0 20px 60px rgba(0, 0, 0, 0.6),
     0 0 0 1px rgba(255, 255, 255, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05),
-    0 0 80px var(--terminal-color, #8b5cf6)15;
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
   transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
   position: relative;
   will-change: transform;
@@ -30,7 +29,7 @@
   inset: 0;
   border-radius: 12px;
   padding: 2px;
-  background: linear-gradient(135deg, var(--terminal-color, #8b5cf6)40, transparent);
+  background: linear-gradient(135deg, var(--terminal-color, #10b981)40, transparent);
   -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
@@ -41,11 +40,10 @@
 }
 
 .terminalWindow:hover {
-  box-shadow: 
+  box-shadow:
     0 30px 80px rgba(0, 0, 0, 0.7),
     0 0 0 1px rgba(255, 255, 255, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    0 0 100px var(--terminal-color, #8b5cf6)25;
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
   transform: translateY(-2px);
 }
 
@@ -130,17 +128,14 @@
 
 .controlClose {
   background: #ff5f56;
-  box-shadow: 0 0 8px rgba(255, 95, 86, 0.4);
 }
 
 .controlMinimize {
   background: #ffbd2e;
-  box-shadow: 0 0 8px rgba(255, 189, 46, 0.4);
 }
 
 .controlMaximize {
   background: #27c93f;
-  box-shadow: 0 0 8px rgba(39, 201, 63, 0.4);
 }
 
 .control:hover {
@@ -160,16 +155,14 @@
 }
 
 .titleIcon {
-  color: var(--terminal-color, #8b5cf6);
-  filter: drop-shadow(0 0 4px currentColor);
+  color: var(--terminal-color, #10b981);
 }
 
 .statusIndicator {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: var(--terminal-color, #8b5cf6);
-  box-shadow: 0 0 8px var(--terminal-color, #8b5cf6);
+  background: var(--terminal-color, #10b981);
   margin-left: 8px;
 }
 
@@ -178,8 +171,8 @@
   padding: 24px;
   min-height: 360px;
   background: 
-    radial-gradient(circle at 20% 50%, rgba(139, 92, 246, 0.03) 0%, transparent 50%),
-    radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 20% 50%, rgba(16, 185, 129, 0.03) 0%, transparent 50%),
+    radial-gradient(circle at 80% 80%, rgba(6, 182, 212, 0.03) 0%, transparent 50%),
     rgba(10, 10, 10, 0.95);
   position: relative;
   font-family: 'SF Mono', 'Monaco', 'Menlo', 'Courier New', monospace;
@@ -227,9 +220,8 @@
 }
 
 .prompt {
-  color: var(--terminal-color, #8b5cf6);
+  color: var(--terminal-color, #10b981);
   font-weight: 600;
-  text-shadow: 0 0 8px currentColor;
 }
 
 .promptText {
@@ -238,10 +230,9 @@
 }
 
 .cursor {
-  color: var(--terminal-color, #8b5cf6);
+  color: var(--terminal-color, #10b981);
   font-weight: bold;
   display: inline-block;
-  text-shadow: 0 0 8px currentColor;
   animation: cursorBlink 1s infinite;
 }
 
@@ -289,32 +280,23 @@
   font-weight: 500;
 }
 
-.outputLine.success .lineText {
-  text-shadow: 0 0 6px rgba(16, 185, 129, 0.4);
-}
 
 .outputLine.loading {
   color: rgba(255, 255, 255, 0.7);
 }
 
 .outputLine.highlight {
-  color: var(--terminal-color, #8b5cf6);
+  color: var(--terminal-color, #10b981);
   font-weight: 600;
   font-size: 14px;
 }
 
-.outputLine.highlight .lineText {
-  text-shadow: 0 0 8px currentColor;
-}
 
 .outputLine.error {
   color: #ef4444;
   font-weight: 500;
 }
 
-.outputLine.error .lineText {
-  text-shadow: 0 0 6px rgba(239, 68, 68, 0.4);
-}
 
 .outputLine.warning {
   color: #f59e0b;
@@ -325,14 +307,12 @@
 .inlineIcon {
   flex-shrink: 0;
   color: inherit;
-  filter: drop-shadow(0 0 4px currentColor);
 }
 
 .spinningIcon {
   flex-shrink: 0;
-  color: var(--terminal-color, #8b5cf6);
+  color: var(--terminal-color, #10b981);
   animation: spin 1s linear infinite;
-  filter: drop-shadow(0 0 4px currentColor);
 }
 
 @keyframes spin {
@@ -348,7 +328,6 @@
   color: #10b981;
   font-size: 16px;
   line-height: 1;
-  text-shadow: 0 0 6px currentColor;
 }
 
 /* Progress Bar */
@@ -364,9 +343,8 @@
 
 .progressFill {
   height: 100%;
-  background: linear-gradient(90deg, var(--terminal-color, #8b5cf6), rgba(139, 92, 246, 0.6));
+  background: linear-gradient(90deg, var(--terminal-color, #10b981), rgba(16, 185, 129, 0.6));
   border-radius: 2px;
-  box-shadow: 0 0 8px var(--terminal-color, #8b5cf6);
   position: relative;
 }
 
@@ -413,8 +391,7 @@
 }
 
 .statItem svg {
-  color: var(--terminal-color, #8b5cf6);
-  filter: drop-shadow(0 0 4px currentColor);
+  color: var(--terminal-color, #10b981);
 }
 
 /* Responsive Design */
@@ -503,8 +480,8 @@
 
   .terminalBody {
     background: 
-      radial-gradient(circle at 20% 50%, rgba(139, 92, 246, 0.05) 0%, transparent 50%),
-      radial-gradient(circle at 80% 80%, rgba(236, 72, 153, 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 20% 50%, rgba(16, 185, 129, 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(6, 182, 212, 0.05) 0%, transparent 50%),
       rgba(5, 5, 5, 0.98);
   }
 }

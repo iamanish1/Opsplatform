@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, memo, useCallback, useRef } from 'react';
+﻿import { useState, useEffect, useMemo, memo, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { User, GitBranch, Brain, Award, Briefcase, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useInView as useIntersectionObserver } from 'react-intersection-observer';
@@ -25,8 +25,8 @@ const HeroWorkflow = memo(() => {
       label: 'Student',
       description: 'Push Code',
       detailedDescription: 'Start your journey by pushing your code to real DevOps projects. Show your skills through actual work, not just theory.',
-      color: '#8b5cf6',
-      gradient: 'linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%)'
+      color: '#10b981',
+      gradient: 'linear-gradient(135deg, #10b981 0%, #6366f1 100%)'
     },
     {
       id: 'push',
@@ -35,7 +35,7 @@ const HeroWorkflow = memo(() => {
       description: 'Real DevOps Projects',
       detailedDescription: 'Work on authentic DevOps challenges that mirror real-world scenarios. Build pipelines, deploy applications, and solve actual problems.',
       color: '#6366f1',
-      gradient: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)'
+      gradient: 'linear-gradient(135deg, #6366f1 0%, #10b981 100%)'
     },
     {
       id: 'ai',
@@ -43,8 +43,8 @@ const HeroWorkflow = memo(() => {
       label: 'AI Analyzes',
       description: 'Talent Assurance Engine',
       detailedDescription: 'Our advanced AI engine analyzes your code quality, problem-solving approach, and DevOps execution to provide comprehensive insights.',
-      color: '#ec4899',
-      gradient: 'linear-gradient(135deg, #ec4899 0%, #f472b6 100%)'
+      color: '#06b6d4',
+      gradient: 'linear-gradient(135deg, #06b6d4 0%, #67e8f9 100%)'
     },
     {
       id: 'trust',
@@ -70,8 +70,8 @@ const HeroWorkflow = memo(() => {
       label: 'Get Hired',
       description: 'Job-Ready Developer',
       detailedDescription: 'Companies trust verified developers. Your portfolio and Trust Score speak for themselves, making you stand out in the job market.',
-      color: '#8b5cf6',
-      gradient: 'linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%)'
+      color: '#10b981',
+      gradient: 'linear-gradient(135deg, #10b981 0%, #34d399 100%)'
     }
   ], []);
 

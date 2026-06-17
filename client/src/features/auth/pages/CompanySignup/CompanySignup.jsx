@@ -96,7 +96,7 @@ const CompanySignup = memo(() => {
         email: formData.email,
         password: formData.password,
       });
-      login(data.token, data.user);
+      login(data.token, data.user, data.refreshToken);
       navigate('/company/dashboard', { replace: true });
     } catch (err) {
       setErrors({ submit: err.message || 'Signup failed. Please try again.' });

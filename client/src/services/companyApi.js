@@ -54,6 +54,10 @@ export const cancelInterviewRequest = (id) => post(`/interview-requests/${id}/ca
 
 export const completeInterviewRequest = (id) => post(`/interview-requests/${id}/complete`);
 
+export const acceptInterviewRequest = (id) => post(`/interview-requests/${id}/accept`);
+
+export const rejectInterviewRequest = (id) => post(`/interview-requests/${id}/reject`);
+
 // ─── Company Profile ──────────────────────────────────────────────────────────
 
 export const getCompanyProfile = () => get('/company/profile');

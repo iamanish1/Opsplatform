@@ -522,9 +522,10 @@ async function streamReviewStatus(req, res, next) {
   const { submissionId } = req.params;
   const userId = req.user.id;
 
-  // Validate ownership before opening the stream
+  // Validate ownership before opening the stream — hoist submission so SSE block can use it
+  let submission;
   try {
-    const submission = await submissionRepo.findById(submissionId);
+    submission = await submissionRepo.findById(submissionId);
     if (!submission || submission.userId !== userId) {
       return res.status(404).json({
         success: false,
@@ -546,14 +547,26 @@ async function streamReviewStatus(req, res, next) {
     res.write(`data: ${JSON.stringify(data)}\n\n`);
   };
 
-  // Send initial state immediately
-  const liveProgress = reviewProgress.get(submissionId);
-  sendEvent(liveProgress || { status: 'PENDING', progress: 0 });
-
-  // Terminal states — close after one send
   const isTerminal = (status) => status === 'REVIEWED' || status === 'ERROR';
 
-  if (liveProgress && isTerminal(liveProgress.status)) {
+  // Derive initial payload: prefer live in-memory progress, but fall back to
+  // DB status so already-reviewed submissions don't get stuck on PENDING.
+  const liveProgress = reviewProgress.get(submissionId);
+  let initialPayload;
+  if (liveProgress) {
+    initialPayload = liveProgress;
+  } else if (submission.status === 'REVIEWED') {
+    initialPayload = { status: 'REVIEWED', progress: 100 };
+  } else if (submission.status === 'SUBMITTED') {
+    initialPayload = { status: 'REVIEWING', progress: 0 };
+  } else {
+    initialPayload = { status: 'PENDING', progress: 0 };
+  }
+
+  sendEvent(initialPayload);
+
+  // Already in a terminal state — close immediately, no polling needed
+  if (isTerminal(initialPayload.status)) {
     res.end();
     return;
   }
@@ -561,7 +574,10 @@ async function streamReviewStatus(req, res, next) {
   // Poll in-process reviewProgress every 1.5 seconds
   const interval = setInterval(() => {
     const progress = reviewProgress.get(submissionId);
-    const payload = progress || { status: 'PENDING', progress: 0 };
+    // Re-check DB fallback inside the interval too
+    const payload = progress || (submission.status === 'REVIEWED'
+      ? { status: 'REVIEWED', progress: 100 }
+      : { status: 'REVIEWING', progress: 0 });
     sendEvent(payload);
 
     if (isTerminal(payload.status)) {

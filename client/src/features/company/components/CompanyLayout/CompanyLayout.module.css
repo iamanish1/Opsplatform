@@ -1,7 +1,7 @@
 .layout {
   display: flex;
   min-height: 100vh;
-  background: #0a0a0f;
+  background: #0a0f0d;
   color: white;
 }
 
@@ -13,8 +13,8 @@
   transition: margin-left 0.3s cubic-bezier(0.22,1,0.36,1);
 }
 
-.contentExpanded { margin-left: 240px; }
-.contentCollapsed { margin-left: 64px; }
+.contentExpanded { margin-left: 200px; }
+.contentCollapsed { margin-left: 58px; }
 
 @media (max-width: 1023px) {
   .contentExpanded, .contentCollapsed { margin-left: 0; }
@@ -25,34 +25,35 @@
   top: 0; z-index: 30;
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 0.85rem 1.75rem;
-  background: rgba(10, 10, 15, 0.9);
+  gap: 0.75rem;
+  padding: 0 1.25rem;
+  height: 50px;
+  background: rgba(10, 15, 13, 0.92);
   backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 
 .menuBtn {
   background: none; border: none; cursor: pointer;
-  color: rgba(255,255,255,0.55); padding: 4px;
+  color: rgba(255,255,255,0.5); padding: 4px;
   display: flex; align-items: center;
   transition: color 0.2s;
 }
 .menuBtn:hover { color: white; }
 
 .pageTitle {
-  font-size: 1rem;
+  font-size: 0.88rem;
   font-weight: 600;
-  color: rgba(255,255,255,0.8);
+  color: rgba(255,255,255,0.75);
   margin: 0;
 }
 
 .main {
   flex: 1;
-  padding: 2rem 1.75rem;
+  padding: 1.5rem 1.5rem;
   overflow-y: auto;
 }
 
 @media (max-width: 768px) {
-  .main { padding: 1.25rem 1rem; }
+  .main { padding: 1rem; }
 }

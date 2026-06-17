@@ -31,7 +31,7 @@ const ProofCard = memo(({ user = {}, score = {}, portfolioSlug, compact = false 
   const cfg = BADGE_CONFIG[badge] || BADGE_CONFIG.RED;
 
   const shareUrl = portfolioSlug
-    ? `${window.location.origin}/portfolio/${portfolioSlug}`
+    ? `${window.location.origin}/portfolios/${portfolioSlug}`
     : window.location.href;
 
   const shareText = `I earned a ${totalScore}/100 Trust Score on DevHubs! AI-verified across 10 code quality categories. ${cfg.rank}`;

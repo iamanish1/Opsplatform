@@ -251,6 +251,7 @@ async function getSubmission(submissionId, userId) {
     status: submission.status,
     latestReview: latestReview,
     score: submission.score ? {
+      id: submission.score.id,
       codeQuality: submission.score.codeQuality,
       problemSolving: submission.score.problemSolving,
       bugRisk: submission.score.bugRisk,
@@ -264,6 +265,10 @@ async function getSubmission(submissionId, userId) {
       reliability: submission.score.reliability,
       totalScore: submission.score.totalScore,
       badge: submission.score.badge,
+    } : null,
+    portfolio: submission.portfolio ? {
+      id: submission.portfolio.id,
+      slug: submission.portfolio.slug,
     } : null,
     createdAt: submission.createdAt,
     updatedAt: submission.updatedAt,

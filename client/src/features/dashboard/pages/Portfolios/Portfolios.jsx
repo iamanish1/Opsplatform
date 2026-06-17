@@ -43,7 +43,8 @@ const Portfolios = memo(() => {
       setPortfolios(portfoliosArray);
     } catch (err) {
       console.error('Error fetching portfolios:', err);
-      setError(err.message || 'Failed to load portfolios');
+      const msg = err.message || '';
+      setError(msg && msg.length <= 120 ? msg : 'Failed to load portfolios. Please try again.');
       setPortfolios([]);
     } finally {
       setLoading(false);
@@ -166,7 +167,7 @@ const Portfolios = memo(() => {
     return (
       <DashboardLayout>
         <div className={styles.loadingContainer}>
-          <Loader2 size={48} className={styles.loader} />
+          <Loader2 size={32} className={styles.loader} />
           <p>Loading portfolios...</p>
         </div>
       </DashboardLayout>
@@ -177,7 +178,9 @@ const Portfolios = memo(() => {
     return (
       <DashboardLayout>
         <div className={styles.errorContainer}>
-          <p className={styles.errorMessage}>{error}</p>
+          <p className={styles.errorMessage}>
+            {error.length > 120 ? 'Failed to load portfolios. Please try again.' : error}
+          </p>
           <button onClick={fetchPortfolios} className={styles.retryButton}>
             Retry
           </button>
@@ -213,7 +216,7 @@ const Portfolios = memo(() => {
 
         <motion.div className={styles.controls} variants={fadeInUp} initial="hidden" animate="visible">
           <div className={styles.sortContainer}>
-            <Filter size={16} />
+            <Filter size={13} />
             <select
               className={styles.sortSelect}
               value={sortBy}
@@ -229,7 +232,7 @@ const Portfolios = memo(() => {
         {sortedPortfolios.length === 0 ? (
           <motion.div className={styles.emptyState} variants={fadeInUp} initial="hidden" animate="visible">
             <GlassCard className={styles.emptyCard}>
-              <Award size={48} className={styles.emptyIcon} />
+              <Award size={36} className={styles.emptyIcon} />
               <h3>No portfolios yet</h3>
               <p>Complete and submit projects to generate your portfolios.</p>
             </GlassCard>
@@ -254,7 +257,7 @@ const Portfolios = memo(() => {
                     <GlassCard className={styles.portfolioCard}>
                       <div className={styles.portfolioHeader}>
                         <div className={styles.portfolioIcon}>
-                          <Award size={24} />
+                          <Award size={18} />
                         </div>
                         {score !== null && (
                           <div className={styles.portfolioScore}>
@@ -287,7 +290,7 @@ const Portfolios = memo(() => {
                           className={styles.viewButton}
                         >
                           View Portfolio
-                          <ExternalLink size={16} />
+                          <ExternalLink size={13} />
                         </a>
 
                         <div className={styles.shareButtons}>
@@ -298,9 +301,9 @@ const Portfolios = memo(() => {
                             title="Copy link"
                           >
                             {copiedSlug === portfolio.slug ? (
-                              <CheckCircle2 size={18} className={styles.copiedIcon} />
+                              <CheckCircle2 size={15} className={styles.copiedIcon} />
                             ) : (
-                              <Copy size={18} />
+                              <Copy size={15} />
                             )}
                           </button>
                           <button
@@ -309,7 +312,7 @@ const Portfolios = memo(() => {
                             aria-label="Share on LinkedIn"
                             title="Share on LinkedIn"
                           >
-                            <Linkedin size={18} />
+                            <Linkedin size={15} />
                           </button>
                           <button
                             className={styles.shareButton}
@@ -317,7 +320,7 @@ const Portfolios = memo(() => {
                             aria-label="Share on Twitter"
                             title="Share on Twitter"
                           >
-                            <Twitter size={18} />
+                            <Twitter size={15} />
                           </button>
                         </div>
                       </div>

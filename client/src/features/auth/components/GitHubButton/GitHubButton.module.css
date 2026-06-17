@@ -1,4 +1,4 @@
-.githubButton {
+﻿.githubButton {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -24,7 +24,7 @@
 .githubButton:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.1);
   border-color: rgba(255, 255, 255, 0.2);
-  box-shadow: 0 10px 30px rgba(139, 92, 246, 0.2);
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.2);
 }
 
 .githubButton:active:not(:disabled) {
@@ -83,7 +83,7 @@
   transform: translate(-50%, -50%);
   width: 100%;
   height: 100%;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.2), transparent 70%);
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.2), transparent 70%);
   pointer-events: none;
 }
 

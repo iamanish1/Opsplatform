@@ -76,10 +76,11 @@ export const AuthProvider = ({ children }) => {
    * @param {string} token - JWT token
    * @param {Object} userData - User object
    */
-  const login = useCallback((token, userData) => {
+  const login = useCallback((token, userData, refreshToken) => {
     try {
       authApi.storeToken(token);
       authApi.storeUser(userData);
+      if (refreshToken) authApi.storeRefreshToken(refreshToken);
       setUser(userData);
       setIsAuthenticated(true);
     } catch (error) {

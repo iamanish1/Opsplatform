@@ -1,4 +1,4 @@
-.toastContainer {
+﻿.toastContainer {
   position: fixed;
   top: 1.25rem;
   right: 1.25rem;
@@ -41,8 +41,8 @@
 }
 
 .info {
-  background: rgba(99, 102, 241, 0.15);
-  border-color: rgba(99, 102, 241, 0.3);
+  background: rgba(20, 184, 166, 0.15);
+  border-color: rgba(20, 184, 166, 0.3);
 }
 
 .toastIcon {
@@ -53,7 +53,7 @@
 .success .toastIcon { color: #10b981; }
 .error .toastIcon { color: #ef4444; }
 .warning .toastIcon { color: #f59e0b; }
-.info .toastIcon { color: #6366f1; }
+.info .toastIcon { color: #10b981; }
 
 .toastBody {
   flex: 1;

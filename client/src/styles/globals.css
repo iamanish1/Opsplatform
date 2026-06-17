@@ -1,4 +1,4 @@
-/* Global styles that complement Tailwind */
+﻿/* Global styles that complement Tailwind */
 
 * {
   box-sizing: border-box;
@@ -28,15 +28,15 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #0a0a0f;
+  background: #0a0f0d;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #8b5cf6;
+  background: #10b981;
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #7c3aed;
+  background: #059669;
 }
 

@@ -183,7 +183,12 @@ const ProjectsSection = memo(() => {
     const hasSubmission = project.submissionStatus && project.submissionStatus !== 'NOT_STARTED' && !isLocked;
 
     return (
-      <motion.div key={project.id} variants={fadeInUp}>
+      <motion.div
+        key={project.id}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, delay: index * 0.06, ease: [0.22, 1, 0.36, 1] }}
+      >
         <GlassCard
           className={`${styles.projectCard} ${isLocked ? styles.locked : ''} ${styles[status.variant]}`}
           onClick={() => handleProjectClick(project)}

@@ -62,7 +62,7 @@ const SubmissionCard = memo(({ submission, onNavigate, fadeInUp }) => {
       >
         <div className={styles.cardHeader}>
           <div className={styles.projectIcon}>
-            <GitPullRequest size={24} />
+            <GitPullRequest size={18} />
             {submission.prNumber && (
               <span className={styles.prBadge}>#{submission.prNumber}</span>
             )}
@@ -87,7 +87,7 @@ const SubmissionCard = memo(({ submission, onNavigate, fadeInUp }) => {
                 className={styles.repoLink}
                 onClick={(e) => e.stopPropagation()}
               >
-                <ExternalLink size={14} />
+                <ExternalLink size={11} />
                 Repository
               </a>
             )}
@@ -120,7 +120,7 @@ const SubmissionCard = memo(({ submission, onNavigate, fadeInUp }) => {
         <div className={styles.cardFooter}>
           <button className={styles.viewButton}>
             View Details
-            <ArrowRight size={16} />
+            <ArrowRight size={13} />
           </button>
         </div>
       </div>

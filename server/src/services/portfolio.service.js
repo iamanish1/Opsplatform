@@ -44,16 +44,13 @@ async function generate(jobData) {
     }
 
     const prReview = await prReviewRepo.findBySubmissionId(submissionId);
-    if (!prReview) {
-      throw new Error(`PR review not found for submission ${submissionId}`);
-    }
 
     // 2. Build portfolio JSON structure
     const portfolioJson = {
       header: buildHeaderSection(user),
       score: buildScoreSection(score),
       project: buildProjectSection(submission, submission.project),
-      review: buildReviewSection(prReview, score),
+      review: prReview ? buildReviewSection(prReview, score) : { summary: 'No PR review available', strengths: [], weaknesses: [], suggestions: [], staticAnalysis: {} },
       evidence: buildEvidenceSection(score.detailsJson),
       timeline: buildTimelineSection(submission, score, prReview),
     };
@@ -404,7 +401,7 @@ function buildTimelineSection(submission, score, prReview) {
     });
   }
 
-  if (prReview.createdAt) {
+  if (prReview?.createdAt) {
     timeline.push({
       event: 'CI Ran',
       timestamp: prReview.createdAt,

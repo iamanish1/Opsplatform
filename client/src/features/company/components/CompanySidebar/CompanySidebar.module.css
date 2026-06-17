@@ -2,7 +2,7 @@
   position: fixed;
   left: 0; top: 0; bottom: 0;
   z-index: 40;
-  background: rgba(10, 10, 15, 0.95);
+  background: rgba(10, 15, 13, 0.97);
   backdrop-filter: blur(20px);
   border-right: 1px solid rgba(255,255,255,0.07);
   display: flex;
@@ -11,8 +11,8 @@
   overflow: hidden;
 }
 
-.open { width: 240px; }
-.collapsed { width: 64px; }
+.open { width: 200px; }
+.collapsed { width: 58px; }
 
 .overlay {
   position: fixed; inset: 0; z-index: 39;
@@ -20,31 +20,31 @@
 }
 
 @media (max-width: 1023px) {
-  .sidebar { transform: translateX(-100%); width: 240px; transition: transform 0.3s; }
+  .sidebar { transform: translateX(-100%); width: 200px; transition: transform 0.3s; }
   .mobileOpen { transform: translateX(0); }
   .collapsed { transform: translateX(-100%); }
 }
 
 .logoSection {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 1rem 1rem 0.75rem;
+  padding: 0.85rem 0.85rem 0.7rem;
   border-bottom: 1px solid rgba(255,255,255,0.06);
 }
 
 .logo {
-  display: flex; align-items: center; gap: 0.6rem;
+  display: flex; align-items: center; gap: 0.5rem;
   color: white; text-decoration: none;
 }
 
 .logoIcon {
-  width: 38px; height: 38px;
-  background: linear-gradient(135deg,#6366f1,#8b5cf6);
-  border-radius: 10px;
+  width: 30px; height: 30px;
+  background: linear-gradient(135deg,#10b981,#06b6d4);
+  border-radius: 8px;
   display: flex; align-items: center; justify-content: center;
   color: white; flex-shrink: 0;
 }
 
-.logoText { font-size: 1.1rem; font-weight: 800; letter-spacing: -0.02em; }
+.logoText { font-size: 0.95rem; font-weight: 800; letter-spacing: -0.02em; }
 
 .closeBtn {
   background: none; border: none; cursor: pointer;
@@ -52,86 +52,85 @@
 }
 
 .companyBadge {
-  display: flex; align-items: center; gap: 0.4rem;
-  margin: 0.5rem 1rem;
-  padding: 0.3rem 0.7rem;
-  background: rgba(99,102,241,0.12);
-  border: 1px solid rgba(99,102,241,0.2);
-  border-radius: 6px;
-  color: #818cf8;
-  font-size: 0.72rem;
+  display: flex; align-items: center; gap: 0.35rem;
+  margin: 0.4rem 0.85rem;
+  padding: 0.25rem 0.6rem;
+  background: rgba(16,185,129,0.08);
+  border: 1px solid rgba(16,185,129,0.15);
+  border-radius: 5px;
+  color: #34d399;
+  font-size: 0.67rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.07em;
 }
 
 .nav {
-  flex: 1; padding: 0.75rem 0.5rem;
-  display: flex; flex-direction: column; gap: 0.2rem;
+  flex: 1; padding: 0.6rem 0.4rem;
+  display: flex; flex-direction: column; gap: 0.15rem;
   overflow-y: auto;
 }
 
 .navItem {
-  display: flex; align-items: center; gap: 0.75rem;
-  padding: 0.65rem 0.75rem;
-  border-radius: 10px;
-  color: rgba(255,255,255,0.55);
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.58rem 0.65rem;
+  border-radius: 8px;
+  color: rgba(255,255,255,0.52);
   text-decoration: none;
-  font-size: 0.875rem;
+  font-size: 0.82rem;
   font-weight: 500;
   position: relative;
   transition: background 0.2s, color 0.2s;
 }
-
-.navItem:hover { background: rgba(255,255,255,0.07); color: rgba(255,255,255,0.9); }
+.navItem:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.9); }
 
 .active {
-  background: rgba(99,102,241,0.15);
-  color: #818cf8;
+  background: rgba(16,185,129,0.12);
+  color: #34d399;
 }
 
 .navIcon { flex-shrink: 0; display: flex; }
 .navLabel { flex: 1; white-space: nowrap; }
 
 .activeDot {
-  position: absolute; right: 0.75rem;
-  width: 6px; height: 6px;
-  background: #6366f1; border-radius: 50%;
+  position: absolute; right: 0.65rem;
+  width: 5px; height: 5px;
+  background: #10b981; border-radius: 50%;
 }
 
 .userSection {
-  padding: 0.75rem 0.5rem;
+  padding: 0.6rem 0.4rem;
   border-top: 1px solid rgba(255,255,255,0.06);
-  display: flex; flex-direction: column; gap: 0.3rem;
+  display: flex; flex-direction: column; gap: 0.2rem;
 }
 
 .userInfo {
-  display: flex; align-items: center; gap: 0.7rem;
-  padding: 0.5rem 0.75rem;
+  display: flex; align-items: center; gap: 0.6rem;
+  padding: 0.45rem 0.65rem;
 }
 
 .userAvatar {
-  width: 34px; height: 34px;
-  background: rgba(99,102,241,0.2);
+  width: 28px; height: 28px;
+  background: rgba(16,185,129,0.15);
   border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; color: #818cf8;
+  flex-shrink: 0; color: #34d399;
 }
 
-.avatarImg { width: 34px; height: 34px; border-radius: 50%; object-fit: cover; }
+.avatarImg { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
 
 .userText { min-width: 0; }
-.userName { font-size: 0.82rem; font-weight: 600; color: rgba(255,255,255,0.85); truncate: ellipsis; white-space: nowrap; overflow: hidden; }
-.userEmail { font-size: 0.72rem; color: rgba(255,255,255,0.35); white-space: nowrap; overflow: hidden; }
+.userName { font-size: 0.78rem; font-weight: 600; color: rgba(255,255,255,0.85); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.userEmail { font-size: 0.68rem; color: rgba(255,255,255,0.32); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .logoutBtn {
-  display: flex; align-items: center; gap: 0.6rem;
-  padding: 0.6rem 0.75rem;
+  display: flex; align-items: center; gap: 0.5rem;
+  padding: 0.52rem 0.65rem;
   background: none; border: none; cursor: pointer;
-  color: rgba(255,255,255,0.4);
-  font-size: 0.85rem;
-  border-radius: 8px;
+  color: rgba(255,255,255,0.38);
+  font-size: 0.8rem;
+  border-radius: 7px;
   transition: background 0.2s, color 0.2s;
   width: 100%;
 }
-.logoutBtn:hover { background: rgba(239,68,68,0.1); color: #f87171; }
+.logoutBtn:hover { background: rgba(239,68,68,0.09); color: #f87171; }

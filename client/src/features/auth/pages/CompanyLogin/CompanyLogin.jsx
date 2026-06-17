@@ -39,7 +39,7 @@ const CompanyLogin = memo(() => {
 
     try {
       const data = await companyLogin(formData.email, formData.password);
-      login(data.token, data.user);
+      login(data.token, data.user, data.refreshToken);
       success('Welcome back!', 'Login successful');
       navigate('/company/dashboard');
     } catch (err) {

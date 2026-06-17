@@ -1,4 +1,4 @@
-.portfolioPreviewContainer {
+﻿.portfolioPreviewContainer {
   width: 100%;
   padding: 0;
 }
@@ -108,8 +108,7 @@
 }
 
 .portfolioCard:hover .portfolioIcon {
-  background: rgba(139, 92, 246, 0.2);
-  box-shadow: 0 0 20px var(--card-color, #8b5cf6);
+  background: rgba(16, 185, 129, 0.2);
 }
 
 .portfolioCardInfo {
@@ -169,8 +168,8 @@
 .portfolioViewButton {
   width: 100%;
   padding: 12px 20px;
-  background: rgba(139, 92, 246, 0.1);
-  border: 2px solid var(--card-color, #8b5cf6);
+  background: rgba(16, 185, 129, 0.1);
+  border: 2px solid var(--card-color, #10b981);
   border-radius: 8px;
   color: rgba(255, 255, 255, 0.9);
   font-size: 14px;
@@ -184,8 +183,7 @@
 }
 
 .portfolioViewButton:hover {
-  background: rgba(139, 92, 246, 0.2);
-  box-shadow: 0 0 20px var(--card-color, #8b5cf6);
+  background: rgba(16, 185, 129, 0.2);
 }
 
 .portfolioCardFooter {

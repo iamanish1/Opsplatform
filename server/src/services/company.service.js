@@ -8,6 +8,7 @@ const jwt = require('jsonwebtoken');
 const config = require('../config');
 const userRepo = require('../repositories/user.repo');
 const companyRepo = require('../repositories/company.repo');
+const refreshTokenRepo = require('../repositories/refreshToken.repo');
 
 /**
  * Company signup with email/password
@@ -53,18 +54,15 @@ async function signup(email, password, companyName) {
     // Don't fail signup if event emission fails
   }
 
-  // Generate JWT token
+  // Generate JWT access token
   const token = jwt.sign(
-    {
-      sub: user.id,
-      role: user.role,
-      email: user.email,
-    },
+    { sub: user.id, role: user.role, email: user.email },
     config.jwtSecret,
-    {
-      expiresIn: config.jwtExpiresIn,
-    }
+    { expiresIn: config.jwtExpiresIn }
   );
+
+  // Issue refresh token (30-day, same as student flow)
+  const { token: refreshToken } = await refreshTokenRepo.create(user.id);
 
   return {
     user: {
@@ -80,6 +78,7 @@ async function signup(email, password, companyName) {
       logo: company.logo,
     },
     token,
+    refreshToken,
   };
 }
 
@@ -118,18 +117,15 @@ async function login(email, password) {
     throw new Error('Company profile not found');
   }
 
-  // Generate JWT token
+  // Generate JWT access token
   const token = jwt.sign(
-    {
-      sub: user.id,
-      role: user.role,
-      email: user.email,
-    },
+    { sub: user.id, role: user.role, email: user.email },
     config.jwtSecret,
-    {
-      expiresIn: config.jwtExpiresIn,
-    }
+    { expiresIn: config.jwtExpiresIn }
   );
+
+  // Issue refresh token (30-day, same as student flow)
+  const { token: refreshToken } = await refreshTokenRepo.create(user.id);
 
   return {
     user: {
@@ -150,6 +146,7 @@ async function login(email, password) {
       hiringNeeds: company.hiringNeeds,
     },
     token,
+    refreshToken,
   };
 }
 

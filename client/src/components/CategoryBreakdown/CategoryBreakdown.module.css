@@ -1,4 +1,4 @@
-.categoryGrid {
+﻿.categoryGrid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
   gap: 1rem;
@@ -15,14 +15,13 @@
 }
 
 .categoryCard:hover {
-  border-color: rgba(139, 92, 246, 0.5);
-  box-shadow: 0 0 20px rgba(139, 92, 246, 0.1);
+  border-color: rgba(16, 185, 129, 0.5);
 }
 
 .scoreValue {
   font-size: 1.875rem;
   font-weight: 700;
-  color: #a78bfa;
+  color: #34d399;
 }
 
 .scoreBar {

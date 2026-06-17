@@ -10,6 +10,12 @@ const notificationPreferencesController = require('../controllers/notificationPr
 const { authenticate } = require('../middlewares/auth.middleware');
 const { notificationLimiter } = require('../middlewares/rateLimit.middleware');
 
+// Notifications are user-specific and change frequently — never cache them
+router.use((req, res, next) => {
+  res.setHeader('Cache-Control', 'no-store');
+  next();
+});
+
 /**
  * GET /api/notifications
  * Get user notifications

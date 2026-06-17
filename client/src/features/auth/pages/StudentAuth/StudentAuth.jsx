@@ -1,4 +1,4 @@
-import { memo, useState } from 'react';
+﻿import { memo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { Github, ArrowLeft, Building2, Code, Zap, TrendingUp, Users } from 'lucide-react';
@@ -25,8 +25,8 @@ const StudentAuth = memo(() => {
   };
 
   const benefits = [
-    { icon: Code, text: 'Real DevOps Projects', color: '#8b5cf6' },
-    { icon: Zap, text: 'AI-Verified Trust Scores', color: '#ec4899' },
+    { icon: Code, text: 'Real DevOps Projects', color: '#10b981' },
+    { icon: Zap, text: 'AI-Verified Trust Scores', color: '#06b6d4' },
     { icon: TrendingUp, text: 'Portfolio Companies Trust', color: '#10b981' },
     { icon: Users, text: 'Connect with Top Employers', color: '#f59e0b' },
   ];

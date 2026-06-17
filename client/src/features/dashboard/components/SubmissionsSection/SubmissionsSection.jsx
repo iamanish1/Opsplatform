@@ -204,7 +204,9 @@ const SubmissionsSection = memo(() => {
                   <motion.div
                     key={submission.id}
                     className={styles.submissionItem}
-                    variants={fadeInUp}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: index * 0.06, ease: [0.22, 1, 0.36, 1] }}
                     onClick={() => handleSubmissionClick(submission)}
                   >
                     <div className={styles.submissionIcon}>

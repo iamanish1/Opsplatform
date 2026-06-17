@@ -1,7 +1,6 @@
-.lessonDetailPage {
-  padding: 2rem;
+﻿.lessonDetailPage {
+  padding: 0.5rem 0;
   max-width: 1000px;
-  margin: 0 auto;
   width: 100%;
 }
 
@@ -70,7 +69,7 @@
   font-size: 2.5rem;
   font-weight: 700;
   margin: 0;
-  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  background: linear-gradient(135deg, #10b981, #06b6d4);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -107,7 +106,7 @@
   font-weight: 700;
   margin: 2rem 0 1rem 0;
   color: #ffffff;
-  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  background: linear-gradient(135deg, #10b981, #06b6d4);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -152,7 +151,7 @@
 }
 
 .actionIcon {
-  color: #8b5cf6;
+  color: #10b981;
   flex-shrink: 0;
 }
 
@@ -178,7 +177,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 1rem 2rem;
-  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  background: linear-gradient(135deg, #10b981, #06b6d4);
   border: none;
   border-radius: 12px;
   color: #ffffff;
@@ -191,7 +190,7 @@
 
 .completeButton:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 12px 32px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 12px 32px rgba(16, 185, 129, 0.4);
 }
 
 .completeButton:disabled {
@@ -243,7 +242,7 @@
 
 .nextButton {
   padding: 1rem 2rem;
-  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  background: linear-gradient(135deg, #10b981, #06b6d4);
   border: none;
   border-radius: 12px;
   color: #ffffff;
@@ -255,7 +254,7 @@
 
 .nextButton:hover {
   transform: translateY(-2px);
-  box-shadow: 0 12px 32px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 12px 32px rgba(16, 185, 129, 0.4);
 }
 
 /* Loading & Error States */
@@ -271,7 +270,7 @@
 }
 
 .loader {
-  color: #8b5cf6;
+  color: #10b981;
   animation: spin 1s linear infinite;
 }
 

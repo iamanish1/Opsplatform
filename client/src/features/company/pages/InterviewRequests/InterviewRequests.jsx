@@ -59,7 +59,7 @@ const RequestCard = memo(({ req, onCancel, onComplete }) => {
       <div className={styles.cardMeta}>
         <span className={styles.dateLabel}>Sent {new Date(req.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
         {req.submission?.portfolio?.[0]?.slug && (
-          <Link to={`/portfolio/${req.submission.portfolio[0].slug}`} target="_blank" className={styles.portfolioLink}>
+          <Link to={`/portfolios/${req.submission.portfolio[0].slug}`} target="_blank" className={styles.portfolioLink}>
             <ExternalLink size={13} />View Portfolio
           </Link>
         )}

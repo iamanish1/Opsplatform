@@ -1,4 +1,4 @@
-.container {
+﻿.container {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 20px;
@@ -57,9 +57,9 @@
 
 .pulsingDot {
   width: 8px; height: 8px;
-  background: #6366f1;
+  background: #10b981;
   border-radius: 50%;
-  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 0 0 3px rgba(20, 184, 166, 0.2);
 }
 
 .headerLabel {
@@ -73,7 +73,7 @@
 .progressPct {
   font-size: 0.9rem;
   font-weight: 800;
-  color: #818cf8;
+  color: #34d399;
   letter-spacing: -0.01em;
 }
 
@@ -94,7 +94,7 @@
 
 .mainFill {
   height: 100%;
-  background: linear-gradient(90deg, #6366f1, #8b5cf6, #a855f7);
+  background: linear-gradient(90deg, #10b981, #06b6d4);
   border-radius: 4px;
   position: relative;
 }
@@ -137,8 +137,8 @@
 }
 
 .stepActive {
-  background: rgba(99, 102, 241, 0.12);
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  background: rgba(20, 184, 166, 0.12);
+  border: 1px solid rgba(20, 184, 166, 0.2);
 }
 
 .stepPending {
@@ -156,7 +156,7 @@
 }
 
 .stepDone .stepIconWrap { color: #10b981; }
-.stepActive .stepIconWrap { color: #818cf8; }
+.stepActive .stepIconWrap { color: #34d399; }
 .stepPending .stepIconWrap { color: rgba(255, 255, 255, 0.2); }
 
 .doneCheck { color: #10b981; }
@@ -188,7 +188,7 @@
   position: absolute;
   bottom: 0; left: 0; right: 0;
   height: 2px;
-  background: linear-gradient(90deg, #6366f1, #8b5cf6);
+  background: linear-gradient(90deg, #10b981, #06b6d4);
   transform-origin: left;
   border-radius: 1px;
 }

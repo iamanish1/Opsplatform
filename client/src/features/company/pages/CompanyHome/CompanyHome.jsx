@@ -1,4 +1,4 @@
-import { memo, useState, useEffect } from 'react';
+﻿import { memo, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Users, Send, TrendingUp, Zap, ArrowRight, Star, Shield } from 'lucide-react';
@@ -47,7 +47,7 @@ const DeveloperCard = memo(({ dev }) => {
         <Shield size={11} />{badge === 'GREEN' ? 'Top Talent' : badge === 'YELLOW' ? 'Rising Star' : 'In Progress'}
       </div>
       {dev.portfolios?.[0]?.slug && (
-        <Link to={`/portfolio/${dev.portfolios[0].slug}`} className={styles.viewPortfolio} target="_blank">
+        <Link to={`/portfolios/${dev.portfolios[0].slug}`} className={styles.viewPortfolio} target="_blank">
           View Portfolio <ArrowRight size={13} />
         </Link>
       )}
@@ -102,7 +102,7 @@ const CompanyHome = memo(() => {
           <StatCard icon={Users}     label="Verified Developers"  value={loading ? '—' : stats.totalTalent}    color="#6366f1" sublabel="in the talent pool" />
           <StatCard icon={Star}      label="Top Talent (GREEN)"   value={loading ? '—' : stats.greenTalent}    color="#10b981" sublabel="ready to hire" />
           <StatCard icon={Send}      label="Pending Requests"     value={loading ? '—' : stats.pendingRequests} color="#f59e0b" sublabel="awaiting response" />
-          <StatCard icon={TrendingUp} label="Avg Trust Score"     value="82"                                    color="#8b5cf6" sublabel="across platform" />
+          <StatCard icon={TrendingUp} label="Avg Trust Score"     value="82"                                    color="#10b981" sublabel="across platform" />
         </motion.div>
 
         {/* Top talent preview */}

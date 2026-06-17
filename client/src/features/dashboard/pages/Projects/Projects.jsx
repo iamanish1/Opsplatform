@@ -176,7 +176,7 @@ const Projects = memo(() => {
     return (
       <DashboardLayout>
         <div className={styles.loadingContainer}>
-          <Loader2 size={48} className={styles.loader} />
+          <Loader2 size={32} className={styles.loader} />
           <p>Loading projects...</p>
         </div>
       </DashboardLayout>
@@ -268,7 +268,7 @@ const Projects = memo(() => {
             animate="visible"
           >
             <GlassCard className={styles.emptyCard}>
-              <FolderKanban size={48} className={styles.emptyIcon} />
+              <FolderKanban size={36} className={styles.emptyIcon} />
               <h3>No projects found</h3>
               <p>
                 {filter === 'all'
@@ -301,7 +301,7 @@ const Projects = memo(() => {
                       <div className={styles.projectHeader}>
                         <div className={styles.projectIconWrapper}>
                           <div className={styles.projectIcon}>
-                            <FolderKanban size={24} />
+                            <FolderKanban size={18} />
                           </div>
                           {!isLocked && (
                             <div className={styles.statusIndicator}>
@@ -368,7 +368,7 @@ const Projects = memo(() => {
                             }}
                           >
                             {status.variant === 'completed' ? 'View Details' : 'Continue'}
-                            <ArrowRight size={16} />
+                            <ArrowRight size={13} />
                           </button>
                         )}
                       </div>
@@ -382,7 +382,7 @@ const Projects = memo(() => {
                           className={styles.starterRepoLink}
                           onClick={(e) => e.stopPropagation()}
                         >
-                          <ExternalLink size={14} />
+                          <ExternalLink size={11} />
                           Starter Repo
                         </a>
                       )}

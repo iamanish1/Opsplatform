@@ -1,4 +1,4 @@
-import { memo, useMemo } from 'react';
+﻿import { memo, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Users, Briefcase, DollarSign, Clock, CheckCircle, TrendingDown, 
@@ -28,14 +28,14 @@ const FloatingCompanyElements = memo(() => {
 
   // Icon elements representing hiring benefits
   const iconElements = useMemo(() => [
-    { Icon: Users, delay: 0.3, size: 26, color: '#ec4899' },
-    { Icon: Briefcase, delay: 0.7, size: 24, color: '#8b5cf6' },
+    { Icon: Users, delay: 0.3, size: 26, color: '#06b6d4' },
+    { Icon: Briefcase, delay: 0.7, size: 24, color: '#10b981' },
     { Icon: DollarSign, delay: 1.1, size: 22, color: '#10b981' },
     { Icon: Clock, delay: 1.5, size: 24, color: '#f59e0b' },
     { Icon: CheckCircle, delay: 1.9, size: 26, color: '#10b981' },
     { Icon: TrendingDown, delay: 2.3, size: 24, color: '#10b981' },
-    { Icon: Target, delay: 2.7, size: 22, color: '#ec4899' },
-    { Icon: Award, delay: 3.1, size: 24, color: '#8b5cf6' },
+    { Icon: Target, delay: 2.7, size: 22, color: '#06b6d4' },
+    { Icon: Award, delay: 3.1, size: 24, color: '#10b981' },
     { Icon: Shield, delay: 3.5, size: 26, color: '#10b981' },
   ], []);
 

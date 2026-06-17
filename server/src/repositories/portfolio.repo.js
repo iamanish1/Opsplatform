@@ -1,5 +1,21 @@
 const prisma = require('../prisma/client');
 
+// Retry a Prisma operation once if it fails with a connection error (P1001, P1002)
+async function withRetry(fn) {
+  try {
+    return await fn();
+  } catch (err) {
+    const code = err.code || '';
+    if (code === 'P1001' || code === 'P1002' || err.name === 'PrismaClientInitializationError') {
+      // Wait briefly then reconnect and try once more
+      await new Promise((r) => setTimeout(r, 1000));
+      await prisma.$connect().catch(() => {});
+      return fn();
+    }
+    throw err;
+  }
+}
+
 /**
  * Create new portfolio
  * @param {Object} portfolioData - Portfolio data
@@ -32,7 +48,7 @@ async function create(portfolioData) {
  * @returns {Promise<Array>} Array of portfolios
  */
 async function findByUserId(userId) {
-  const portfolios = await prisma.portfolio.findMany({
+  const portfolios = await withRetry(() => prisma.portfolio.findMany({
     where: {
       userId,
     },
@@ -51,7 +67,7 @@ async function findByUserId(userId) {
     orderBy: {
       createdAt: 'desc',
     },
-  });
+  }));
 
   // Manually fetch submissions and projects for each portfolio
   // This is a workaround if Prisma client relation is not available

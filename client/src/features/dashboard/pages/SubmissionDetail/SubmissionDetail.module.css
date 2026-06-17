@@ -1,206 +1,214 @@
 /* Submission Detail Page Container */
 .submissionDetailPage {
-  padding: 2rem;
+  padding: 0.5rem 0;
   max-width: 1200px;
-  margin: 0 auto;
   width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
 }
 
-/* Header Section */
+/* ── Header ── */
 .header {
-  margin-bottom: 3rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
 }
 
 .backButton {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.25rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 0.4rem;
+  padding: 0.42rem 0.85rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
-  color: rgba(255, 255, 255, 0.8);
-  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.78rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.3s ease;
-  margin-bottom: 1.5rem;
+  transition: all 0.2s;
+  width: fit-content;
 }
 
 .backButton:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.14);
   color: #ffffff;
-  transform: translateX(-4px);
+  transform: translateX(-3px);
 }
 
 .headerContent {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.4rem;
 }
 
 .submissionMeta {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.65rem;
 }
 
 .submissionIcon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(236, 72, 153, 0.2));
-  border: 1px solid rgba(139, 92, 246, 0.3);
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.18), rgba(6, 182, 212, 0.18));
+  border: 1px solid rgba(16, 185, 129, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #ffffff;
   position: relative;
+  flex-shrink: 0;
 }
 
 .prNumber {
   position: absolute;
-  top: -6px;
-  right: -6px;
-  padding: 0.125rem 0.375rem;
-  background: rgba(0, 0, 0, 0.8);
-  border: 1px solid rgba(139, 92, 246, 0.5);
+  top: -5px;
+  right: -5px;
+  padding: 0.1rem 0.3rem;
+  background: rgba(0, 0, 0, 0.85);
+  border: 1px solid rgba(16, 185, 129, 0.5);
   border-radius: 4px;
-  font-size: 0.625rem;
+  font-size: 0.58rem;
   font-weight: 700;
-  color: #a78bfa;
+  color: #34d399;
 }
 
 .statusBadge {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
-  font-size: 0.875rem;
+  gap: 0.3rem;
+  padding: 0.22rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.72rem;
   font-weight: 600;
+  border: 1px solid;
 }
 
 .statusBadge.notStarted {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.45);
 }
 
 .statusBadge.inProgress {
-  background: rgba(59, 130, 246, 0.15);
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.25);
   color: #60a5fa;
 }
 
 .statusBadge.submitted {
-  background: rgba(245, 158, 11, 0.15);
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  background: rgba(245, 158, 11, 0.1);
+  border-color: rgba(245, 158, 11, 0.25);
   color: #fbbf24;
 }
 
 .statusBadge.reviewed {
-  background: rgba(16, 185, 129, 0.15);
-  border: 1px solid rgba(16, 185, 129, 0.3);
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.25);
   color: #34d399;
 }
 
 .submissionTitle {
-  font-size: 2.5rem;
-  font-weight: 700;
+  font-size: 1.45rem;
+  font-weight: 800;
   margin: 0;
-  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  background: linear-gradient(135deg, #10b981, #06b6d4);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
 .repoLink {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
-  color: #ffffff;
-  font-size: 0.9rem;
+  gap: 0.35rem;
+  padding: 0.4rem 0.9rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.78rem;
   font-weight: 600;
   text-decoration: none;
-  transition: all 0.3s ease;
+  transition: all 0.2s;
   width: fit-content;
 }
 
 .repoLink:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.18);
+  transform: translateY(-1px);
 }
 
 .headerSubtitle {
-  margin: 0.5rem 0 0 0;
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.7);
-  line-height: 1.6;
-  max-width: 800px;
+  margin: 0;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.5;
 }
 
-/* Content Section */
+/* ── Content ── */
 .content {
   display: flex;
   flex-direction: column;
-  gap: 2rem;
+  gap: 0.85rem;
 }
 
 .sectionTitle {
-  font-size: 1.5rem;
+  font-size: 1rem;
   font-weight: 700;
-  margin: 0 0 1.5rem 0;
+  margin: 0 0 0.75rem 0;
   color: #ffffff;
+  letter-spacing: -0.01em;
 }
 
-/* Score Card */
+/* ── Score Card ── */
 .scoreCard {
-  padding: 2rem;
+  padding: 1rem 1.2rem !important;
+  border-radius: 14px !important;
 }
+.scoreCard:hover { transform: none !important; }
 
 .scoreHeader {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
+  gap: 0.65rem;
+  margin-bottom: 0.75rem;
 }
 
-.scoreIcon {
-  color: #8b5cf6;
-}
+.scoreIcon { color: #10b981; }
 
 .scoreTitle {
-  font-size: 1.5rem;
+  font-size: 0.95rem;
   font-weight: 700;
-  margin: 0 0 0.25rem 0;
+  margin: 0 0 0.15rem 0;
   color: #ffffff;
 }
 
 .scoreSubtitle {
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.73rem;
+  color: rgba(255, 255, 255, 0.45);
   margin: 0;
 }
 
 .scoreDisplay {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 0.85rem;
   flex-wrap: wrap;
 }
 
 .totalScore {
-  font-size: 4rem;
-  font-weight: 700;
+  font-size: 2.4rem;
+  font-weight: 800;
   line-height: 1;
+  letter-spacing: -0.02em;
 }
 
 .totalScore.green {
@@ -224,74 +232,72 @@
   background-clip: text;
 }
 
-.totalScore.muted {
-  color: rgba(255, 255, 255, 0.5);
-}
+.totalScore.muted { color: rgba(255, 255, 255, 0.4); }
 
 .badge {
-  padding: 0.75rem 1.5rem;
-  border-radius: 10px;
-  font-size: 1rem;
+  padding: 0.28rem 0.75rem;
+  border-radius: 7px;
+  font-size: 0.72rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .badge.green {
-  background: rgba(16, 185, 129, 0.2);
+  background: rgba(16, 185, 129, 0.15);
   border: 1px solid rgba(16, 185, 129, 0.3);
   color: #34d399;
 }
 
 .badge.yellow {
-  background: rgba(245, 158, 11, 0.2);
+  background: rgba(245, 158, 11, 0.15);
   border: 1px solid rgba(245, 158, 11, 0.3);
   color: #fbbf24;
 }
 
 .badge.red {
-  background: rgba(239, 68, 68, 0.2);
+  background: rgba(239, 68, 68, 0.15);
   border: 1px solid rgba(239, 68, 68, 0.3);
   color: #f87171;
 }
 
-/* Breakdown Card */
+/* ── Breakdown Card ── */
 .breakdownCard {
-  padding: 2rem;
+  padding: 1rem 1.2rem !important;
+  border-radius: 14px !important;
 }
+.breakdownCard:hover { transform: none !important; }
 
 .categoriesGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 0.55rem;
 }
 
 .categoryItem {
-  padding: 1.25rem;
+  padding: 0.7rem 0.85rem;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  transition: all 0.3s ease;
+  border-radius: 10px;
+  transition: border-color 0.2s;
 }
 
 .categoryItem:hover {
   background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.09);
 }
 
 .categoryHeader {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  margin-bottom: 1rem;
+  gap: 0.4rem;
+  margin-bottom: 0.45rem;
 }
 
-.categoryIcon {
-  color: #8b5cf6;
-}
+.categoryIcon { color: #10b981; }
 
 .categoryLabel {
-  font-size: 0.9rem;
+  font-size: 0.78rem;
   font-weight: 600;
   color: #ffffff;
 }
@@ -299,225 +305,192 @@
 .categoryScore {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.55rem;
 }
 
 .scoreBar {
   flex: 1;
-  height: 8px;
+  height: 5px;
   background: rgba(255, 255, 255, 0.05);
-  border-radius: 4px;
+  border-radius: 3px;
   overflow: hidden;
 }
 
 .scoreFill {
   height: 100%;
-  border-radius: 4px;
+  border-radius: 3px;
   transition: width 0.5s ease;
 }
 
-.scoreFill.green {
-  background: linear-gradient(90deg, #10b981, #34d399);
-}
-
-.scoreFill.yellow {
-  background: linear-gradient(90deg, #f59e0b, #fbbf24);
-}
-
-.scoreFill.red {
-  background: linear-gradient(90deg, #ef4444, #f87171);
-}
-
-.scoreFill.muted {
-  background: rgba(255, 255, 255, 0.2);
-}
+.scoreFill.green { background: linear-gradient(90deg, #10b981, #34d399); }
+.scoreFill.yellow { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.scoreFill.red { background: linear-gradient(90deg, #ef4444, #f87171); }
+.scoreFill.muted { background: rgba(255, 255, 255, 0.2); }
 
 .scoreValue {
-  font-size: 0.875rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  min-width: 50px;
+  min-width: 34px;
   text-align: right;
 }
 
-.scoreValue.green {
-  color: #34d399;
-}
+.scoreValue.green { color: #34d399; }
+.scoreValue.yellow { color: #fbbf24; }
+.scoreValue.red { color: #f87171; }
+.scoreValue.muted { color: rgba(255, 255, 255, 0.4); }
 
-.scoreValue.yellow {
-  color: #fbbf24;
-}
-
-.scoreValue.red {
-  color: #f87171;
-}
-
-.scoreValue.muted {
-  color: rgba(255, 255, 255, 0.5);
-}
-
-/* Review Card */
+/* ── Review Card ── */
 .reviewCard {
-  padding: 2rem;
+  padding: 1rem 1.2rem !important;
+  border-radius: 14px !important;
 }
+.reviewCard:hover { transform: none !important; }
 
 .reviewContent {
   display: flex;
   align-items: center;
-  gap: 2rem;
+  gap: 1.2rem;
   flex-wrap: wrap;
 }
 
 .reviewScore {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.3rem;
 }
 
 .reviewLabel {
-  font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.5);
   font-weight: 500;
 }
 
 .reviewValue {
-  font-size: 2rem;
-  font-weight: 700;
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1;
 }
 
-.reviewValue.green {
-  color: #34d399;
-}
-
-.reviewValue.yellow {
-  color: #fbbf24;
-}
-
-.reviewValue.red {
-  color: #f87171;
-}
+.reviewValue.green { color: #34d399; }
+.reviewValue.yellow { color: #fbbf24; }
+.reviewValue.red { color: #f87171; }
 
 .reviewBadge {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  color: rgba(255, 255, 255, 0.8);
+  gap: 0.4rem;
+  padding: 0.35rem 0.85rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.78rem;
   font-weight: 600;
 }
 
-/* Info Card */
-/* Tasks Card */
+/* ── Tasks Card ── */
 .tasksCard {
-  padding: 2rem;
-  margin-bottom: 2rem;
+  padding: 1rem 1.2rem !important;
+  border-radius: 14px !important;
 }
+.tasksCard:hover { transform: none !important; }
 
 .tasksHeader {
   display: flex;
   align-items: flex-start;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  gap: 0.55rem;
+  margin-bottom: 0.7rem;
 }
 
 .tasksIcon {
-  color: #8b5cf6;
+  color: #10b981;
   flex-shrink: 0;
-  margin-top: 0.25rem;
+  margin-top: 0.1rem;
 }
 
-.tasksHeaderContent {
-  flex: 1;
-}
+.tasksHeaderContent { flex: 1; }
 
 .tasksSubtitle {
-  margin: 0.5rem 0 0 0;
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.6);
+  margin: 0.15rem 0 0 0;
+  font-size: 0.73rem;
+  color: rgba(255, 255, 255, 0.45);
 }
 
 .progressBarContainer {
-  margin-bottom: 2rem;
+  margin-bottom: 0.75rem;
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.65rem;
 }
 
 .progressBar {
   flex: 1;
-  height: 12px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 3px;
   overflow: hidden;
-  position: relative;
 }
 
 .progressFill {
   height: 100%;
-  background: linear-gradient(90deg, #8b5cf6, #ec4899);
-  border-radius: 6px;
+  background: linear-gradient(90deg, #10b981, #06b6d4);
+  border-radius: 3px;
   transition: width 0.3s ease;
-  box-shadow: 0 0 12px rgba(139, 92, 246, 0.4);
 }
 
 .progressPercentage {
-  font-size: 1rem;
+  font-size: 0.76rem;
   font-weight: 700;
-  color: #ffffff;
-  min-width: 50px;
+  color: rgba(255, 255, 255, 0.75);
+  min-width: 38px;
   text-align: right;
 }
 
 .tasksList {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.45rem;
 }
 
 .taskItem {
   display: flex;
-  gap: 1rem;
-  padding: 1.25rem;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  transition: all 0.3s ease;
+  gap: 0.65rem;
+  padding: 0.7rem 0.85rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+  transition: border-color 0.2s;
 }
 
 .taskItem:hover {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .taskItem.taskCompleted {
-  background: rgba(16, 185, 129, 0.05);
-  border-color: rgba(16, 185, 129, 0.2);
+  background: rgba(16, 185, 129, 0.04);
+  border-color: rgba(16, 185, 129, 0.18);
 }
 
-.taskCheckbox {
-  flex-shrink: 0;
-}
+.taskCheckbox { flex-shrink: 0; }
 
 .checkboxButton {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 2px solid rgba(255, 255, 255, 0.2);
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 2px solid rgba(255, 255, 255, 0.15);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s;
   padding: 0;
 }
 
 .checkboxButton:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(139, 92, 246, 0.5);
-  transform: scale(1.05);
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.45);
 }
 
 .checkboxButton:disabled {
@@ -526,221 +499,215 @@
 }
 
 .checkboxEmpty {
-  width: 16px;
-  height: 16px;
-  border-radius: 4px;
+  width: 13px;
+  height: 13px;
+  border-radius: 3px;
   background: transparent;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.25);
 }
 
-.checkboxIcon {
-  color: #10b981;
-}
+.checkboxIcon { color: #10b981; }
 
 .checkboxLoader {
   animation: spin 1s linear infinite;
-  color: rgba(255, 255, 255, 0.6);
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  color: rgba(255, 255, 255, 0.55);
 }
 
 .taskContent {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.25rem;
 }
 
 .taskHeader {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.65rem;
 }
 
 .taskNumber {
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   font-weight: 700;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(255, 255, 255, 0.38);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
 .taskPoints {
-  font-size: 0.75rem;
+  font-size: 0.65rem;
   font-weight: 600;
-  padding: 0.25rem 0.625rem;
-  background: rgba(139, 92, 246, 0.15);
-  border: 1px solid rgba(139, 92, 246, 0.3);
+  padding: 0.15rem 0.45rem;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.25);
   border-radius: 4px;
-  color: #a78bfa;
+  color: #34d399;
 }
 
 .taskTitle {
   margin: 0;
-  font-size: 1.125rem;
+  font-size: 0.86rem;
   font-weight: 600;
   color: #ffffff;
+  line-height: 1.3;
 }
 
 .taskDescription {
   margin: 0;
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.7);
-  line-height: 1.6;
+  font-size: 0.76rem;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.5;
 }
 
 .taskCompletedAt {
-  font-size: 0.75rem;
-  color: rgba(16, 185, 129, 0.8);
+  font-size: 0.67rem;
+  color: rgba(16, 185, 129, 0.7);
   font-weight: 500;
-  margin-top: 0.25rem;
+}
+
+.tasksCompletedBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.42rem 0.8rem;
+  background: rgba(16, 185, 129, 0.09);
+  border: 1px solid rgba(16, 185, 129, 0.22);
+  border-radius: 7px;
+  color: #34d399;
+  font-size: 0.76rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.tasksCompletedIcon {
+  color: #34d399;
+  flex-shrink: 0;
 }
 
 .noTasksMessage {
-  padding: 3rem 2rem;
+  padding: 1.5rem 1rem;
   text-align: center;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .noTasksMessage p {
-  margin: 0.5rem 0;
-  font-size: 1rem;
+  margin: 0.35rem 0;
+  font-size: 0.82rem;
 }
 
 .noTasksSubtext {
-  font-size: 0.9rem !important;
-  color: rgba(255, 255, 255, 0.5) !important;
+  font-size: 0.75rem !important;
+  color: rgba(255, 255, 255, 0.35) !important;
 }
 
-/* Submit Section */
+/* ── Submit Section ── */
 .submitSection {
-  margin-top: 2rem;
-  padding-top: 2rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: 0.9rem;
+  padding-top: 0.9rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.65rem;
 }
 
-.submitInfo {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
+.submitInfo { }
 
 .submitMessage {
   margin: 0;
-  font-size: 0.95rem;
-  color: rgba(255, 255, 255, 0.8);
-  line-height: 1.6;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.65);
+  line-height: 1.5;
 }
 
 .submitButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  padding: 1rem 2rem;
-  background: linear-gradient(135deg, #8b5cf6, #ec4899);
+  gap: 0.45rem;
+  padding: 0.58rem 1.25rem;
+  background: linear-gradient(135deg, #10b981, #06b6d4);
   border: none;
-  border-radius: 12px;
+  border-radius: 9px;
   color: #ffffff;
-  font-size: 1rem;
+  font-size: 0.84rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s;
   width: 100%;
 }
 
 .submitButton:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 32px rgba(139, 92, 246, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.35);
 }
 
 .submitButton:disabled {
-  opacity: 0.6;
+  opacity: 0.55;
   cursor: not-allowed;
   transform: none;
 }
 
+/* ── Submitted Status ── */
 .submittedMessage {
-  margin-top: 2rem;
-  padding: 1.5rem;
-  background: rgba(245, 158, 11, 0.1);
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  border-radius: 12px;
+  margin-top: 0.75rem;
+  padding: 0.85rem 1rem;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 10px;
   display: flex;
   align-items: flex-start;
-  gap: 1rem;
+  gap: 0.65rem;
 }
 
 .submittedIcon {
   color: #fbbf24;
   flex-shrink: 0;
-  margin-top: 0.25rem;
+  margin-top: 0.1rem;
 }
 
 .submittedTitle {
-  margin: 0 0 0.5rem 0;
-  font-size: 1.125rem;
+  margin: 0 0 0.3rem 0;
+  font-size: 0.88rem;
   font-weight: 700;
   color: #ffffff;
 }
 
 .submittedText {
   margin: 0;
-  font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.8);
-  line-height: 1.6;
+  font-size: 0.76rem;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.5;
 }
 
-.prInfo {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(245, 158, 11, 0.2);
-  font-size: 0.875rem;
-  color: #fbbf24;
-  font-weight: 500;
-}
-
+/* ── PR Status ── */
 .prSuccessContainer {
-  margin-top: 1rem;
-  padding: 0.75rem 1rem;
-  background: rgba(34, 197, 94, 0.1);
-  border: 1px solid rgba(34, 197, 94, 0.3);
-  border-radius: 8px;
+  margin-top: 0.65rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(34, 197, 94, 0.09);
+  border: 1px solid rgba(34, 197, 94, 0.25);
+  border-radius: 7px;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
-.prSuccessIcon {
-  color: #22c55e;
-  flex-shrink: 0;
-}
+.prSuccessIcon { color: #22c55e; flex-shrink: 0; }
 
 .prSuccessText {
   color: #22c55e;
-  font-size: 0.875rem;
+  font-size: 0.76rem;
   font-weight: 600;
 }
 
 .prAutoFetchingContainer {
-  margin-top: 1rem;
-  padding: 0.75rem 1rem;
-  background: rgba(59, 130, 246, 0.1);
-  border: 1px solid rgba(59, 130, 246, 0.3);
-  border-radius: 8px;
+  margin-top: 0.65rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(59, 130, 246, 0.09);
+  border: 1px solid rgba(59, 130, 246, 0.25);
+  border-radius: 7px;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
 }
 
 .prFetchingSpinner {
@@ -749,76 +716,41 @@
   flex-shrink: 0;
 }
 
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 .prAutoFetchingText {
   color: #3b82f6;
-  font-size: 0.875rem;
+  font-size: 0.76rem;
   font-weight: 500;
 }
 
 .prActionContainer {
-  margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(245, 158, 11, 0.2);
-}
-
-.prMissingText {
-  margin: 0 0 0.75rem 0;
-  font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.7);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
+  margin-top: 0.65rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid rgba(245, 158, 11, 0.15);
 }
 
 .fetchPRButton {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.625rem 1rem;
+  gap: 0.4rem;
+  padding: 0.45rem 0.85rem;
   background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
   border: none;
-  border-radius: 8px;
+  border-radius: 7px;
   color: #ffffff;
-  font-size: 0.875rem;
+  font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s;
 }
 
 .fetchPRButton:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 8px 16px rgba(245, 158, 11, 0.3);
-}
-
-.fetchPRButton:active:not(:disabled) {
-  transform: translateY(0);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px rgba(245, 158, 11, 0.3);
 }
 
 .fetchPRButton:disabled {
-  opacity: 0.6;
+  opacity: 0.55;
   cursor: not-allowed;
-}
-
-.prErrorText {
-  margin-top: 0.75rem;
-  padding: 0.75rem;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: 6px;
-  font-size: 0.75rem;
-  color: #ef4444;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
 }
 
 /* ── Repo URL row ── */
@@ -826,13 +758,13 @@
   display: flex;
   align-items: flex-start;
   gap: 0.5rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.6rem;
   flex-wrap: wrap;
 }
 
 .repoUrlLabel {
-  font-size: 0.75rem;
-  color: rgba(255,255,255,0.4);
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.38);
   padding-top: 0.15rem;
   flex-shrink: 0;
 }
@@ -840,315 +772,255 @@
 .repoUrlDisplay {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.45rem;
   flex-wrap: wrap;
 }
 
 .repoUrlCode {
-  font-size: 0.72rem;
-  color: rgba(255,255,255,0.6);
-  background: rgba(255,255,255,0.06);
-  padding: 0.2rem 0.5rem;
+  font-size: 0.69rem;
+  color: rgba(255, 255, 255, 0.55);
+  background: rgba(255, 255, 255, 0.05);
+  padding: 0.18rem 0.45rem;
   border-radius: 4px;
   word-break: break-all;
 }
 
 .repoUrlEditBtn {
-  font-size: 0.72rem;
-  padding: 0.2rem 0.55rem;
-  background: rgba(99,102,241,0.15);
-  border: 1px solid rgba(99,102,241,0.3);
+  font-size: 0.69rem;
+  padding: 0.18rem 0.5rem;
+  background: rgba(139, 92, 246, 0.12);
+  border: 1px solid rgba(139, 92, 246, 0.28);
   border-radius: 5px;
-  color: #818cf8;
+  color: #34d399;
   cursor: pointer;
   transition: background 0.15s;
 }
-.repoUrlEditBtn:hover { background: rgba(99,102,241,0.25); }
+.repoUrlEditBtn:hover { background: rgba(139, 92, 246, 0.22); }
 
 .repoUrlEditGroup {
   display: flex;
-  gap: 0.4rem;
+  gap: 0.35rem;
   flex-wrap: wrap;
   flex: 1;
 }
 
 .repoUrlEditInput {
   flex: 1;
-  min-width: 220px;
-  padding: 0.35rem 0.65rem;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(99,102,241,0.35);
+  min-width: 200px;
+  padding: 0.3rem 0.6rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(139, 92, 246, 0.32);
   border-radius: 6px;
   color: white;
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   outline: none;
 }
-.repoUrlEditInput:focus { border-color: #818cf8; }
+.repoUrlEditInput:focus { border-color: #34d399; }
 
 .repoUrlSaveBtn {
-  padding: 0.35rem 0.75rem;
-  background: #6366f1;
+  padding: 0.3rem 0.65rem;
+  background: #10b981;
   border: none;
   border-radius: 6px;
   color: white;
-  font-size: 0.78rem;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 0.3rem;
 }
-.repoUrlSaveBtn:disabled { opacity: 0.6; cursor: not-allowed; }
+.repoUrlSaveBtn:disabled { opacity: 0.55; cursor: not-allowed; }
 
 .repoUrlCancelBtn {
-  padding: 0.35rem 0.65rem;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.12);
+  padding: 0.3rem 0.6rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 6px;
-  color: rgba(255,255,255,0.6);
-  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.75rem;
   cursor: pointer;
 }
 
 /* ── PR guide ── */
 .prGuide {
-  margin: 0.5rem 0 0.75rem;
-  padding: 0.85rem 1rem;
-  background: rgba(245,158,11,0.07);
-  border: 1px solid rgba(245,158,11,0.2);
+  margin: 0.45rem 0 0.6rem;
+  padding: 0.75rem 0.9rem;
+  background: rgba(245, 158, 11, 0.06);
+  border: 1px solid rgba(245, 158, 11, 0.18);
   border-radius: 8px;
 }
 
 .prGuideTitle {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  font-size: 0.78rem;
+  gap: 0.35rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #f59e0b;
-  margin: 0 0 0.6rem;
+  margin: 0 0 0.5rem;
 }
 
 .prGuideSteps {
-  margin: 0 0 0.65rem 1.1rem;
+  margin: 0 0 0.55rem 1rem;
   padding: 0;
-  font-size: 0.75rem;
-  color: rgba(255,255,255,0.55);
-  line-height: 1.8;
+  font-size: 0.72rem;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.7;
 }
 
-.prGuideSteps strong { color: rgba(255,255,255,0.8); }
+.prGuideSteps strong { color: rgba(255, 255, 255, 0.75); }
 
 .prGuideLink {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
-  font-size: 0.75rem;
-  color: #818cf8;
+  font-size: 0.72rem;
+  color: #34d399;
   text-decoration: none;
 }
 .prGuideLink:hover { text-decoration: underline; }
 
+/* ── Info Card ── */
 .infoCard {
-  padding: 2rem;
+  padding: 1rem 1.2rem !important;
+  border-radius: 14px !important;
 }
+.infoCard:hover { transform: none !important; }
 
 .infoGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 0.65rem;
 }
 
 .infoItem {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.25rem;
 }
 
 .infoLabel {
-  font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.42);
   font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .infoValue {
-  font-size: 1rem;
+  font-size: 0.82rem;
   font-weight: 600;
   color: #ffffff;
 }
 
-.infoValue.reviewed {
-  color: #34d399;
-}
+.infoValue.reviewed { color: #34d399; }
+.infoValue.submitted { color: #fbbf24; }
+.infoValue.inProgress { color: #60a5fa; }
+.infoValue.notStarted { color: rgba(255, 255, 255, 0.4); }
 
-.infoValue.submitted {
-  color: #fbbf24;
-}
-
-.infoValue.inProgress {
-  color: #60a5fa;
-}
-
-.infoValue.notStarted {
-  color: rgba(255, 255, 255, 0.5);
-}
-
-/* Loading & Error States */
+/* ── Loading & Error ── */
 .loadingContainer,
 .errorContainer {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 60vh;
-  gap: 1rem;
+  min-height: 300px;
+  gap: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .loader {
-  color: #8b5cf6;
+  color: #10b981;
   animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
 .errorMessage {
   color: rgba(255, 255, 255, 0.7);
-  font-size: 1.125rem;
+  font-size: 0.9rem;
   text-align: center;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .submissionDetailPage {
-    padding: 1.5rem;
-  }
-
-  .submissionTitle {
-    font-size: 2rem;
-  }
-
-  .categoriesGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .infoGrid {
-    grid-template-columns: 1fr;
-  }
-
-  .scoreDisplay {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .totalScore {
-    font-size: 3rem;
-  }
-
-  .reviewContent {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-}
-
-@media (max-width: 480px) {
-  .submissionDetailPage {
-    padding: 1rem;
-  }
-
-  .submissionTitle {
-    font-size: 1.75rem;
-  }
-
-  .sectionTitle {
-    font-size: 1.25rem;
-  }
-
-  .tasksCard,
-  .scoreCard,
-  .breakdownCard,
-  .reviewCard,
-  .infoCard {
-    padding: 1.5rem;
-  }
-
-  .taskItem {
-    padding: 1rem;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .taskCheckbox {
-    align-self: flex-start;
-  }
-
-  .progressBarContainer {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.5rem;
-  }
-
-  .progressPercentage {
-    text-align: left;
-  }
-
-  .totalScore {
-    font-size: 2.5rem;
-  }
-}
-
-/* ── Inline confirm banner (replaces window.confirm) ───────────────────── */
-.confirmBanner {
-  margin-top: 0.75rem;
-  padding: 1rem 1.25rem;
-  background: rgba(245, 158, 11, 0.1);
-  border: 1px solid rgba(245, 158, 11, 0.3);
-  border-radius: 12px;
+.loadingState {
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1.5rem;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.8rem;
+}
+
+/* ── Inline confirm banner ── */
+.confirmBanner {
+  padding: 0.85rem 1rem;
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
 }
 
 .confirmText {
   margin: 0;
-  font-size: 0.88rem;
-  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.7);
   line-height: 1.5;
 }
 
 .confirmActions {
   display: flex;
-  gap: 0.6rem;
+  gap: 0.5rem;
   justify-content: flex-end;
 }
 
 .confirmCancelBtn {
-  padding: 0.45rem 1rem;
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 8px;
-  color: rgba(255, 255, 255, 0.65);
-  font-size: 0.82rem;
+  padding: 0.4rem 0.85rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 7px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.78rem;
   cursor: pointer;
   transition: background 0.2s;
 }
-.confirmCancelBtn:hover { background: rgba(255, 255, 255, 0.12); }
+.confirmCancelBtn:hover { background: rgba(255, 255, 255, 0.1); }
 
 .confirmOkBtn {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.45rem 1.1rem;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  gap: 0.35rem;
+  padding: 0.4rem 0.95rem;
+  background: linear-gradient(135deg, #10b981, #06b6d4);
   border: none;
-  border-radius: 8px;
+  border-radius: 7px;
   color: white;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   font-weight: 600;
   cursor: pointer;
   transition: opacity 0.2s;
 }
-.confirmOkBtn:hover { opacity: 0.9; }
+.confirmOkBtn:hover { opacity: 0.88; }
+
+/* ── Responsive ── */
+@media (max-width: 768px) {
+  .categoriesGrid { grid-template-columns: repeat(2, 1fr); }
+  .infoGrid { grid-template-columns: repeat(2, 1fr); }
+  .scoreDisplay { flex-direction: column; align-items: flex-start; }
+  .reviewContent { flex-direction: column; align-items: flex-start; }
+}
+
+@media (max-width: 480px) {
+  .categoriesGrid { grid-template-columns: 1fr; }
+  .infoGrid { grid-template-columns: 1fr; }
+  .taskItem { flex-direction: column; gap: 0.5rem; }
+  .taskCheckbox { align-self: flex-start; }
+  .progressBarContainer { flex-direction: column; align-items: stretch; }
+  .progressPercentage { text-align: left; }
+  .totalScore { font-size: 1.8rem; }
+  .submissionTitle { font-size: 1.2rem; }
+}

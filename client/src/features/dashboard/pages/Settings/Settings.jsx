@@ -18,7 +18,12 @@ import {
 import DashboardLayout from '../../components/DashboardLayout/DashboardLayout';
 import GlassCard from '../../../../components/ui/GlassCard/GlassCard';
 import { fadeInUp, staggerContainer } from '../../../../utils/animations';
-import { getCurrentUser, updateUserProfile } from '../../../../services/userApi';
+import {
+  getCurrentUser,
+  updateUserProfile,
+  getNotificationPreferences,
+  updateNotificationPreferences,
+} from '../../../../services/userApi';
 import styles from './Settings.module.css';
 
 /**
@@ -71,9 +76,10 @@ const Settings = memo(() => {
         avatar: userData.avatar || '',
         location: userData.location || '',
       });
-      // TODO: Fetch notification preferences when API is ready
-      // const prefs = await getNotificationPreferences();
-      // setNotificationPrefs(prefs);
+      try {
+        const prefs = await getNotificationPreferences();
+        if (prefs) setNotificationPrefs(prev => ({ ...prev, ...prefs }));
+      } catch { /* use defaults if prefs not yet created */ }
     } catch (err) {
       console.error('Error fetching user data:', err);
       setError(err.message || 'Failed to load settings');
@@ -94,6 +100,7 @@ const Settings = memo(() => {
       const updated = await updateUserProfile({
         name: profileData.name,
         avatar: profileData.avatar,
+        location: profileData.location,
       });
 
       setUser(updated);
@@ -118,9 +125,7 @@ const Settings = memo(() => {
       setError(null);
       setSuccess(null);
 
-      // TODO: Update notification preferences when API is ready
-      // await updateNotificationPreferences(notificationPrefs);
-      
+      await updateNotificationPreferences(notificationPrefs);
       setSuccess('Notification preferences updated successfully!');
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
@@ -634,52 +639,29 @@ const Settings = memo(() => {
                       <div className={styles.privacyInfo}>
                         <h3 className={styles.privacyTitle}>Profile Visibility</h3>
                         <p className={styles.privacyDescription}>
-                          Control who can see your profile in the talent feed
+                          Your profile is publicly visible in the talent feed so companies can find you.
                         </p>
                       </div>
-                      <select className={styles.select}>
-                        <option value="public">Public</option>
-                        <option value="private">Private</option>
-                      </select>
+                      <span className={styles.statusValue}>Public</span>
                     </div>
 
                     <div className={styles.privacyItem}>
                       <div className={styles.privacyInfo}>
                         <h3 className={styles.privacyTitle}>Portfolio Visibility</h3>
                         <p className={styles.privacyDescription}>
-                          Control who can view your portfolios
+                          Verified portfolios are publicly accessible via your unique link.
                         </p>
                       </div>
-                      <select className={styles.select}>
-                        <option value="public">Public</option>
-                        <option value="private">Private</option>
-                      </select>
-                    </div>
-
-                    <div className={styles.privacyItem}>
-                      <div className={styles.privacyInfo}>
-                        <h3 className={styles.privacyTitle}>Data Sharing</h3>
-                        <p className={styles.privacyDescription}>
-                          Allow your data to be used for platform improvements
-                        </p>
-                      </div>
-                      <label className={styles.switch}>
-                        <input type="checkbox" defaultChecked />
-                        <span className={styles.slider}></span>
-                      </label>
+                      <span className={styles.statusValue}>Public</span>
                     </div>
                   </div>
 
                   <div className={styles.dangerZone}>
                     <h3 className={styles.dangerTitle}>Danger Zone</h3>
-                    <div className={styles.dangerActions}>
-                      <button className={styles.dangerButton}>
-                        Export My Data
-                      </button>
-                      <button className={styles.dangerButton}>
-                        Delete Account
-                      </button>
-                    </div>
+                    <p className={styles.privacyDescription} style={{ marginBottom: '1rem' }}>
+                      To export your data or delete your account, contact{' '}
+                      <a href="mailto:support@devhubs.io" style={{ color: '#34d399' }}>support@devhubs.io</a>.
+                    </p>
                   </div>
                 </GlassCard>
               </motion.div>

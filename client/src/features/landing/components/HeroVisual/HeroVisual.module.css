@@ -1,4 +1,4 @@
-.heroVisual {
+﻿.heroVisual {
   position: relative;
   width: 100%;
   height: 100%;
@@ -22,7 +22,7 @@
   position: absolute;
   width: 400px;
   height: 400px;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.4), transparent 70%);
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.4), transparent 70%);
   border-radius: 50%;
   filter: blur(60px);
   top: -100px;
@@ -34,7 +34,7 @@
   position: absolute;
   width: 350px;
   height: 350px;
-  background: radial-gradient(circle, rgba(236, 72, 153, 0.3), transparent 70%);
+  background: radial-gradient(circle, rgba(6, 182, 212, 0.3), transparent 70%);
   border-radius: 50%;
   filter: blur(60px);
   bottom: -80px;
@@ -46,7 +46,7 @@
   position: absolute;
   width: 300px;
   height: 300px;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.2), transparent 70%);
+  background: radial-gradient(circle, rgba(16, 185, 129, 0.2), transparent 70%);
   border-radius: 50%;
   filter: blur(60px);
   top: 50%;
@@ -84,20 +84,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(139, 92, 246, 0.1);
-  border: 2px solid rgba(139, 92, 246, 0.3);
+  background: rgba(16, 185, 129, 0.1);
+  border: 2px solid rgba(16, 185, 129, 0.3);
   border-radius: 16px;
-  color: #8b5cf6;
+  color: #10b981;
   backdrop-filter: blur(10px);
-  box-shadow: 0 8px 32px rgba(139, 92, 246, 0.2);
+  box-shadow: 0 8px 32px rgba(16, 185, 129, 0.2);
 }
 
 .gridOverlay {
   position: absolute;
   inset: 0;
   background-image: 
-    linear-gradient(rgba(139, 92, 246, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(139, 92, 246, 0.03) 1px, transparent 1px);
+    linear-gradient(rgba(16, 185, 129, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(16, 185, 129, 0.03) 1px, transparent 1px);
   background-size: 50px 50px;
   opacity: 0.5;
   pointer-events: none;

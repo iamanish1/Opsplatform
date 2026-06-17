@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+﻿import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Terminal as TerminalIcon, CheckCircle2, Loader2, Sparkles } from 'lucide-react';
 import { useInView } from 'react-intersection-observer';
@@ -36,7 +36,7 @@ const Terminal = ({ currentScene, onSceneComplete }) => {
         { text: '✓ Pipeline triggered automatically', type: 'success', icon: 'check' }
       ],
       delay: 30,
-      color: '#8b5cf6'
+      color: '#10b981'
     },
     {
       prompt: '$ → Running AI Code Analysis...',
@@ -52,7 +52,7 @@ const Terminal = ({ currentScene, onSceneComplete }) => {
         { text: '✓ CI/CD pipeline: Valid', type: 'success', icon: 'check' }
       ],
       delay: 35,
-      color: '#ec4899'
+      color: '#06b6d4'
     },
     {
       prompt: '$ → Checking Docker deployment...',
@@ -252,7 +252,7 @@ const Terminal = ({ currentScene, onSceneComplete }) => {
     >
       <div 
         className={`${styles.terminalWindow} ${showGlitch ? styles.glitch : ''}`}
-        style={{ '--terminal-color': currentCommandData?.color || '#8b5cf6' }}
+        style={{ '--terminal-color': currentCommandData?.color || '#10b981' }}
       >
         {/* Scanline effect */}
         {!prefersReducedMotion && (

@@ -1,6 +1,7 @@
 import { memo } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { useAuth } from '../../../../contexts/AuthContext';
 import {
   LayoutDashboard,
   BookOpen,
@@ -10,16 +11,23 @@ import {
   Settings,
   Zap,
   X,
-  ChevronDown,
-  User
+  LogOut,
+  User,
+  Inbox,
 } from 'lucide-react';
-import { slideInLeft, fadeIn } from '../../../../utils/animations';
 import useReducedMotion from '../../../../hooks/useReducedMotion';
 import styles from './Sidebar.module.css';
 
 const Sidebar = memo(({ isOpen, onToggle, mobileMenuOpen, onMobileMenuToggle, currentPath }) => {
   const prefersReducedMotion = useReducedMotion();
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const handleLogout = () => {
+    logout();
+    navigate('/');
+  };
 
   const navItems = [
     { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
@@ -27,6 +35,7 @@ const Sidebar = memo(({ isOpen, onToggle, mobileMenuOpen, onMobileMenuToggle, cu
     { icon: FolderKanban, label: 'Projects', path: '/dashboard/projects' },
     { icon: FileCode, label: 'Submissions', path: '/dashboard/submissions' },
     { icon: Award, label: 'Portfolio', path: '/dashboard/portfolios' },
+    { icon: Inbox, label: 'Interviews', path: '/dashboard/interviews' },
     { icon: Settings, label: 'Settings', path: '/dashboard/settings' },
   ];
 
@@ -135,31 +144,35 @@ const Sidebar = memo(({ isOpen, onToggle, mobileMenuOpen, onMobileMenuToggle, cu
         <div className={styles.userSection}>
           <div className={styles.userProfile}>
             <div className={styles.userAvatar}>
-              <User size={20} />
+              {user?.avatar
+                ? <img src={user.avatar} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8 }} />
+                : <User size={16} />}
             </div>
             {isOpen && (
               <motion.div
                 className={styles.userInfo}
                 initial={prefersReducedMotion ? {} : { opacity: 0 }}
                 animate={prefersReducedMotion ? {} : { opacity: 1 }}
-                transition={{ delay: 0.2 }}
+                transition={{ delay: 0.15 }}
               >
-                <div className={styles.userName}>John Doe</div>
-                <div className={styles.userEmail}>@johndoe</div>
+                <div className={styles.userName}>{user?.name || user?.githubUsername || 'Student'}</div>
+                <div className={styles.userEmail}>{user?.email || (user?.githubUsername ? `@${user.githubUsername}` : '')}</div>
               </motion.div>
             )}
-            {isOpen && (
-              <motion.button
-                className={styles.userMenuButton}
-                initial={prefersReducedMotion ? {} : { opacity: 0 }}
-                animate={prefersReducedMotion ? {} : { opacity: 1 }}
-                transition={{ delay: 0.2 }}
-                aria-label="User menu"
-              >
-                <ChevronDown size={16} />
-              </motion.button>
-            )}
           </div>
+          {isOpen && (
+            <motion.button
+              className={styles.logoutBtn}
+              onClick={handleLogout}
+              initial={prefersReducedMotion ? {} : { opacity: 0 }}
+              animate={prefersReducedMotion ? {} : { opacity: 1 }}
+              transition={{ delay: 0.2 }}
+              title="Logout"
+            >
+              <LogOut size={15} />
+              <span>Logout</span>
+            </motion.button>
+          )}
         </div>
       </motion.aside>
     </>

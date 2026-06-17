@@ -73,6 +73,13 @@ router.patch(
 );
 
 /**
+ * POST /api/user/onboarding/complete
+ * Mark onboarding as done for the authenticated student
+ * Auth: Required (any authenticated user)
+ */
+router.post('/onboarding/complete', authenticate, updateLimiter, userController.completeOnboarding);
+
+/**
  * POST /api/user/link-github
  * Link GitHub account
  * Auth: Optional (for OAuth callback)

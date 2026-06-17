@@ -1,8 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 import LiveReviewProgress from '../LiveReviewProgress/LiveReviewProgress';
-import TrustScoreCard from '../TrustScoreCard/TrustScoreCard';
-import CategoryBreakdown from '../CategoryBreakdown/CategoryBreakdown';
 import AISummaryCard from '../AISummaryCard/AISummaryCard';
 import SuggestionsCard from '../SuggestionsCard/SuggestionsCard';
 import StaticAnalysisCard from '../StaticAnalysisCard/StaticAnalysisCard';
@@ -31,13 +29,24 @@ const AIReviewPanel = ({ status = 'REVIEWING', progress = 0, review = null, erro
     visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
   };
 
-  // Show live progress tracker while reviewing
-  if (status !== 'REVIEWED' || loading) {
+  // Show live progress tracker while reviewing, or while fetching review data after REVIEWED
+  if (status !== 'REVIEWED' || loading || !review) {
     return (
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
         <LiveReviewProgress status={status} progress={progress} error={error} />
       </motion.div>
     );
+  }
+
+  // Only show AI-generated qualitative content — score and categories are already shown
+  // above via SubmissionDetail's scoreCard/breakdownCard. If nothing qualitative exists, don't render.
+  const hasSummary = review?.summary;
+  const hasSuggestions = review?.suggestions?.length > 0;
+  const hasStaticAnalysis = review?.staticAnalysis;
+  const hasAiContent = hasSummary || hasSuggestions || hasStaticAnalysis;
+
+  if (!hasAiContent && status === 'REVIEWED') {
+    return null;
   }
 
   return (
@@ -47,35 +56,22 @@ const AIReviewPanel = ({ status = 'REVIEWING', progress = 0, review = null, erro
       variants={containerVariants}
       className={styles.panel}
     >
-      {/* Review Results */}
+      {/* AI-generated qualitative content only — score/categories shown separately above */}
       {review && status === 'REVIEWED' && (
         <>
-          {/* Verification Score */}
-          <motion.div variants={itemVariants}>
-            <TrustScoreCard score={review.trustScore} />
-          </motion.div>
-
-          {/* Categories Grid */}
-          <motion.div variants={itemVariants}>
-            <CategoryBreakdown categories={review.categories} />
-          </motion.div>
-
-          {/* Summary */}
-          {review.summary && (
+          {hasSummary && (
             <motion.div variants={itemVariants}>
               <AISummaryCard summary={review.summary} />
             </motion.div>
           )}
 
-          {/* Suggestions */}
-          {review.suggestions && review.suggestions.length > 0 && (
+          {hasSuggestions && (
             <motion.div variants={itemVariants}>
               <SuggestionsCard suggestions={review.suggestions} />
             </motion.div>
           )}
 
-          {/* Static Analysis */}
-          {review.staticAnalysis && (
+          {hasStaticAnalysis && (
             <motion.div variants={itemVariants}>
               <StaticAnalysisCard analysis={review.staticAnalysis} />
             </motion.div>
@@ -85,13 +81,10 @@ const AIReviewPanel = ({ status = 'REVIEWING', progress = 0, review = null, erro
 
       {/* Error State */}
       {error && status === 'ERROR' && (
-        <motion.div
-          variants={itemVariants}
-          className="p-6 rounded-xl bg-red-900/20 border border-red-500/50 backdrop-blur-md"
-        >
-          <h3 className="text-red-300 font-semibold mb-2">Review Failed</h3>
-          <p className="text-red-200 text-sm">{error}</p>
-          <p className="text-red-300 text-xs mt-3">
+        <motion.div variants={itemVariants} className={styles.errorCard}>
+          <h3 className={styles.errorTitle}>Review Failed</h3>
+          <p className={styles.errorMsg}>{error}</p>
+          <p className={styles.errorHint}>
             Please try submitting again or contact support if the issue persists.
           </p>
         </motion.div>

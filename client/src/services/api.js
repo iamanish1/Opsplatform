@@ -64,6 +64,7 @@ const apiRequest = async (endpoint, options = {}) => {
   
   const config = {
     ...options,
+    cache: 'no-store', // prevent browser from caching API responses (avoids 304 / stale data)
     headers: {
       'Content-Type': 'application/json',
       ...(token && { Authorization: `Bearer ${token}` }),
@@ -81,6 +82,11 @@ const apiRequest = async (endpoint, options = {}) => {
   try {
     const response = await fetch(url, config);
     
+    // 304 Not Modified — treat as empty success (no body to parse)
+    if (response.status === 304) {
+      return {};
+    }
+
     // Handle 401 — try to refresh, then retry once
     if (response.status === 401 && !options._isRetry) {
       const newToken = await attemptTokenRefresh();

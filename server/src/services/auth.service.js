@@ -104,7 +104,7 @@ async function validateState(state) {
  */
 async function handleOAuthCallback(code, state) {
   // Validate state
-  if (!validateState(state)) {
+  if (!await validateState(state)) {
     const error = new Error('Invalid or expired state parameter');
     error.statusCode = 400;
     error.code = 'INVALID_STATE';
@@ -138,11 +138,11 @@ async function handleOAuthCallback(code, state) {
     const user = await upsertUserFromGitHub(githubUser, accessToken);
 
     // Generate short-lived access token + long-lived refresh token
-    const accessToken = generateJWT(user.id, user.role);
+    const jwtToken = generateJWT(user.id, user.role);
     const { token: refreshToken } = await refreshTokenRepo.create(user.id, 30);
 
     return {
-      token: accessToken,
+      token: jwtToken,
       refreshToken,
       user: {
         id: user.id,

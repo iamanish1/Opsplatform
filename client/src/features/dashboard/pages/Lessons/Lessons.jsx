@@ -110,11 +110,9 @@ const Lessons = memo(() => {
 
           {/* Progress Card */}
           <GlassCard className={styles.progressCard}>
-            <div className={styles.progressHeader}>
-              <div className={styles.progressInfo}>
-                <span className={styles.progressLabel}>Overall Progress</span>
-                <span className={styles.progressPercentage}>{progressPercentage}%</span>
-              </div>
+            <div className={styles.progressInfo}>
+              <span className={styles.progressLabel}>Overall Progress</span>
+              <span className={styles.progressPercentage}>{progressPercentage}%</span>
             </div>
             <div className={styles.progressBarContainer}>
               <motion.div
@@ -156,47 +154,47 @@ const Lessons = memo(() => {
                   className={styles.lessonCardWrapper}
                 >
                   <GlassCard
-                    className={`${styles.lessonCard} ${!isClickable ? styles.locked : ''}`}
+                    className={`${styles.lessonCard} ${styles[status.type]}`}
                     onClick={() => isClickable && handleLessonClick(lesson)}
                   >
-                    {/* Lesson Number Badge */}
+                    {/* Number + completion check */}
                     <div className={styles.lessonNumberBadge}>
                       <span className={styles.lessonNumber}>{lesson.order}</span>
                       {lesson.completed && (
                         <div className={styles.completedBadge}>
-                          <CheckCircle2 size={16} />
+                          <CheckCircle2 size={14} />
                         </div>
                       )}
                     </div>
 
-                    {/* Lesson Content */}
+                    {/* Icon + Title */}
                     <div className={styles.lessonContent}>
                       <div className={styles.lessonIcon}>
                         <StatusIcon
-                          size={32}
+                          size={20}
                           className={`${styles.icon} ${styles[status.type]}`}
                         />
                       </div>
                       <h3 className={styles.lessonTitle}>{lesson.title}</h3>
-                      <div className={styles.lessonStatus}>
-                        <span className={`${styles.statusBadge} ${styles[status.type]}`}>
-                          {status.label}
-                        </span>
-                      </div>
                     </div>
 
-                    {/* Action Arrow */}
-                    {isClickable && (
-                      <div className={styles.actionArrow}>
-                        <ArrowRight size={20} />
-                      </div>
-                    )}
+                    {/* Footer: badge + arrow */}
+                    <div className={styles.lessonFooter}>
+                      <span className={`${styles.statusBadge} ${styles[status.type]}`}>
+                        {status.label}
+                      </span>
+                      {isClickable && (
+                        <div className={styles.actionArrow}>
+                          <ArrowRight size={14} />
+                        </div>
+                      )}
+                    </div>
 
                     {/* Locked Overlay */}
                     {!isClickable && (
                       <div className={styles.lockedOverlay}>
-                        <Lock size={24} />
-                        <span>Complete previous lesson to unlock</span>
+                        <Lock size={18} />
+                        <span>Complete previous lesson</span>
                       </div>
                     )}
                   </GlassCard>

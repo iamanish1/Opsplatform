@@ -212,7 +212,7 @@ const PortfolioSection = memo(() => {
       ) : (
         <>
           <div className={styles.portfoliosGrid}>
-            {portfolios.map((portfolio) => {
+            {portfolios.map((portfolio, index) => {
               const title = getPortfolioTitle(portfolio);
               const score = getPortfolioScore(portfolio);
               const badge = getPortfolioBadge(portfolio);
@@ -220,7 +220,12 @@ const PortfolioSection = memo(() => {
               const portfolioUrl = `/portfolios/${portfolio.slug}`;
 
               return (
-                <motion.div key={portfolio.id} variants={fadeInUp}>
+                <motion.div
+                  key={portfolio.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.06, ease: [0.22, 1, 0.36, 1] }}
+                >
                   <GlassCard className={styles.portfolioCard}>
                     <div className={styles.portfolioHeader}>
                       <div className={styles.portfolioIcon}>

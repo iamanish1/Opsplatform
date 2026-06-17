@@ -1,7 +1,7 @@
-/* ── Page shell ─────────────────────────────────────────────────────────── */
+﻿/* ── Page shell ─────────────────────────────────────────────────────────── */
 .page {
   min-height: 100vh;
-  background: #0a0a0f;
+  background: #0a0f0d;
   color: white;
   font-family: inherit;
   position: relative;
@@ -40,7 +40,7 @@
   letter-spacing: -0.02em;
 }
 
-.navBrand svg { color: #6366f1; }
+.navBrand svg { color: #10b981; }
 
 .navActions {
   display: flex;
@@ -70,7 +70,7 @@
   align-items: center;
   gap: 0.4rem;
   padding: 0.5rem 1.1rem;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: linear-gradient(135deg, #10b981, #06b6d4);
   border-radius: 8px;
   color: white;
   font-size: 0.85rem;
@@ -158,7 +158,7 @@
   width: 80px;
   height: 80px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: linear-gradient(135deg, #10b981, #06b6d4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -174,9 +174,9 @@
   right: 2px;
   width: 22px;
   height: 22px;
-  background: #6366f1;
+  background: #10b981;
   border-radius: 50%;
-  border: 2px solid #0a0a0f;
+  border: 2px solid #0a0f0d;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -202,7 +202,7 @@
   text-decoration: none;
   transition: color 0.2s;
 }
-.githubLink:hover { color: #6366f1; }
+.githubLink:hover { color: #10b981; }
 
 .location {
   display: flex;
@@ -276,15 +276,15 @@
   align-items: center;
   gap: 0.3rem;
   padding: 0.35rem 0.8rem;
-  background: rgba(99, 102, 241, 0.15);
-  border: 1px solid rgba(99, 102, 241, 0.3);
+  background: rgba(20, 184, 166, 0.15);
+  border: 1px solid rgba(20, 184, 166, 0.3);
   border-radius: 8px;
-  color: #818cf8;
+  color: #34d399;
   font-size: 0.8rem;
   text-decoration: none;
   transition: background 0.2s;
 }
-.repoLink:hover { background: rgba(99,102,241,0.25); }
+.repoLink:hover { background: rgba(139,92,246,0.25); }
 
 .prTag, .dateTag {
   display: flex;
@@ -349,8 +349,8 @@
 
 /* ── CTA card ───────────────────────────────────────────────────────────── */
 .ctaCard {
-  background: linear-gradient(135deg, rgba(99,102,241,0.15), rgba(139,92,246,0.15));
-  border: 1px solid rgba(99,102,241,0.3);
+  background: linear-gradient(135deg, rgba(139,92,246,0.15), rgba(236,72,153,0.15));
+  border: 1px solid rgba(139,92,246,0.3);
   border-radius: 24px;
   padding: 2rem;
   display: flex;
@@ -378,7 +378,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1.5rem;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: linear-gradient(135deg, #10b981, #06b6d4);
   border-radius: 10px;
   color: white;
   font-size: 0.9rem;
@@ -399,7 +399,7 @@
   position: relative;
   z-index: 1;
 }
-.footer a { color: #6366f1; text-decoration: none; }
+.footer a { color: #10b981; text-decoration: none; }
 
 /* ── Loading / Error ─────────────────────────────────────────────────────── */
 .loadingPage, .errorPage {
@@ -409,12 +409,12 @@
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  background: #0a0a0f;
+  background: #0a0f0d;
   color: rgba(255,255,255,0.7);
 }
 
 .spinner {
-  color: #6366f1;
+  color: #10b981;
   animation: spin 1s linear infinite;
 }
 

@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react';
+﻿import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { ToastProvider } from './contexts/ToastContext';
@@ -18,7 +18,7 @@ const Leaderboard = lazy(() => import('./features/leaderboard/pages/Leaderboard/
 const Onboarding = lazy(() => import('./features/onboarding/pages/Onboarding/Onboarding'));
 
 const PageLoader = () => (
-  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#0a0a0f' }}>
+  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', background: '#0a0f0d' }}>
     <Loader2 size={40} style={{ color: '#6366f1', animation: 'spin 1s linear infinite' }} />
   </div>
 );
@@ -37,7 +37,7 @@ function App() {
               <Route path="/auth/company/signup" element={<CompanySignup />} />
 
               {/* Public pages — no auth required */}
-              <Route path="/portfolio/:slug" element={<PublicPortfolio />} />
+              <Route path="/portfolios/:slug" element={<PublicPortfolio />} />
               <Route path="/leaderboard" element={<Leaderboard />} />
 
               {/* Student dashboard */}

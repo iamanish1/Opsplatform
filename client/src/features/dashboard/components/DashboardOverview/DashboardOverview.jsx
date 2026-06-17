@@ -7,6 +7,7 @@ import ActiveProjectWidget from '../ActiveProjectWidget/ActiveProjectWidget';
 import QuickStatsWidget from '../QuickStatsWidget/QuickStatsWidget';
 import { fadeInUp, staggerContainer } from '../../../../utils/animations';
 import { getSubmissions } from '../../../../services/submissionsApi';
+import { getUserPortfolios } from '../../../../services/portfolioApi';
 import styles from './DashboardOverview.module.css';
 
 const DashboardOverview = memo(() => {
@@ -29,10 +30,16 @@ const DashboardOverview = memo(() => {
   const fetchDashboardData = async () => {
     try {
       setLoading(true);
-      const submissions = await getSubmissions();
-      const submissionsArray = Array.isArray(submissions) ? submissions : [];
+      const [submissions, portfoliosData] = await Promise.allSettled([
+        getSubmissions(),
+        getUserPortfolios(),
+      ]);
 
-      // Calculate average trust score from reviewed submissions
+      const submissionsArray = submissions.status === 'fulfilled' && Array.isArray(submissions.value)
+        ? submissions.value : [];
+      const portfoliosArray = portfoliosData.status === 'fulfilled' && Array.isArray(portfoliosData.value)
+        ? portfoliosData.value : [];
+
       const reviewedSubmissions = submissionsArray.filter(s => s.status === 'REVIEWED' && s.score?.totalScore);
       const avgScore = reviewedSubmissions.length > 0
         ? Math.round(reviewedSubmissions.reduce((sum, s) => sum + (s.score?.totalScore || 0), 0) / reviewedSubmissions.length)
@@ -41,12 +48,11 @@ const DashboardOverview = memo(() => {
       setTrustScore(avgScore);
       setStats({
         submissions: submissionsArray.length,
-        portfolios: 0, // Can be fetched from another API
-        certificates: 0, // Can be fetched from another API
+        portfolios: portfoliosArray.length,
+        certificates: reviewedSubmissions.length,
       });
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
-      // Fallback to default values
       setTrustScore(0);
     } finally {
       setLoading(false);
@@ -66,22 +72,42 @@ const DashboardOverview = memo(() => {
 
       <div className={styles.widgetsGrid}>
         {/* Trust Score Widget */}
-        <motion.div variants={fadeInUp} className={styles.widgetLarge}>
+        <motion.div
+          className={styles.widgetLarge}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+        >
           <TrustScoreWidget score={trustScore} />
         </motion.div>
 
         {/* Lessons Progress Widget */}
-        <motion.div variants={fadeInUp} className={styles.widgetMedium}>
+        <motion.div
+          className={styles.widgetMedium}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.16, ease: [0.22, 1, 0.36, 1] }}
+        >
           <LessonsProgressWidget />
         </motion.div>
 
         {/* Active Project Widget */}
-        <motion.div variants={fadeInUp} className={styles.widgetLarge}>
+        <motion.div
+          className={styles.widgetLarge}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.22, ease: [0.22, 1, 0.36, 1] }}
+        >
           <ActiveProjectWidget project={activeProject} />
         </motion.div>
 
         {/* Quick Stats Widget */}
-        <motion.div variants={fadeInUp} className={styles.widgetMedium}>
+        <motion.div
+          className={styles.widgetMedium}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: 0.28, ease: [0.22, 1, 0.36, 1] }}
+        >
           <QuickStatsWidget stats={stats} />
         </motion.div>
       </div>

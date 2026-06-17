@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -7,7 +7,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../../../contexts/AuthContext';
 import { useToast } from '../../../../contexts/ToastContext';
-import { get } from '../../../../services/api';
+import { get, post } from '../../../../services/api';
 import styles from './Onboarding.module.css';
 
 const STEPS = [
@@ -23,7 +23,7 @@ const STEPS = [
     icon: GitPullRequest,
     title: 'Connect Your Repository',
     subtitle: 'We\'ll detect your PRs and run AI code reviews when you submit a project.',
-    color: '#8b5cf6',
+    color: '#10b981',
   },
   {
     id: 3,
@@ -75,8 +75,9 @@ export default function Onboarding() {
 
   const handleFinish = async () => {
     try {
+      await post('/user/onboarding/complete');
       await refreshUser();
-    } catch { /* ignore */ }
+    } catch { /* ignore — navigate regardless */ }
     navigate('/dashboard');
   };
 

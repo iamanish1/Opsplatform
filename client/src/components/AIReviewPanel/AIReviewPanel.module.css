@@ -5,6 +5,32 @@
   width: 100%;
 }
 
+.errorCard {
+  padding: 1rem 1.2rem;
+  border-radius: 14px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.errorTitle {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #f87171;
+  margin: 0 0 0.35rem;
+}
+
+.errorMsg {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.65);
+  margin: 0 0 0.5rem;
+}
+
+.errorHint {
+  font-size: 0.76rem;
+  color: rgba(255, 255, 255, 0.35);
+  margin: 0;
+}
+
 .panelContent {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
